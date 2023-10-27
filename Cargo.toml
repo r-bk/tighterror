@@ -1,0 +1,15 @@
+[package]
+name = "tighterror"
+version = "0.0.1"
+authors = ["Rafael Buchbinder <rafi@rbk.io>"]
+edition = "2021"
+description = "Error representation framework with a code generator"
+license = "MIT OR Apache-2.0"
+keywords = ["error", "error-handling"]
+categories = ["rust-patterns", "no-std"]
+repository = "https://github.com/r-bk/tighterror"
+exclude = [".git*"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
