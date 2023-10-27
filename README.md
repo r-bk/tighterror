@@ -1,4 +1,4 @@
-# tighterror - compact error representation framework
+# tighterror - compact error types + codegen
 
 **tighterror** is a Rust library and a set of accompanying tools for
 compact representation of errors in Rust programs.
