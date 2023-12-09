@@ -1,3 +1,5 @@
 /target
 /Cargo.lock
 **/*.rs.bk
+test.yaml
+test.toml
