@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - '**-wip'
+      - '**-fuzz'
+  pull_request:
+  schedule:
+    - cron: '0 1 * * 5'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: --deny warnings
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - 1.70.0  # MSRV
+        runs_on:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt,clippy
+
+      - name: build
+        run: cargo build --workspace
+
+      - name: test
+        run: cargo test --workspace
+
+      - name: clippy
+        run: cargo clippy --workspace
+
+      - name: build yaml
+        run: cargo build -p tighterror-build --no-default-features --features yaml
+
+      - name: build toml
+        if: false
+        run: cargo build -p tighterror-build --no-default-features --features toml
+
+      - name: build all-features
+        run: cargo build -p tighterror-build --all-features
+
+      - name: test yaml
+        run: cargo test -p tighterror-build --no-default-features --features yaml
+
+      - name: test toml
+        if: false
+        run: cargo test -p tighterror-build --no-default-features --features toml
+
+      - name: test all-features
+        run: cargo test -p tighterror-build --all-features
+
+      - name: clippy yaml
+        run: cargo clippy -p tighterror-build --no-default-features --features yaml
+
+      - name: clippy toml
+        if: false
+        run: cargo clippy -p tighterror-build --no-default-features --features toml
+
+      - name: clippy all-features
+        run: cargo clippy -p tighterror-build --all-features
+
+  common-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - name: format all
+        run: cargo fmt -- --check
+      - name: doc
+        env:
+          RUSTDOCFLAGS: "--cfg docsrs"
+        run: cargo doc --all-features --no-deps
