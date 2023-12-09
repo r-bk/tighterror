@@ -1,7 +1,9 @@
 # cargo-tighterror
 
 `cargo-tighterror` is a Cargo extension for the `tighterror` framework.
-It generates Rust code out of definitions placed in `tighterror.yaml` file.
+
+This tool is used to lint the `tighterror` markup specification file, or to
+generate Rust source code from it.
 
 ## License
 
