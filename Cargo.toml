@@ -11,7 +11,13 @@ repository = "https://github.com/r-bk/tighterror"
 exclude = [".git*"]
 
 [workspace]
-members = ["crates/tighterror-build", "crates/cargo-tighterror"]
+members = [
+    "crates/tighterror-build",
+    "crates/tighterror-build/tests/implicit_category",
+    "crates/tighterror-build/tests/minimal",
+    "crates/tighterror-build/tests/minimal_with_display",
+    "crates/cargo-tighterror",
+]
 
 [package.metadata.docs.rs]
 all-features = true

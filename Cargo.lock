@@ -395,6 +395,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_implicit_category"
+version = "0.0.0"
+dependencies = [
+ "env_logger",
+ "tighterror",
+ "tighterror-build",
+]
+
+[[package]]
+name = "test_minimal"
+version = "0.0.0"
+dependencies = [
+ "env_logger",
+ "tighterror",
+ "tighterror-build",
+]
+
+[[package]]
+name = "test_minimal_with_display"
+version = "0.0.0"
+dependencies = [
+ "env_logger",
+ "tighterror",
+ "tighterror-build",
+]
+
+[[package]]
 name = "tighterror"
 version = "0.0.1"
 

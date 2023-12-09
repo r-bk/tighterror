@@ -1,0 +1,15 @@
+tighterror:
+  doc_from_display: true
+  err_doc: A custom error struct doc.
+  err_code_doc: A custom error doc.
+  cat_doc: A custom category doc.
+
+errors:
+  - FailedToOpenFile: Input file could not be open.
+  - BadInput: Input file has invalid format.
+  - name: LongDescription
+    doc: |
+      This is an example for a long doc string.
+
+      It continues on several lines. And can include Rust doc-string
+      formatting [`String`].

@@ -1,0 +1,8 @@
+---
+tighterror:
+  doc_from_display: true
+
+errors:
+  - BadConfFile: Configuration file is malformed.
+  - BadArg: Invalid argument.
+  - IoError: An IO error occurred.
