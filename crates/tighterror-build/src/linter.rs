@@ -15,7 +15,7 @@ cfg_if::cfg_if! {
 cfg_if::cfg_if! {
     if #[cfg(feature = "toml")] {
         mod toml;
-        pub(crate) use toml::*;
+        pub(crate) use self::toml::*;
     }
 }
 
