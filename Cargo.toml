@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["error", "error-handling"]
 categories = ["rust-patterns", "no-std"]
 repository = "https://github.com/r-bk/tighterror"
-exclude = [".git*"]
+exclude = [".git*", "Makefile.toml"]
 
 [workspace]
 members = [
