@@ -1,0 +1,14 @@
+[package]
+name = "tighterror-build"
+version = "0.0.1"
+authors = ["Rafael Buchbinder <rafi@rbk.io>"]
+edition = "2021"
+description = "tighterror code generator library"
+license = "MIT OR Apache-2.0"
+keywords = ["tighterror"]
+categories = ["development-tools", "development-tools::build-utils"]
+repository = "https://github.com/r-bk/tighterror"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

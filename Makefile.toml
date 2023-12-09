@@ -12,6 +12,19 @@ toolchain = "nightly"
 command = "cargo"
 args = ["doc", "-p", "tighterror", "--all-features", "--no-deps", "--open"]
 
+[tasks.docb]
+env = { "RUSTDOCFLAGS" = "--cfg docsrs" }
+toolchain = "nightly"
+command = "cargo"
+args = [
+    "doc",
+    "-p",
+    "tighterror-build",
+    "--all-features",
+    "--no-deps",
+    "--open",
+]
+
 [tasks.fmt]
 command = "cargo"
 args = ["fmt", "--all", "--", "--check"]

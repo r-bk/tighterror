@@ -10,6 +10,9 @@ categories = ["rust-patterns", "no-std"]
 repository = "https://github.com/r-bk/tighterror"
 exclude = [".git*"]
 
+[workspace]
+members = ["crates/tighterror-build", "crates/cargo-tighterror"]
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]

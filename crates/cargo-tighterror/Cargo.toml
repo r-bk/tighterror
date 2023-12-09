@@ -1,0 +1,22 @@
+[package]
+name = "cargo-tighterror"
+version = "0.0.1"
+authors = ["Rafael Buchbinder <rafi@rbk.io>"]
+edition = "2021"
+description = "A cargo extension for the tighterror framework"
+license = "MIT OR Apache-2.0"
+keywords = ["tighterror", "cargo", "build"]
+categories = [
+    "command-line-utilities",
+    "development-tools",
+    "development-tools::cargo-plugins",
+    "development-tools::build-utils",
+]
+repository = "https://github.com/r-bk/tighterror"
+
+[dependencies]
+tighterror-build = { version = "0.0.1", path = "../tighterror-build" }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
