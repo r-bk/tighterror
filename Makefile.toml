@@ -11,6 +11,7 @@ env = { "RUSTDOCFLAGS" = "--cfg docsrs" }
 toolchain = "nightly"
 command = "cargo"
 args = ["doc", "-p", "tighterror", "--all-features", "--no-deps", "--open"]
+workspace = false
 
 [tasks.docb]
 env = { "RUSTDOCFLAGS" = "--cfg docsrs" }
@@ -24,6 +25,7 @@ args = [
     "--no-deps",
     "--open",
 ]
+workspace = false
 
 [tasks.fmt]
 command = "cargo"
