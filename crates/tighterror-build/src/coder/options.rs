@@ -30,7 +30,7 @@ impl CodegenOptions {
 
     /// Sets the specification file path.
     ///
-    /// If not specified the path [DEFAULT_SPEC_PATH] is used.
+    /// If `Some` value is not specified the path [DEFAULT_SPEC_PATH] is used.
     ///
     /// # Examples
     /// ```rust
@@ -51,8 +51,8 @@ impl CodegenOptions {
     /// If the value is `"-"`, or destination file path is not set at all, the
     /// output is written to `stdout`.
     ///
-    /// A value specified here overrides the one present in the specification
-    /// file.
+    /// A `Some` value specified here overrides the one present in the
+    /// specification file.
     ///
     /// # Examples
     ///
