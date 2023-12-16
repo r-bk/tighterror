@@ -381,7 +381,7 @@ impl<'a> CodeGenerator<'a> {
             impl core::fmt::Display for ErrorCode {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                    f.pad(self.display())
+                    f.pad(self.name())
                 }
             }
         }
@@ -430,7 +430,7 @@ impl<'a> CodeGenerator<'a> {
             impl core::fmt::Display for Error {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                    self.code().fmt(f)
+                    f.pad(self.code().display())
                 }
             }
         }
