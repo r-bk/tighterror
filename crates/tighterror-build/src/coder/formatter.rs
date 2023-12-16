@@ -23,7 +23,7 @@ fn add_newlines(file: String) -> String {
         r"^[[:space:]]*fn",
         r"^[[:space:]]*const fn",
         r"^[[:space:]]*pub fn",
-        r"^[[:space:]]*#\[inline\]",
+        r"^[[:space:]]*#\[.*\]$",
     ])
     .unwrap();
     let rg_post = RegexSet::new([r"^[[:space:]]*}$", r"^[[:space:]]*];$"]).unwrap();
