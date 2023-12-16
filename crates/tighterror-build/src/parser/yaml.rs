@@ -216,13 +216,25 @@ impl YamlErrorParser {
         })
     }
 
+    fn is_short_mapping(m: &Mapping) -> bool {
+        if m.len() != 1 {
+            return false;
+        }
+        if let Some(key) = m.keys().next() {
+            if let Some(k) = key.as_str() {
+                return !kws::is_any_kw(k);
+            }
+        }
+        false
+    }
+
     fn from_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
         match m.len() {
             0 => {
                 error!("an error must be a non-empty Mapping: deserialized {:?}", m);
                 BAD_SPEC.into()
             }
-            1 => Self::from_short_mapping(m),
+            1 if Self::is_short_mapping(&m) => Self::from_short_mapping(m),
             _ => Self::from_long_mapping(m),
         }
     }
