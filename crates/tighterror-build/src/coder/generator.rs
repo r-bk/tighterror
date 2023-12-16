@@ -326,6 +326,7 @@ impl<'a> CodeGenerator<'a> {
                     _n::A[self.category_value() as usize][self.kind_value() as usize]
                 }
 
+                #[inline]
                 fn display(&self) -> &'static str {
                     _d::A[self.category_value() as usize][self.kind_value() as usize]
                 }
