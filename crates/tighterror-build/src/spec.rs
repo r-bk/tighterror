@@ -13,7 +13,7 @@ pub const DEFAULT_CATEGORY_STRUCT_DOC: &str = "Error category type.";
 pub const DEFAULT_GENERAL_CAT_DOC: &str = "General error category.";
 pub const DEFAULT_DOC_FROM_DISPLAY: bool = false;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
     /// Module documentation
     pub mod_doc: Option<String>,
@@ -29,7 +29,7 @@ pub struct MainSpec {
     pub oes: OverrideableErrorSpec,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Spec {
     pub main: MainSpec,
     pub categories: Vec<CategorySpec>,

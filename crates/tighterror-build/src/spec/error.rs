@@ -1,11 +1,11 @@
 use convert_case::{Case::UpperSnake, Casing};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct OverrideableErrorSpec {
     pub doc_from_display: Option<bool>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ErrorSpec {
     pub name: String,
     pub display: Option<String>,

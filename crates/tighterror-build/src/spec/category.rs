@@ -3,7 +3,7 @@ use convert_case::{Case::UpperSnake, Casing};
 
 pub const IMPLICIT_CATEGORY_NAME: &str = "General";
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct CategorySpec {
     pub name: String,
     pub oes: OverrideableErrorSpec,
