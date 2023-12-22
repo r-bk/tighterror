@@ -1,5 +1,5 @@
 use crate::{
-    coder::formatter::pretty,
+    coder::{formatter::pretty, options::CodegenOptions},
     errors::{TebError, BAD_SPEC},
     spec::{CategorySpec, Spec},
 };
@@ -18,6 +18,7 @@ enum ReprType {
 
 #[allow(dead_code)]
 struct CodeGenerator<'a> {
+    opts: &'a CodegenOptions,
     spec: &'a Spec,
     /// total number of categories
     n_categories: usize,
@@ -34,7 +35,7 @@ struct CodeGenerator<'a> {
 }
 
 impl<'a> CodeGenerator<'a> {
-    fn new(spec: &'a Spec) -> Result<CodeGenerator<'a>, TebError> {
+    fn new(opts: &'a CodegenOptions, spec: &'a Spec) -> Result<CodeGenerator<'a>, TebError> {
         let n_categories = spec.categories.len();
         let n_category_bits = Self::calc_n_category_bits(n_categories)?;
         let n_error_bits = Self::calc_n_error_bits(spec)?;
@@ -43,6 +44,7 @@ impl<'a> CodeGenerator<'a> {
         let repr_type = Self::calc_repr_type(n_category_bits + n_error_bits)?;
 
         Ok(Self {
+            opts,
             spec,
             n_categories,
             n_category_bits,
@@ -112,6 +114,7 @@ impl<'a> CodeGenerator<'a> {
         let error_tokens = self.error_tokens();
         let category_constants = self.category_constants_tokens();
         let error_code_constants = self.error_code_constants_tokens();
+        let test = self.test_tokens();
         let tokens = quote! {
             #mod_doc
             #category_tokens
@@ -120,6 +123,7 @@ impl<'a> CodeGenerator<'a> {
             #private_modules
             #category_constants
             #error_code_constants
+            #test
         };
         pretty(tokens)
     }
@@ -143,6 +147,10 @@ impl<'a> CodeGenerator<'a> {
                 #constants_tokens
             }
         }
+    }
+
+    fn n_categories_literal(&self) -> Literal {
+        Literal::usize_unsuffixed(self.n_categories)
     }
 
     fn private_constants_tokens(&self) -> TokenStream {
@@ -564,6 +572,289 @@ impl<'a> CodeGenerator<'a> {
         let category_max = self.spec.category_max();
         TokenStream::from_str(if category_max == 0 { "==" } else { "<=" }).unwrap()
     }
+
+    fn test_tokens(&self) -> TokenStream {
+        let do_test = self.spec.test(self.opts.test);
+        if do_test {
+            let test_tokens = self.test_tokens_impl();
+            quote! {
+                #[cfg(test)]
+                mod tests {
+                    use super::*;
+
+                    #test_tokens
+                }
+            }
+        } else {
+            TokenStream::default()
+        }
+    }
+
+    fn test_tokens_impl(&self) -> TokenStream {
+        let ut_category_name = self.ut_category_name_tokens();
+        let ut_category_display = self.ut_category_display();
+        let ut_category_uniqueness = self.ut_category_uniqueness();
+        let ut_category_values = self.ut_category_values();
+        let ut_err_code_name = self.ut_err_code_name();
+        let ut_err_code_display = self.ut_err_code_display();
+        let ut_err_code_uniqueness = self.ut_err_code_uniqueness();
+        let ut_err_code_value_uniqueness = self.ut_err_code_value_uniqueness();
+        let ut_err_code_category = self.ut_err_code_category();
+        let ut_err_code_from_value = self.ut_err_code_from_value();
+        let ut_err_display = self.ut_err_display();
+
+        quote! {
+            #ut_category_name
+            #ut_category_display
+            #ut_category_uniqueness
+            #ut_category_values
+            #ut_err_code_name
+            #ut_err_code_display
+            #ut_err_code_uniqueness
+            #ut_err_code_value_uniqueness
+            #ut_err_code_category
+            #ut_err_code_from_value
+            #ut_err_display
+        }
+    }
+
+    fn ut_category_name_tokens(&self) -> TokenStream {
+        let check_cat_name_iter = self.spec.categories.iter().map(|c| {
+            let ident_name = c.ident_name();
+            let ident = format_ident!("{}", ident_name);
+            quote! {
+                assert_eq!(#ident.name(), #ident_name);
+                assert_eq!(tighterror::TightErrorCategory::name(&#ident), #ident_name)
+            }
+        });
+        quote! {
+            #[test]
+            fn test_category_name() {
+                use categories::*;
+                #(#check_cat_name_iter);*
+            }
+        }
+    }
+
+    fn ut_category_display(&self) -> TokenStream {
+        let check_cat_display_iter = self.spec.categories.iter().map(|c| {
+            let ident_name = c.ident_name();
+            let ident = format_ident!("{}", ident_name);
+            quote! {
+                assert_eq!(format!("{}", #ident), #ident_name);
+            }
+        });
+        quote! {
+            #[test]
+            fn test_category_display() {
+                use categories::*;
+                #(#check_cat_display_iter)*
+            }
+        }
+    }
+
+    fn ut_category_uniqueness(&self) -> TokenStream {
+        let cat_arr = self.ut_cat_arr();
+        let n_categories = self.n_categories_literal();
+        quote! {
+            #[test]
+            fn test_category_uniqueness() {
+                use categories::*;
+                use std::collections::HashSet;
+                let cats: [ErrorCategory; #n_categories] = #cat_arr;
+                let set = HashSet::<ErrorCategory>::from_iter(cats);
+                assert_eq!(set.len(), #n_categories);
+            }
+        }
+    }
+
+    fn ut_category_values(&self) -> TokenStream {
+        let cat_arr = self.ut_cat_arr();
+        let n_categories = Literal::usize_unsuffixed(self.spec.categories.len());
+        let category_max = Literal::usize_unsuffixed(self.spec.categories.len() - 1);
+        let comparison = self.category_max_comparison();
+        quote! {
+            #[test]
+            fn test_category_values() {
+                use categories::*;
+                let cats: [ErrorCategory; #n_categories] = #cat_arr;
+                for c in cats {
+                    assert!(c.0 #comparison #category_max);
+                }
+            }
+        }
+    }
+
+    fn ut_cat_arr(&self) -> TokenStream {
+        let cat_iter = self
+            .spec
+            .categories
+            .iter()
+            .map(|c| format_ident!("{}", c.ident_name()));
+        quote! {
+            [#(#cat_iter),*]
+        }
+    }
+
+    fn ut_err_code_name(&self) -> TokenStream {
+        let iter = self.spec.categories.iter().map(|c| {
+            let ec_iter = c.errors.iter().map(|e| {
+                let ident_name = e.ident_name();
+                let ident = format_ident!("{}", ident_name);
+                quote! {
+                    assert_eq!(#ident.name(), #ident_name);
+                    assert_eq!(tighterror::TightErrorCode::name(&#ident), #ident_name);
+                }
+            });
+            quote! {
+                #(#ec_iter)*
+            }
+        });
+        quote! {
+            #[test]
+            fn test_err_code_name() {
+                use codes::*;
+                #(#iter)*
+            }
+        }
+    }
+
+    fn ut_err_code_display(&self) -> TokenStream {
+        let iter = self.spec.categories.iter().map(|c| {
+            let ec_iter = c.errors.iter().map(|e| {
+                let ident_name = e.ident_name();
+                let ident = format_ident!("{}", ident_name);
+                quote! {
+                    assert_eq!(format!("{}", #ident), #ident_name);
+                }
+            });
+            quote! {
+                #(#ec_iter)*
+            }
+        });
+        quote! {
+            #[test]
+            fn test_err_code_display() {
+                use codes::*;
+                #(#iter)*
+            }
+        }
+    }
+
+    fn ut_err_code_arr(&self) -> TokenStream {
+        let iter = self.spec.categories.iter().map(|c| {
+            let eiter = c.errors.iter().map(|e| format_ident!("{}", e.ident_name()));
+            quote! {
+                #(#eiter),*
+            }
+        });
+
+        quote! {
+            [#(#iter),*]
+        }
+    }
+
+    fn ut_err_code_uniqueness(&self) -> TokenStream {
+        let err_code_arr = self.ut_err_code_arr();
+        let n_errors =
+            Literal::usize_unsuffixed(self.spec.categories.iter().map(|c| c.errors.len()).sum());
+        quote! {
+            #[test]
+            fn test_err_code_uniqueness() {
+                use codes::*;
+                use std::collections::HashSet;
+                let errs: [ErrorCode; #n_errors] = #err_code_arr;
+                let set = HashSet::<ErrorCode>::from_iter(errs);
+                assert_eq!(set.len(), #n_errors);
+            }
+        }
+    }
+
+    fn ut_err_code_value_uniqueness(&self) -> TokenStream {
+        let repr_type = self.repr_type.ident();
+        let err_code_arr = self.ut_err_code_arr();
+        let n_errors =
+            Literal::usize_unsuffixed(self.spec.categories.iter().map(|c| c.errors.len()).sum());
+        quote! {
+            #[test]
+            fn test_err_code_value_uniqueness() {
+                use codes::*;
+                use std::collections::HashSet;
+                let errs: [ErrorCode; #n_errors] = #err_code_arr;
+                let set = HashSet::<#repr_type>::from_iter(errs.iter().map(|ec| ec.value()));
+                assert_eq!(set.len(), #n_errors);
+            }
+        }
+    }
+
+    fn ut_err_code_category(&self) -> TokenStream {
+        let iter = self.spec.categories.iter().map(|c| {
+            let eiter = c.errors.iter().map(|e| {
+                let ident = format_ident!("{}", e.ident_name());
+                let cat_ident = format_ident!("{}", c.ident_name());
+                quote! {
+                    assert_eq!(#ident.category(), categories::#cat_ident);
+                }
+            });
+            quote! {
+                #(#eiter)*
+            }
+        });
+        quote! {
+            #[test]
+            fn test_err_code_category() {
+                use codes::*;
+                #(#iter)*
+            }
+        }
+    }
+
+    fn ut_err_code_from_value(&self) -> TokenStream {
+        let iter = self.spec.categories.iter().map(|c| {
+            let eiter = c.errors.iter().map(|e| {
+                let ident = format_ident!("{}", e.ident_name());
+                quote! {
+                    assert_eq!(ErrorCode::from_value(#ident.value()).unwrap(), #ident);
+                }
+            });
+            quote! {
+                #(#eiter)*
+            }
+        });
+        quote! {
+            #[test]
+            fn test_err_code_from_value() {
+                use codes::*;
+                #(#iter)*
+            }
+        }
+    }
+
+    fn ut_err_display(&self) -> TokenStream {
+        let iter = self.spec.categories.iter().map(|c| {
+            let eiter = c.errors.iter().map(|e| {
+                let eident = format_ident!("{}", e.ident_name());
+                let display = if let Some(ref d) = e.display {
+                    d.clone()
+                } else {
+                    e.ident_name()
+                };
+                quote! {
+                    assert_eq!(Error::from(#eident).to_string(), #display);
+                }
+            });
+            quote! {
+                #(#eiter)*
+            }
+        });
+        quote! {
+            #[test]
+            fn test_err_display() {
+                use codes::*;
+                #(#iter)*
+            }
+        }
+    }
 }
 
 fn category_errors_constant_name(c: &CategorySpec) -> String {
@@ -620,7 +911,7 @@ impl ReprType {
     }
 }
 
-pub fn spec2code(spec: &Spec) -> Result<String, TebError> {
-    let gen = CodeGenerator::new(spec)?;
+pub fn spec2code(opts: &CodegenOptions, spec: &Spec) -> Result<String, TebError> {
+    let gen = CodeGenerator::new(opts, spec)?;
     gen.code()
 }

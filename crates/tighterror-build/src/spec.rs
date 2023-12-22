@@ -12,6 +12,7 @@ pub const DEFAULT_ERROR_CODE_CONST_DOC: &str = "";
 pub const DEFAULT_CATEGORY_STRUCT_DOC: &str = "Error category type.";
 pub const DEFAULT_GENERAL_CAT_DOC: &str = "General error category.";
 pub const DEFAULT_DOC_FROM_DISPLAY: bool = false;
+pub const DEFAULT_TEST: bool = false;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
@@ -38,6 +39,10 @@ pub struct Spec {
 impl Spec {
     pub fn dst<'a>(&'a self, path: Option<&'a str>) -> &'a str {
         path.or(self.main.dst.as_deref()).unwrap_or(STDOUT_DST)
+    }
+
+    pub fn test(&self, test: Option<bool>) -> bool {
+        test.unwrap_or(DEFAULT_TEST)
     }
 
     pub fn n_errors_in_largest_category(&self) -> Option<usize> {

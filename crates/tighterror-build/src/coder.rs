@@ -39,7 +39,7 @@ pub use options::*;
 pub fn codegen(opts: &CodegenOptions) -> Result<(), TebError> {
     let path = opts.spec.as_deref().unwrap_or(DEFAULT_SPEC_PATH);
     let spec = parser::from_path(path.into())?;
-    let code = generator::spec2code(&spec)?;
+    let code = generator::spec2code(opts, &spec)?;
 
     match spec.dst(opts.dst.as_deref()) {
         p if p == STDOUT_DST => {

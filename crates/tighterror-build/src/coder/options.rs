@@ -20,6 +20,7 @@ use crate::errors::TebError;
 pub struct CodegenOptions {
     pub(crate) spec: Option<String>,
     pub(crate) dst: Option<String>,
+    pub(crate) test: Option<bool>,
 }
 
 impl CodegenOptions {
@@ -64,6 +65,26 @@ impl CodegenOptions {
     /// ```
     pub fn dst(&mut self, dst: impl Into<Option<String>>) -> &mut Self {
         self.dst = dst.into();
+        self
+    }
+
+    /// Enables the unit test.
+    ///
+    /// If the value is `true` a module unit-test is included in the generated
+    /// code.
+    ///
+    /// A `Some` value specified here overrides the one present in the
+    /// specification file.
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use tighterror_build::CodegenOptions;
+    /// CodegenOptions::new().test(None);
+    /// CodegenOptions::new().test(true);
+    /// CodegenOptions::new().test(Some(false));
+    /// ```
+    pub fn test(&mut self, test: impl Into<Option<bool>>) -> &mut Self {
+        self.test = test.into();
         self
     }
 
