@@ -29,9 +29,11 @@ fn lint_main(args: Args) {
 }
 
 fn codegen_main(args: Args) {
+    let test = args.test();
     if let Err(e) = CodegenOptions::new()
         .spec(args.spec)
         .dst(args.dst)
+        .test(test)
         .codegen()
     {
         error!("{e}");

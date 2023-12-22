@@ -14,10 +14,22 @@ pub struct Args {
     /// Only lint the spec file
     #[arg(short, long)]
     pub lint: bool,
+
+    /// Include a unit-test in the generated code
+    #[arg(short, long)]
+    pub test: bool,
 }
 
 impl Args {
     pub fn parse_args() -> Self {
         Self::parse()
+    }
+
+    pub fn test(&self) -> Option<bool> {
+        if self.test {
+            Some(true)
+        } else {
+            None
+        }
     }
 }
