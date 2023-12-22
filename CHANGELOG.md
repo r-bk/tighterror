@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.3], [b-0.0.3], [c-0.0.3] - 2023-12-22
+
+This is a small incremental release bringing `tighterror` closer to the first
+milestone of being self-hosted in its inner crates.
+
+### Added
+
+- add `From<ErrorCode> for Error`
+- add an auto-generated unit-test
+- add a new argument `-t/--test` to `cargo-tighterror` to include the unit-test
+  in the generated code
+- add `err_into_result` setting to enable generation of `From<Error> for Result<T, Error>`
+- add `err_code_into_result` setting to enable generation of `From<ErrorCode> for Result<T, Error>`
+
+### Changed
+
+- enhance the Yaml parser unit test
+- enhance `CodegenOptions` documentation
+- `Display for ErrorCode` now shows the error name. The content of `display`
+  attribute is used in `Display for Error`
+
 ## [0.0.2], [b-0.0.2], [c-0.0.2] - 2023-12-09
 
 This is the initial development release with basic implementation. Its goal is
@@ -24,3 +45,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.2]: https://github.com/r-bk/tighterror/releases/tag/v0.0.2
 [b-0.0.2]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.2
 [c-0.0.2]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.2
+[0.0.3]: https://github.com/r-bk/tighterror/releases/tag/v0.0.3
+[b-0.0.3]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.3
+[c-0.0.3]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.3
