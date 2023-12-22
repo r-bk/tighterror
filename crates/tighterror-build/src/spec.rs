@@ -13,6 +13,7 @@ pub const DEFAULT_CATEGORY_STRUCT_DOC: &str = "Error category type.";
 pub const DEFAULT_GENERAL_CAT_DOC: &str = "General error category.";
 pub const DEFAULT_DOC_FROM_DISPLAY: bool = false;
 pub const DEFAULT_TEST: bool = false;
+pub const DEFAULT_ERR_INTO_RESULT: bool = true;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
@@ -27,6 +28,8 @@ pub struct MainSpec {
     /// destination file path: relative to the specification file, or an
     /// absolute path.
     pub dst: Option<String>,
+    /// Add `impl From<Error> for Result`
+    pub err_into_result: Option<bool>,
     pub oes: OverrideableErrorSpec,
 }
 
@@ -111,5 +114,9 @@ impl Spec {
     pub fn category_max(&self) -> usize {
         debug_assert!(!self.categories.is_empty());
         self.categories.len() - 1
+    }
+
+    pub fn err_into_result(&self) -> bool {
+        self.main.err_into_result.unwrap_or(DEFAULT_ERR_INTO_RESULT)
     }
 }

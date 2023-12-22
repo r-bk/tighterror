@@ -397,6 +397,18 @@ impl<'a> CodeGenerator<'a> {
 
     fn error_tokens(&self) -> TokenStream {
         let err_doc = doc_tokens(self.spec.err_doc());
+        let err_into_result = if self.spec.err_into_result() {
+            quote! {
+                impl<T> core::convert::From<Error> for core::result::Result<T, Error> {
+                    #[inline]
+                    fn from(err: Error) -> Self {
+                        Err(err)
+                    }
+                }
+            }
+        } else {
+            TokenStream::default()
+        };
         quote! {
             #err_doc
             #[derive(Debug)]
@@ -448,6 +460,8 @@ impl<'a> CodeGenerator<'a> {
                     f.pad(self.code().display())
                 }
             }
+
+            #err_into_result
         }
     }
 
