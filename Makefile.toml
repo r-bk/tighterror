@@ -1,17 +1,22 @@
-[env]
-CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+[config]
+default_to_workspace = false
+
+[tasks.build]
+args = ["build", "--workspace", "--all-features"]
+
+[tasks.test]
+args = ["test", "--workspace", "--all-features"]
 
 [tasks.clippy]
 toolchain = "beta"
 command = "cargo"
-args = ["clippy", "--all-features", "--all-targets"]
+args = ["clippy", "--workspace", "--all-features", "--all-targets"]
 
 [tasks.doc]
 env = { "RUSTDOCFLAGS" = "--cfg docsrs" }
 toolchain = "nightly"
 command = "cargo"
 args = ["doc", "-p", "tighterror", "--all-features", "--no-deps", "--open"]
-workspace = false
 
 [tasks.docb]
 env = { "RUSTDOCFLAGS" = "--cfg docsrs" }
@@ -25,7 +30,6 @@ args = [
     "--no-deps",
     "--open",
 ]
-workspace = false
 
 [tasks.fmt]
 command = "cargo"
