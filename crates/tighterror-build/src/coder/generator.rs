@@ -427,6 +427,13 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
+            impl core::convert::From<ErrorCode> for Error {
+                #[inline]
+                fn from(code: ErrorCode) -> Self {
+                    Self(code)
+                }
+            }
+
             impl core::fmt::Display for Error {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
