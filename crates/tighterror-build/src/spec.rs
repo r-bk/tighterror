@@ -14,6 +14,7 @@ pub const DEFAULT_GENERAL_CAT_DOC: &str = "General error category.";
 pub const DEFAULT_DOC_FROM_DISPLAY: bool = false;
 pub const DEFAULT_TEST: bool = false;
 pub const DEFAULT_ERR_INTO_RESULT: bool = true;
+pub const DEFAULT_ERR_CODE_INTO_RESULT: bool = true;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
@@ -30,6 +31,8 @@ pub struct MainSpec {
     pub dst: Option<String>,
     /// Add `impl From<Error> for Result`
     pub err_into_result: Option<bool>,
+    /// Add `impl From<ErrorCode> for Result<T, Error>`
+    pub err_code_into_result: Option<bool>,
     pub oes: OverrideableErrorSpec,
 }
 
@@ -118,5 +121,11 @@ impl Spec {
 
     pub fn err_into_result(&self) -> bool {
         self.main.err_into_result.unwrap_or(DEFAULT_ERR_INTO_RESULT)
+    }
+
+    pub fn err_code_into_result(&self) -> bool {
+        self.main
+            .err_code_into_result
+            .unwrap_or(DEFAULT_ERR_CODE_INTO_RESULT)
     }
 }

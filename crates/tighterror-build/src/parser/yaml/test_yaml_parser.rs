@@ -669,3 +669,52 @@ errors:
 
     assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
 }
+
+#[test]
+fn test_main_err_code_into_result() {
+    log_init();
+    let s = "
+---
+tighterror:
+  err_code_into_result: true
+
+errors:
+  - DummyErr
+";
+
+    let main = MainSpec {
+        err_code_into_result: Some(true),
+        ..Default::default()
+    };
+    let spec = spec_from_main(main);
+    let res = YamlParser::from_str(s).unwrap();
+    assert_eq!(spec, res);
+
+    let s = "
+---
+tighterror:
+  err_code_into_result: false
+
+errors:
+  - DummyErr
+";
+
+    let main = MainSpec {
+        err_code_into_result: Some(false),
+        ..Default::default()
+    };
+    let spec = spec_from_main(main);
+    let res = YamlParser::from_str(s).unwrap();
+    assert_eq!(spec, res);
+
+    let s = "
+---
+tighterror:
+  err_code_into_result: yes
+
+errors:
+  - DummyErr
+";
+
+    assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
+}

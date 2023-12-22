@@ -301,6 +301,18 @@ impl<'a> CodeGenerator<'a> {
     fn error_code_tokens(&self) -> TokenStream {
         let err_code_doc = doc_tokens(self.spec.err_code_doc());
         let category_max_comparison = self.category_max_comparison();
+        let err_code_into_result = if self.spec.err_code_into_result() {
+            quote! {
+                impl<T> core::convert::From<ErrorCode> for Result<T, Error> {
+                    #[inline]
+                    fn from(code: ErrorCode) -> Self {
+                        Err(code.into())
+                    }
+                }
+            }
+        } else {
+            TokenStream::default()
+        };
         quote! {
             #err_code_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -392,6 +404,8 @@ impl<'a> CodeGenerator<'a> {
                     f.pad(self.name())
                 }
             }
+
+            #err_code_into_result
         }
     }
 
