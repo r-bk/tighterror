@@ -1,5 +1,5 @@
 use crate::{
-    errors::BAD_YAML,
+    errors::codes::BAD_YAML,
     parser::yaml::*,
     spec::{CategorySpec, ErrorSpec, OverrideableErrorSpec, Spec},
 };
@@ -358,7 +358,7 @@ fn test_top_kws() {
 my_errors:
     - BadError
 ";
-    assert_eq!(YamlParser::from_str(s).unwrap_err(), BAD_SPEC);
+    assert_eq!(YamlParser::from_str(s).unwrap_err(), BAD_SPEC.into());
 
     let s = "
 ---
@@ -366,7 +366,7 @@ tighterror:
   doc_from_display: true
 
 ";
-    assert_eq!(YamlParser::from_str(s).unwrap_err(), BAD_SPEC);
+    assert_eq!(YamlParser::from_str(s).unwrap_err(), BAD_SPEC.into());
 }
 
 #[test]

@@ -1,4 +1,7 @@
-use crate::errors::{TebError, FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED};
+use crate::errors::{
+    codes::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED},
+    TebError,
+};
 use log::{error, warn};
 use proc_macro2::TokenStream;
 use regex::RegexSet;

@@ -1,0 +1,18 @@
+---
+tighterror:
+  dst: src/errors.rs
+  doc_from_display: true
+  mod_doc: Crate errors.
+  err_name: TebError
+  err_code_name: TebErrorCode
+  err_cat_name: TebErrorCategory
+
+errors:
+  - FailedToOpenSpecFile: Specification file couldn't be opened.
+  - BadSpec: Bad specification file format.
+  - BadYaml: Bad YAML file format.
+  - BadToml: Bad TOML file format.
+  - BadSpecFileExtension: Bad specification file name extension.
+  - FailedToWriteToDstFile: Destination file couldn't be written.
+  - FailedToParseTokens: Generated code tokens couldn't be parsed.
+  - RustfmtFailed: Rustfmt tool exited with an error.

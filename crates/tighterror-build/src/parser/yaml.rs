@@ -1,6 +1,9 @@
 use crate::{
     coder::idents,
-    errors::{TebError, BAD_SPEC, BAD_YAML},
+    errors::{
+        codes::{BAD_SPEC, BAD_YAML},
+        TebError,
+    },
     parser::kws,
     spec::{CategorySpec, ErrorSpec, MainSpec, Spec, IMPLICIT_CATEGORY_NAME},
     util::get_non_unique_error_names,

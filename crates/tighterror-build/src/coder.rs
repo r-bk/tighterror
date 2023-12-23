@@ -1,5 +1,5 @@
 use crate::{
-    errors::{TebError, FAILED_TO_WRITE_TO_DST_FILE},
+    errors::{codes::FAILED_TO_WRITE_TO_DST_FILE, TebError},
     parser,
     spec::STDOUT_DST,
     DEFAULT_SPEC_PATH,

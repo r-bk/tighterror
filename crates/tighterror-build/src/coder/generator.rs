@@ -1,6 +1,6 @@
 use crate::{
     coder::{formatter::pretty, idents, options::CodegenOptions},
-    errors::{TebError, BAD_SPEC},
+    errors::{codes::BAD_SPEC, TebError},
     spec::{CategorySpec, Spec},
 };
 use log::error;

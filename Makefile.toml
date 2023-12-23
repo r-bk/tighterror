@@ -2,6 +2,7 @@
 default_to_workspace = false
 
 [tasks.build]
+dependencies = ["tb-errors"]
 args = ["build", "--workspace", "--all-features"]
 
 [tasks.test]
@@ -11,6 +12,23 @@ args = ["test", "--workspace", "--all-features"]
 toolchain = "beta"
 command = "cargo"
 args = ["clippy", "--workspace", "--all-features", "--all-targets"]
+
+[tasks.tb-errors]
+condition = { files_modified = { input = [
+    "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/tighterror-build/tighterror.yaml",
+], output = [
+    "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/tighterror-build/src/errors.rs",
+] } }
+run_task = "gen-tb-errors"
+
+[tasks.gen-tb-errors]
+dependencies = ["ct"]
+cwd = "crates/tighterror-build"
+command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/debug/cargo-tighterror"
+
+[tasks.ct]
+command = "cargo"
+args = ["build", "-p", "cargo-tighterror"]
 
 [tasks.doc]
 env = { "RUSTDOCFLAGS" = "--cfg docsrs" }

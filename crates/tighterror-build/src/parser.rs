@@ -1,5 +1,5 @@
 use crate::{
-    errors::{TebError, BAD_SPEC_FILE_EXTENSION},
+    errors::{codes::BAD_SPEC_FILE_EXTENSION, TebError},
     spec::Spec,
     util::open_spec_file,
 };
