@@ -3,6 +3,8 @@ tighterror:
   err_doc: A custom error struct doc.
   err_code_doc: A custom error doc.
   cat_doc: A custom category doc.
+  err_into_result: false
+  err_code_into_result: false
 
 errors:
   - FailedToOpenFile: Input file could not be open.
