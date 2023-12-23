@@ -423,6 +423,13 @@ impl<'a> CodeGenerator<'a> {
         } else {
             TokenStream::default()
         };
+        let error_trait = if self.spec.error_trait() {
+            quote! {
+                impl std::error::Error for Error {}
+            }
+        } else {
+            TokenStream::default()
+        };
         quote! {
             #err_doc
             #[derive(Debug)]
@@ -476,6 +483,7 @@ impl<'a> CodeGenerator<'a> {
             }
 
             #err_into_result
+            #error_trait
         }
     }
 

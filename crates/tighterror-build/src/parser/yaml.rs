@@ -142,6 +142,7 @@ impl MainSpecParser {
                 kws::ERR_CODE_INTO_RESULT => {
                     main_spec.err_code_into_result = Some(v2bool(v, kws::ERR_CODE_INTO_RESULT)?)
                 }
+                kws::ERROR_TRAIT => main_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
                 _ => panic!("internal error: unhandled main key {}", key),
             }
         }

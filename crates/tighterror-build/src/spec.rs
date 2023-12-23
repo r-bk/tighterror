@@ -15,6 +15,7 @@ pub const DEFAULT_DOC_FROM_DISPLAY: bool = false;
 pub const DEFAULT_TEST: bool = false;
 pub const DEFAULT_ERR_INTO_RESULT: bool = true;
 pub const DEFAULT_ERR_CODE_INTO_RESULT: bool = true;
+pub const DEFAULT_ERROR_TRAIT: bool = true;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
@@ -33,6 +34,8 @@ pub struct MainSpec {
     pub err_into_result: Option<bool>,
     /// Add `impl From<ErrorCode> for Result<T, Error>`
     pub err_code_into_result: Option<bool>,
+    /// Add `impl std::error::Error for Error`
+    pub error_trait: Option<bool>,
     pub oes: OverrideableErrorSpec,
 }
 
@@ -127,5 +130,9 @@ impl Spec {
         self.main
             .err_code_into_result
             .unwrap_or(DEFAULT_ERR_CODE_INTO_RESULT)
+    }
+
+    pub fn error_trait(&self) -> bool {
+        self.main.error_trait.unwrap_or(DEFAULT_ERROR_TRAIT)
     }
 }

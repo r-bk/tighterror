@@ -26,7 +26,12 @@ fn add_newlines(file: String) -> String {
         r"^[[:space:]]*#\[.*\]$",
     ])
     .unwrap();
-    let rg_post = RegexSet::new([r"^[[:space:]]*}$", r"^[[:space:]]*];$"]).unwrap();
+    let rg_post = RegexSet::new([
+        r"^[[:space:]]*}$",
+        r"^[[:space:]]*];$",
+        r"^[[:space:]]*impl.*\{\}$",
+    ])
+    .unwrap();
     let rg_comment = RegexSet::new([r"^[[:space:]]*///", r"^[[:space:]]*/\*\*"]).unwrap();
     let rg_inner_comment = RegexSet::new([r"^[[:space:]]*//!"]).unwrap();
     let mut ans = String::with_capacity(file.capacity());

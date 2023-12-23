@@ -718,3 +718,52 @@ errors:
 
     assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
 }
+
+#[test]
+fn test_error_trait() {
+    log_init();
+    let s = "
+---
+tighterror:
+  error_trait: true
+
+errors:
+  - DummyErr
+";
+
+    let main = MainSpec {
+        error_trait: Some(true),
+        ..Default::default()
+    };
+    let spec = spec_from_main(main);
+    let res = YamlParser::from_str(s).unwrap();
+    assert_eq!(spec, res);
+
+    let s = "
+---
+tighterror:
+  error_trait: false
+
+errors:
+  - DummyErr
+";
+
+    let main = MainSpec {
+        error_trait: Some(false),
+        ..Default::default()
+    };
+    let spec = spec_from_main(main);
+    let res = YamlParser::from_str(s).unwrap();
+    assert_eq!(spec, res);
+
+    let s = "
+---
+tighterror:
+  error_trait: yes
+
+errors:
+  - DummyErr
+";
+
+    assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
+}

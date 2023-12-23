@@ -9,3 +9,6 @@ tighterror = { path = "../../../.." }
 [build-dependencies]
 env_logger = "0.10"
 tighterror-build = { path = "../.." }
+
+[dev-dependencies]
+anyhow = "1.0"
