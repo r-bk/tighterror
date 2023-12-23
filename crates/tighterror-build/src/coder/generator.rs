@@ -868,7 +868,7 @@ impl<'a> CodeGenerator<'a> {
                     e.ident_name()
                 };
                 quote! {
-                    assert_eq!(Error::from(#eident).to_string(), #display);
+                    assert_eq!(format!("{}", Error::from(#eident)), #display);
                 }
             });
             quote! {
