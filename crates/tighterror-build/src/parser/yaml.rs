@@ -5,6 +5,7 @@ use crate::{
     util::get_non_unique_error_names,
 };
 use log::error;
+use regex::Regex;
 use serde_yaml::{Mapping, Sequence, Value};
 use std::fs::File;
 
@@ -187,21 +188,7 @@ impl YamlErrorsParser {
 
 impl YamlErrorParser {
     fn check_name(name: &str) -> Result<(), TebError> {
-        use convert_case::{Case, Casing};
-
-        if name.is_empty() {
-            error!("`{}` cannot be an empty string", kws::NAME);
-            return BAD_SPEC.into();
-        } else if !name.is_case(Case::UpperCamel) {
-            error!(
-                "`{}` must be specified in UpperCamel case: {} -> {}",
-                kws::NAME,
-                name,
-                name.to_case(Case::UpperCamel)
-            );
-            return BAD_SPEC.into();
-        }
-
+        check_ident(name, kws::NAME)?;
         if kws::is_any_kw(name) {
             // double check, in case any logic above changes
             error!(
@@ -350,6 +337,40 @@ fn v2bool(v: Value, kw: &str) -> Result<bool, TebError> {
             BAD_SPEC.into()
         }
     }
+}
+
+fn check_ident_chars(ident: &str, name: &str) -> Result<(), TebError> {
+    let rg = Regex::new(r"^[A-Za-z0-9_]+$").unwrap();
+    if !rg.is_match(ident) {
+        error!(
+            "`{}` contains invalid characters. Only [A-Za-z0-9_] are allowed: {}",
+            name, ident
+        );
+        BAD_SPEC.into()
+    } else {
+        Ok(())
+    }
+}
+
+fn check_ident(ident: &str, name: &str) -> Result<(), TebError> {
+    use convert_case::{Case, Casing};
+
+    if ident.is_empty() {
+        error!("`{}` cannot be an empty string", name);
+        return BAD_SPEC.into();
+    } else if !ident.is_case(Case::UpperCamel) {
+        error!(
+            "`{}` must be specified in UpperCamel case: {} -> {}",
+            name,
+            ident,
+            ident.to_case(Case::UpperCamel)
+        );
+        return BAD_SPEC.into();
+    }
+
+    check_ident_chars(ident, name)?;
+
+    Ok(())
 }
 
 #[cfg(test)]
