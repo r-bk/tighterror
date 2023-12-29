@@ -1,3 +1,5 @@
+use crate::coder::idents;
+
 mod error;
 pub use error::*;
 
@@ -36,6 +38,8 @@ pub struct MainSpec {
     pub err_code_into_result: Option<bool>,
     /// Add `impl std::error::Error for Error`
     pub error_trait: Option<bool>,
+    /// A custom name for the Error struct
+    pub err_name: Option<String>,
     pub oes: OverrideableErrorSpec,
 }
 
@@ -134,5 +138,9 @@ impl Spec {
 
     pub fn error_trait(&self) -> bool {
         self.main.error_trait.unwrap_or(DEFAULT_ERROR_TRAIT)
+    }
+
+    pub fn err_name(&self) -> &str {
+        self.main.err_name.as_deref().unwrap_or(idents::ERROR)
     }
 }

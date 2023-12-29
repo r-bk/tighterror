@@ -6,6 +6,7 @@ tighterror:
   err_into_result: false
   err_code_into_result: false
   error_trait: false
+  err_name: IcError
 
 errors:
   - FailedToOpenFile: Input file could not be open.

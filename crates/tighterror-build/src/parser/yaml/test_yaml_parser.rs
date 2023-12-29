@@ -12,6 +12,15 @@ const GOOD_BOOLS: [(&str, bool); 4] = [
     ("False", false),
 ];
 const BAD_BOOLS: [&str; 5] = ["yes", "tr ue", "1", "on", "null"];
+const BAD_IDENTS: [&str; 7] = [
+    "notUpperCamelCase",
+    "With Spaces",
+    "\"\"",
+    "\"  \"",
+    "\" PaddedWithSpaces  \"",
+    "Disallowed-Character-",
+    "null",
+];
 
 fn log_init() {
     env_logger::builder().is_test(true).try_init().ok();
@@ -620,6 +629,40 @@ fn test_error_trait() {
     for bad in BAD_BOOLS {
         let s = format!(
             "---\ntighterror:\n  error_trait: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
+}
+
+#[test]
+fn test_error_name() {
+    log_init();
+    for good in ["MyError", idents::ERROR] {
+        let main = MainSpec {
+            err_name: Some(good.into()),
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = YamlParser::from_str(&format!(
+            "\n---\ntighterror:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
+            good
+        ))
+        .unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_IDENTS {
+        let s = format!(
+            "\n---\ntighterror:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
+
+    for bad in [idents::ERROR_CATEGORY, idents::ERROR_CODE] {
+        let s = format!(
+            "\n---\ntighterror:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());

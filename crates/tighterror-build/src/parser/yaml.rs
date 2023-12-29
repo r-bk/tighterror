@@ -1,4 +1,5 @@
 use crate::{
+    coder::idents,
     errors::{TebError, BAD_SPEC, BAD_YAML},
     parser::kws,
     spec::{CategorySpec, ErrorSpec, MainSpec, Spec, IMPLICIT_CATEGORY_NAME},
@@ -144,11 +145,29 @@ impl MainSpecParser {
                     main_spec.err_code_into_result = Some(v2bool(v, kws::ERR_CODE_INTO_RESULT)?)
                 }
                 kws::ERROR_TRAIT => main_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
+                kws::ERR_NAME => {
+                    let err_name = v2string(v, kws::ERR_NAME)?;
+                    Self::check_ident(&err_name, kws::ERR_NAME)?;
+                    main_spec.err_name = Some(err_name);
+                }
                 _ => panic!("internal error: unhandled main key {}", key),
             }
         }
 
         Ok(main_spec)
+    }
+
+    fn check_ident(ident: &str, kw: &str) -> Result<(), TebError> {
+        crate::parser::yaml::check_ident(ident, kw)?;
+        if kw == kws::ERR_NAME && ident == idents::ERROR {
+            return Ok(());
+        }
+        if idents::is_top_level_ident(ident) {
+            error!("`{}` cannot be a reserved identifier: {}", kw, ident);
+            BAD_SPEC.into()
+        } else {
+            Ok(())
+        }
     }
 }
 

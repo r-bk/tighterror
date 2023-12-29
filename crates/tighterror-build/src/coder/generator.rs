@@ -172,7 +172,7 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn err_name_ident(&self) -> Ident {
-        format_ident!("{}", idents::ERROR)
+        format_ident!("{}", self.spec.err_name())
     }
 
     fn err_cat_name_ident(&self) -> Ident {
