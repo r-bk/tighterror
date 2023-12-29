@@ -5,6 +5,13 @@ use crate::{
 };
 
 const GENERAL_CAT: &str = "General";
+const GOOD_BOOLS: [(&str, bool); 4] = [
+    ("true", true),
+    ("false", false),
+    ("True", true),
+    ("False", false),
+];
+const BAD_BOOLS: [&str; 5] = ["yes", "tr ue", "1", "on", "null"];
 
 fn log_init() {
     env_logger::builder().is_test(true).try_init().ok();
@@ -125,132 +132,84 @@ errors:
 #[test]
 fn test_err_doc_from_display() {
     log_init();
-    let s = "
----
-errors:
-    - name: TestError
-      doc_from_display: false
-";
-    let err = ErrorSpec {
-        name: "TestError".into(),
-        oes: OverrideableErrorSpec {
-            doc_from_display: Some(false),
-        },
-        ..Default::default()
-    };
-    let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(res, spec);
 
-    let s = "
----
-errors:
-    - name: TestError
-      doc_from_display: true
-";
-    let err = ErrorSpec {
-        name: "TestError".into(),
-        oes: OverrideableErrorSpec {
-            doc_from_display: Some(true),
-        },
-        ..Default::default()
-    };
-    let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(res, spec);
+    for good in GOOD_BOOLS {
+        let s = format!(
+            "---\nerrors:\n  - name: TestError\n    doc_from_display: {}",
+            good.0
+        );
+        let err = ErrorSpec {
+            name: "TestError".into(),
+            oes: OverrideableErrorSpec {
+                doc_from_display: Some(good.1),
+            },
+            ..Default::default()
+        };
+        let spec = spec_from_err(err);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(res, spec);
+    }
 
-    let s = "
----
-errors:
-    - name: TestError
-      doc_from_display: yes
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+    for bad in BAD_BOOLS {
+        let s = format!(
+            "---\nerrors:\n  - name: TestError\n    doc_from_display: {}",
+            bad
+        );
+
+        let res = YamlParser::from_str(&s);
+        assert_eq!(res, BAD_SPEC.into());
+    }
 }
 
 #[test]
 fn test_err_display() {
-    let s = "
----
-errors:
-    - name: TestError
-      display: An error occurred.
-";
-    let err = ErrorSpec {
-        name: "TestError".into(),
-        display: Some("An error occurred.".into()),
-        ..Default::default()
-    };
-    let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(res, spec);
+    log_init();
+    for good in ["An error occurred.", "\\\"\\\"", "\\\"1\\\""] {
+        let s = format!("---\nerrors:\n  - name: TestError\n    display: {}", good);
+        let err = ErrorSpec {
+            name: "TestError".into(),
+            display: Some(good.into()),
+            ..Default::default()
+        };
+        let spec = spec_from_err(err);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(res, spec);
+    }
 
-    let s = "
----
-errors:
-    - name: TestError
-      display: \"\"
-";
-    let err = ErrorSpec {
-        name: "TestError".into(),
-        display: Some("".into()),
-        ..Default::default()
-    };
-    let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(res, spec);
+    for bad in ["null", "1"] {
+        let s = format!(
+            "---\nerrors:\n  - name: TestError\n    doc_from_display: {}",
+            bad
+        );
 
-    let s = "
----
-errors:
-    - name: TestError
-      display: An error occurred.
-";
-    let err = ErrorSpec {
-        name: "TestError".into(),
-        display: Some("An error occurred.".into()),
-        ..Default::default()
-    };
-    let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(res, spec);
-
-    let s = "
----
-errors:
-    - name: TestError
-      display: null
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+        let res = YamlParser::from_str(&s);
+        assert_eq!(res, BAD_SPEC.into());
+    }
 }
 
 #[test]
 fn test_err_doc() {
-    let s = "
----
-errors:
-    - name: TestError
-      doc: An error doc.
-";
-    let err = ErrorSpec {
-        name: "TestError".into(),
-        doc: Some("An error doc.".into()),
-        ..Default::default()
-    };
-    let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(res, spec);
+    log_init();
+    for good in ["An error doc.", "\\\"\\\"", "\\\"1\\\""] {
+        let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", good);
+        let err = ErrorSpec {
+            name: "TestError".into(),
+            doc: Some(good.into()),
+            ..Default::default()
+        };
+        let spec = spec_from_err(err);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(res, spec);
+    }
 
     let s = "
 ---
 errors:
-    - name: TestError
-      doc: |
-        A multiline doc.
+  - name: TestError
+    doc: |
+      A multiline doc.
 
-        Second line.
+      Second line.
 ";
     let err = ErrorSpec {
         name: "TestError".into(),
@@ -261,75 +220,44 @@ errors:
     let res = YamlParser::from_str(s).unwrap();
     assert_eq!(res, spec);
 
-    let s = "
----
-errors:
-    - name: TestError
-      doc: null
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+    for bad in ["null", "1"] {
+        let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", bad);
 
-    let s = "
----
-errors:
-    - name: TestError
-      doc: 1
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+        let res = YamlParser::from_str(&s);
+        assert_eq!(res, BAD_SPEC.into());
+    }
 }
 
 #[test]
 fn test_err_name() {
-    // name cannot be an empty string
-    let s = "
----
-errors:
-    - name: \"\"
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+    log_init();
 
-    // name must be in UpperCamel case
-    let s = "
----
-errors:
-    - notUpperCamel
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+    const BAD_NAMES: &[&str] = &[
+        "\\\"\\\"",
+        "camelCase",
+        "null",
+        "1",
+        "With Spaces",
+        "With-Dashes",
+        "CAPITAL_LETTERS",
+    ];
 
-    // name must be in UpperCamel case
-    let s = "
----
-errors:
-    - name: notUpperCamel
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+    for bad in BAD_NAMES {
+        let s = format!("---\nerrors:\n  - name: {}", bad);
+        let res = YamlParser::from_str(&s);
+        assert_eq!(res, BAD_SPEC.into());
+    }
 
-    // name cannot be null
-    let s = "
----
-errors:
-    - name: null
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
-
-    // name cannot be non String
-    let s = "
----
-errors:
-    - 1
-";
-    let res = YamlParser::from_str(s);
-    assert_eq!(res, BAD_SPEC.into());
+    for bad in BAD_NAMES {
+        let s = format!("---\nerrors:\n  - {}", bad);
+        let res = YamlParser::from_str(&s);
+        assert_eq!(res, BAD_SPEC.into());
+    }
 }
 
 #[test]
 fn test_err() {
+    log_init();
     let s = "
 ---
 errors:
@@ -426,43 +354,30 @@ tighterror:
 #[test]
 fn test_main_doc_from_display() {
     log_init();
-    let s = "
----
-tighterror:
-  doc_from_display: true
 
-errors:
-  - DummyErr
-";
+    for good in GOOD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            good.0
+        );
+        let main = MainSpec {
+            oes: OverrideableErrorSpec {
+                doc_from_display: Some(good.1),
+            },
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
 
-    let main = MainSpec {
-        oes: OverrideableErrorSpec {
-            doc_from_display: Some(true),
-        },
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
-
-    let s = "
----
-tighterror:
-  doc_from_display: false
-
-errors:
-  - DummyErr
-";
-
-    let main = MainSpec {
-        oes: OverrideableErrorSpec {
-            doc_from_display: Some(false),
-        },
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
+    for bad in BAD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
 }
 
 #[test]
@@ -624,146 +539,80 @@ errors:
 #[test]
 fn test_main_err_into_result() {
     log_init();
-    let s = "
----
-tighterror:
-  err_into_result: true
 
-errors:
-  - DummyErr
-";
+    for good in GOOD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  err_into_result: {}\n\nerrors:\n  - DummyErr",
+            good.0
+        );
+        let main = MainSpec {
+            err_into_result: Some(good.1),
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
 
-    let main = MainSpec {
-        err_into_result: Some(true),
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
-
-    let s = "
----
-tighterror:
-  err_into_result: false
-
-errors:
-  - DummyErr
-";
-
-    let main = MainSpec {
-        err_into_result: Some(false),
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
-
-    let s = "
----
-tighterror:
-  err_into_result: yes
-
-errors:
-  - DummyErr
-";
-
-    assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
+    for bad in BAD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  err_into_result: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
 }
 
 #[test]
 fn test_main_err_code_into_result() {
     log_init();
-    let s = "
----
-tighterror:
-  err_code_into_result: true
 
-errors:
-  - DummyErr
-";
+    for good in GOOD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  err_code_into_result: {}\n\nerrors:\n  - DummyErr",
+            good.0
+        );
+        let main = MainSpec {
+            err_code_into_result: Some(good.1),
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
 
-    let main = MainSpec {
-        err_code_into_result: Some(true),
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
-
-    let s = "
----
-tighterror:
-  err_code_into_result: false
-
-errors:
-  - DummyErr
-";
-
-    let main = MainSpec {
-        err_code_into_result: Some(false),
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
-
-    let s = "
----
-tighterror:
-  err_code_into_result: yes
-
-errors:
-  - DummyErr
-";
-
-    assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
+    for bad in BAD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  err_code_into_result: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
 }
 
 #[test]
 fn test_error_trait() {
     log_init();
-    let s = "
----
-tighterror:
-  error_trait: true
 
-errors:
-  - DummyErr
-";
+    for good in GOOD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  error_trait: {}\n\nerrors:\n  - DummyErr",
+            good.0
+        );
+        let main = MainSpec {
+            error_trait: Some(good.1),
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
 
-    let main = MainSpec {
-        error_trait: Some(true),
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
-
-    let s = "
----
-tighterror:
-  error_trait: false
-
-errors:
-  - DummyErr
-";
-
-    let main = MainSpec {
-        error_trait: Some(false),
-        ..Default::default()
-    };
-    let spec = spec_from_main(main);
-    let res = YamlParser::from_str(s).unwrap();
-    assert_eq!(spec, res);
-
-    let s = "
----
-tighterror:
-  error_trait: yes
-
-errors:
-  - DummyErr
-";
-
-    assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
+    for bad in BAD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  error_trait: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
 }
