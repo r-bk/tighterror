@@ -1,10 +1,10 @@
 use crate::{
-    coder::{formatter::pretty, options::CodegenOptions},
+    coder::{formatter::pretty, idents, options::CodegenOptions},
     errors::{TebError, BAD_SPEC},
     spec::{CategorySpec, Spec},
 };
 use log::error;
-use proc_macro2::{Literal, TokenStream};
+use proc_macro2::{Ident, Literal, TokenStream};
 use quote::{format_ident, quote};
 use std::{num::TryFromIntError, str::FromStr};
 
@@ -133,20 +133,66 @@ impl<'a> CodeGenerator<'a> {
         let category_names = self.private_category_names();
         let error_names = self.private_error_names();
         let error_display = self.private_error_display();
+
+        let category_names_mod = Self::category_names_mod_ident();
+        let error_names_mod = Self::error_names_mod_ident();
+        let error_displays_mod = Self::error_displays_mod_ident();
+        let private_mod = Self::private_mod_ident();
+
         quote! {
-            mod _cn {
+            mod #category_names_mod {
                 #category_names
             }
-            mod _n {
+            mod #error_names_mod {
                 #error_names
             }
-            mod _d {
+            mod #error_displays_mod {
                 #error_display
             }
-            mod _p {
+            mod #private_mod {
                 #constants_tokens
             }
         }
+    }
+
+    fn category_names_mod_ident() -> Ident {
+        format_ident!("{}", idents::CATEGORY_NAMES_MOD)
+    }
+
+    fn error_names_mod_ident() -> Ident {
+        format_ident!("{}", idents::ERROR_NAMES_MOD)
+    }
+
+    fn error_displays_mod_ident() -> Ident {
+        format_ident!("{}", idents::ERROR_DISPLAYS_MOD)
+    }
+
+    fn private_mod_ident() -> Ident {
+        format_ident!("{}", idents::PRIVATE_MOD)
+    }
+
+    fn err_name_ident(&self) -> Ident {
+        format_ident!("{}", idents::ERROR)
+    }
+
+    fn err_cat_name_ident(&self) -> Ident {
+        format_ident!("{}", idents::ERROR_CATEGORY)
+    }
+
+    fn err_code_name_ident(&self) -> Ident {
+        format_ident!("{}", idents::ERROR_CODE)
+    }
+
+    fn tests_mod_ident(&self) -> Ident {
+        format_ident!("{}", idents::TESTS_MOD)
+    }
+
+    fn err_codes_mod_ident(&self) -> Ident {
+        format_ident!("{}", idents::ERROR_CODES_MOD)
+    }
+
+    fn categories_mod_ident(&self) -> Ident {
+        format_ident!("{}", idents::CATEGORY_CONSTS_MOD)
     }
 
     fn n_categories_literal(&self) -> Literal {
@@ -299,14 +345,19 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn error_code_tokens(&self) -> TokenStream {
+        let err_name = self.err_name_ident();
+        let err_code_name = self.err_code_name_ident();
+        let err_cat_name = self.err_cat_name_ident();
+        let private_mod = Self::private_mod_ident();
+        let error_names_mod = Self::error_names_mod_ident();
         let err_code_doc = doc_tokens(self.spec.err_code_doc());
         let category_max_comparison = self.category_max_comparison();
         let err_code_into_result = if self.spec.err_code_into_result() {
             quote! {
-                impl<T> core::convert::From<ErrorCode> for Result<T, Error> {
+                impl<T> core::convert::From<#err_code_name> for Result<T, #err_name> {
                     #[inline]
-                    fn from(code: ErrorCode) -> Self {
-                        Err(code.into())
+                    fn from(v: #err_code_name) -> Self {
+                        Err(v.into())
                     }
                 }
             }
@@ -317,33 +368,33 @@ impl<'a> CodeGenerator<'a> {
             #err_code_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct ErrorCode(_p::T);
+            pub struct #err_code_name(#private_mod::T);
 
-            impl ErrorCode {
-                const fn new(cat: ErrorCategory, kind: _p::T) -> Self {
-                    Self(cat.0 << _p::KIND_BITS | kind)
+            impl #err_code_name {
+                const fn new(cat: #err_cat_name, kind: #private_mod::T) -> Self {
+                    Self(cat.0 << #private_mod::KIND_BITS | kind)
                 }
 
                 #[inline]
-                fn category_value(&self) -> _p::T {
-                    self.0 >> _p::KIND_BITS
+                fn category_value(&self) -> #private_mod::T {
+                    self.0 >> #private_mod::KIND_BITS
                 }
 
                 #[inline]
-                fn kind_value(&self) -> _p::T {
-                    self.0 & _p::KIND_MASK
+                fn kind_value(&self) -> #private_mod::T {
+                    self.0 & #private_mod::KIND_MASK
                 }
 
                 #[doc = " Returns the error code category."]
                 #[inline]
-                pub fn category(&self) -> ErrorCategory {
-                    ErrorCategory::new(self.category_value())
+                pub fn category(&self) -> #err_cat_name {
+                    #err_cat_name::new(self.category_value())
                 }
 
                 #[doc = " Returns the error code name."]
                 #[inline]
                 pub fn name(&self) -> &'static str {
-                    _n::A[self.category_value() as usize][self.kind_value() as usize]
+                    #error_names_mod::A[self.category_value() as usize][self.kind_value() as usize]
                 }
 
                 #[inline]
@@ -363,16 +414,16 @@ impl<'a> CodeGenerator<'a> {
                     let cat = (value & _p::CAT_MASK) >> _p::KIND_BITS;
                     let kind = value & _p::KIND_MASK;
                     if cat #category_max_comparison _p::CAT_MAX && kind <= _p::KIND_MAXES[cat as usize] {
-                        Some(Self::new(ErrorCategory::new(cat), kind))
+                        Some(Self::new(#err_cat_name::new(cat), kind))
                     } else {
                         None
                     }
                 }
             }
 
-            impl tighterror::TightErrorCode for ErrorCode {
+            impl tighterror::TightErrorCode for #err_code_name {
                 type ReprType = _p::T;
-                type CategoryType = ErrorCategory;
+                type CategoryType = #err_cat_name;
                 const CATEGORY_BITS: usize = _p::CAT_BITS;
                 const KIND_BITS: usize = _p::KIND_BITS;
                 const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
@@ -398,7 +449,7 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl core::fmt::Display for ErrorCode {
+            impl core::fmt::Display for #err_code_name {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                     f.pad(self.name())
@@ -410,6 +461,7 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn error_tokens(&self) -> TokenStream {
+        let err_code_name = self.err_code_name_ident();
         let err_doc = doc_tokens(self.spec.err_doc());
         let err_into_result = if self.spec.err_into_result() {
             quote! {
@@ -434,12 +486,12 @@ impl<'a> CodeGenerator<'a> {
             #err_doc
             #[derive(Debug)]
             #[repr(transparent)]
-            pub struct Error(ErrorCode);
+            pub struct Error(#err_code_name);
 
             impl Error {
                 #[doc = " Returns the error code."]
                 #[inline]
-                pub fn code(&self) -> ErrorCode {
+                pub fn code(&self) -> #err_code_name {
                     self.0
                 }
 
@@ -452,7 +504,7 @@ impl<'a> CodeGenerator<'a> {
 
             impl tighterror::TightError for Error {
                 type ReprType = _p::T;
-                type CodeType = ErrorCode;
+                type CodeType = #err_code_name;
                 const CATEGORY_BITS: usize = _p::CAT_BITS;
                 const KIND_BITS: usize = _p::KIND_BITS;
                 const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
@@ -468,9 +520,9 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl core::convert::From<ErrorCode> for Error {
+            impl core::convert::From<#err_code_name> for Error {
                 #[inline]
-                fn from(code: ErrorCode) -> Self {
+                fn from(code: #err_code_name) -> Self {
                     Self(code)
                 }
             }
@@ -488,6 +540,7 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn error_code_constants_tokens(&self) -> TokenStream {
+        let err_code_name = self.err_code_name_ident();
         let mut tokens = TokenStream::default();
         for c in &self.spec.categories {
             for (i, e) in c.errors.iter().enumerate() {
@@ -507,7 +560,7 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[doc = " Error code constants."]
             pub mod codes {
-                use super::ErrorCode as E;
+                use super::#err_code_name as E;
                 use super::categories as c;
                 #tokens
             }
@@ -515,15 +568,16 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn category_tokens(&self) -> TokenStream {
+        let err_cat_name = self.err_cat_name_ident();
         let cat_doc = doc_tokens(self.spec.cat_doc());
         let category_max_comparison = self.category_max_comparison();
         quote! {
             #cat_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct ErrorCategory(_p::T);
+            pub struct #err_cat_name(_p::T);
 
-            impl ErrorCategory {
+            impl #err_cat_name {
                 #[inline]
                 const fn new(v: _p::T) -> Self {
                     debug_assert!(v #category_max_comparison _p::CAT_MAX);
@@ -537,7 +591,7 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl tighterror::TightErrorCategory for ErrorCategory {
+            impl tighterror::TightErrorCategory for #err_cat_name {
                 type ReprType = _p::T;
                 const CATEGORY_BITS: usize = _p::CAT_BITS;
                 const KIND_BITS: usize = _p::KIND_BITS;
@@ -549,7 +603,7 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl core::fmt::Display for ErrorCategory {
+            impl core::fmt::Display for #err_cat_name {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                     f.pad(self.name())
@@ -559,6 +613,7 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn category_constants_tokens(&self) -> TokenStream {
+        let err_cat_name = self.err_cat_name_ident();
         let mut tokens = quote! {};
         for (i, c) in self.spec.categories.iter().enumerate() {
             let cat_value = self.usize_to_repr_type_literal(i).unwrap();
@@ -577,7 +632,7 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[doc = " Error category constants."]
             pub mod categories {
-                use super::ErrorCategory as C;
+                use super::#err_cat_name as C;
                 #tokens
             }
         }
@@ -610,14 +665,14 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn test_tokens(&self) -> TokenStream {
+        let tests_mod = self.tests_mod_ident();
         let do_test = self.spec.test(self.opts.test);
         if do_test {
             let test_tokens = self.test_tokens_impl();
             quote! {
                 #[cfg(test)]
-                mod tests {
+                mod #tests_mod {
                     use super::*;
-
                     #test_tokens
                 }
             }
@@ -655,6 +710,7 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn ut_category_name_tokens(&self) -> TokenStream {
+        let categories_mod = self.categories_mod_ident();
         let check_cat_name_iter = self.spec.categories.iter().map(|c| {
             let ident_name = c.ident_name();
             let ident = format_ident!("{}", ident_name);
@@ -666,13 +722,14 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_category_name() {
-                use categories::*;
+                use #categories_mod::*;
                 #(#check_cat_name_iter);*
             }
         }
     }
 
     fn ut_category_display(&self) -> TokenStream {
+        let categories_mod = self.categories_mod_ident();
         let check_cat_display_iter = self.spec.categories.iter().map(|c| {
             let ident_name = c.ident_name();
             let ident = format_ident!("{}", ident_name);
@@ -683,28 +740,32 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_category_display() {
-                use categories::*;
+                use #categories_mod::*;
                 #(#check_cat_display_iter)*
             }
         }
     }
 
     fn ut_category_uniqueness(&self) -> TokenStream {
+        let err_cat_name = self.err_cat_name_ident();
+        let categories_mod = self.categories_mod_ident();
         let cat_arr = self.ut_cat_arr();
         let n_categories = self.n_categories_literal();
         quote! {
             #[test]
             fn test_category_uniqueness() {
-                use categories::*;
+                use #categories_mod::*;
                 use std::collections::HashSet;
-                let cats: [ErrorCategory; #n_categories] = #cat_arr;
-                let set = HashSet::<ErrorCategory>::from_iter(cats);
+                let cats: [#err_cat_name; #n_categories] = #cat_arr;
+                let set = HashSet::<#err_cat_name>::from_iter(cats);
                 assert_eq!(set.len(), #n_categories);
             }
         }
     }
 
     fn ut_category_values(&self) -> TokenStream {
+        let err_cat_name = self.err_cat_name_ident();
+        let categories_mod = self.categories_mod_ident();
         let cat_arr = self.ut_cat_arr();
         let n_categories = Literal::usize_unsuffixed(self.spec.categories.len());
         let category_max = Literal::usize_unsuffixed(self.spec.categories.len() - 1);
@@ -712,8 +773,8 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_category_values() {
-                use categories::*;
-                let cats: [ErrorCategory; #n_categories] = #cat_arr;
+                use #categories_mod::*;
+                let cats: [#err_cat_name; #n_categories] = #cat_arr;
                 for c in cats {
                     assert!(c.0 #comparison #category_max);
                 }
@@ -733,6 +794,7 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn ut_err_code_name(&self) -> TokenStream {
+        let err_codes_mod = self.err_codes_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
@@ -749,13 +811,14 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_err_code_name() {
-                use codes::*;
+                use #err_codes_mod::*;
                 #(#iter)*
             }
         }
     }
 
     fn ut_err_code_display(&self) -> TokenStream {
+        let err_codes_mod = self.err_codes_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
@@ -771,7 +834,7 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_err_code_display() {
-                use codes::*;
+                use #err_codes_mod::*;
                 #(#iter)*
             }
         }
@@ -791,22 +854,26 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn ut_err_code_uniqueness(&self) -> TokenStream {
+        let err_code_name = self.err_code_name_ident();
+        let err_codes_mod = self.err_codes_mod_ident();
         let err_code_arr = self.ut_err_code_arr();
         let n_errors =
             Literal::usize_unsuffixed(self.spec.categories.iter().map(|c| c.errors.len()).sum());
         quote! {
             #[test]
             fn test_err_code_uniqueness() {
-                use codes::*;
+                use #err_codes_mod::*;
                 use std::collections::HashSet;
-                let errs: [ErrorCode; #n_errors] = #err_code_arr;
-                let set = HashSet::<ErrorCode>::from_iter(errs);
+                let errs: [#err_code_name; #n_errors] = #err_code_arr;
+                let set = HashSet::<#err_code_name>::from_iter(errs);
                 assert_eq!(set.len(), #n_errors);
             }
         }
     }
 
     fn ut_err_code_value_uniqueness(&self) -> TokenStream {
+        let err_code_name = self.err_code_name_ident();
+        let err_codes_mod = self.err_codes_mod_ident();
         let repr_type = self.repr_type.ident();
         let err_code_arr = self.ut_err_code_arr();
         let n_errors =
@@ -814,9 +881,9 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_err_code_value_uniqueness() {
-                use codes::*;
+                use #err_codes_mod::*;
                 use std::collections::HashSet;
-                let errs: [ErrorCode; #n_errors] = #err_code_arr;
+                let errs: [#err_code_name; #n_errors] = #err_code_arr;
                 let set = HashSet::<#repr_type>::from_iter(errs.iter().map(|ec| ec.value()));
                 assert_eq!(set.len(), #n_errors);
             }
@@ -824,12 +891,14 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn ut_err_code_category(&self) -> TokenStream {
+        let categories_mod = self.categories_mod_ident();
+        let err_codes_mod = self.err_codes_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
                 let ident = format_ident!("{}", e.ident_name());
                 let cat_ident = format_ident!("{}", c.ident_name());
                 quote! {
-                    assert_eq!(#ident.category(), categories::#cat_ident);
+                    assert_eq!(#ident.category(), #categories_mod::#cat_ident);
                 }
             });
             quote! {
@@ -839,18 +908,20 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_err_code_category() {
-                use codes::*;
+                use #err_codes_mod::*;
                 #(#iter)*
             }
         }
     }
 
     fn ut_err_code_from_value(&self) -> TokenStream {
+        let err_code_name = self.err_code_name_ident();
+        let err_codes_mod = self.err_codes_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
                 let ident = format_ident!("{}", e.ident_name());
                 quote! {
-                    assert_eq!(ErrorCode::from_value(#ident.value()).unwrap(), #ident);
+                    assert_eq!(#err_code_name::from_value(#ident.value()).unwrap(), #ident);
                 }
             });
             quote! {
@@ -860,13 +931,15 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_err_code_from_value() {
-                use codes::*;
+                use #err_codes_mod::*;
                 #(#iter)*
             }
         }
     }
 
     fn ut_err_display(&self) -> TokenStream {
+        let err_name = self.err_name_ident();
+        let err_codes_mod = self.err_codes_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
                 let eident = format_ident!("{}", e.ident_name());
@@ -876,7 +949,7 @@ impl<'a> CodeGenerator<'a> {
                     e.ident_name()
                 };
                 quote! {
-                    assert_eq!(format!("{}", Error::from(#eident)), #display);
+                    assert_eq!(format!("{}", #err_name::from(#eident)), #display);
                 }
             });
             quote! {
@@ -886,7 +959,7 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_err_display() {
-                use codes::*;
+                use #err_codes_mod::*;
                 #(#iter)*
             }
         }

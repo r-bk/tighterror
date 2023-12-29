@@ -12,6 +12,7 @@ use std::{
 
 mod formatter;
 mod generator;
+pub(crate) mod idents;
 mod options;
 pub use options::*;
 
