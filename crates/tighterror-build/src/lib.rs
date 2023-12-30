@@ -4,6 +4,7 @@
 
 #![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![forbid(unsafe_code)]
 
 /// The default spec file path when none is provided.
 ///

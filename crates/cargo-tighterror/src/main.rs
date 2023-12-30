@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use log::error;
 use std::{path::PathBuf, process::exit};
 use tighterror_build::{lint, CodegenOptions, LintLevel};
