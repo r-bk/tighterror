@@ -164,11 +164,15 @@ fn test_err_doc_from_display() {
 #[test]
 fn test_err_display() {
     log_init();
-    for good in ["An error occurred.", "\\\"\\\"", "\\\"1\\\""] {
-        let s = format!("---\nerrors:\n  - name: TestError\n    display: {}", good);
+    for good in [
+        ("An error occurred.", "An error occurred."),
+        ("\"\"", ""),
+        ("\"1\"", "1"),
+    ] {
+        let s = format!("---\nerrors:\n  - name: TestError\n    display: {}", good.0);
         let err = ErrorSpec {
             name: "TestError".into(),
-            display: Some(good.into()),
+            display: Some(good.1.into()),
             ..Default::default()
         };
         let spec = spec_from_err(err);
@@ -190,11 +194,15 @@ fn test_err_display() {
 #[test]
 fn test_err_doc() {
     log_init();
-    for good in ["An error doc.", "\\\"\\\"", "\\\"1\\\""] {
-        let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", good);
+    for good in [
+        ("An error doc.", "An error doc."),
+        ("\"\"", ""),
+        ("\"1\"", "1"),
+    ] {
+        let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", good.0);
         let err = ErrorSpec {
             name: "TestError".into(),
-            doc: Some(good.into()),
+            doc: Some(good.1.into()),
             ..Default::default()
         };
         let spec = spec_from_err(err);
@@ -233,7 +241,8 @@ fn test_err_name() {
     log_init();
 
     const BAD_NAMES: &[&str] = &[
-        "\\\"\\\"",
+        "\"\"",
+        "\"  \"",
         "camelCase",
         "null",
         "1",
