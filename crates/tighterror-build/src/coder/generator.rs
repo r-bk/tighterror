@@ -535,6 +535,14 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
+            impl core::cmp::PartialEq for #err_name {
+                #[doc = " Checks equality based on the error code only."]
+                #[inline]
+                fn eq(&self, other: &#err_name) -> bool {
+                    self.0 == other.0
+                }
+            }
+
             #err_into_result
             #error_trait
         }
