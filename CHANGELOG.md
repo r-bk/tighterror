@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4], [b-0.0.4], [c-0.0.4] - 2023-12-30
+
+This is a small incremental release on the way to self-hosted `tighterror`.
+
+### Added
+
+- add support for a custom name for `Error`, `ErrorCategory` and `ErrorCode`
+  structs
+
+### Fixed
+
+- check for invalid characters in identifiers; disallow whitespace
+
 ## [0.0.3], [b-0.0.3], [c-0.0.3] - 2023-12-22
 
 This is a small incremental release bringing `tighterror` closer to the first
@@ -48,3 +61,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.3]: https://github.com/r-bk/tighterror/releases/tag/v0.0.3
 [b-0.0.3]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.3
 [c-0.0.3]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.3
+[0.0.4]: https://github.com/r-bk/tighterror/releases/tag/v0.0.4
+[b-0.0.4]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.4
+[c-0.0.4]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.4
