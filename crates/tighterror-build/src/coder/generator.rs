@@ -461,13 +461,14 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn error_tokens(&self) -> TokenStream {
+        let err_name = self.err_name_ident();
         let err_code_name = self.err_code_name_ident();
         let err_doc = doc_tokens(self.spec.err_doc());
         let err_into_result = if self.spec.err_into_result() {
             quote! {
-                impl<T> core::convert::From<Error> for core::result::Result<T, Error> {
+                impl<T> core::convert::From<#err_name> for core::result::Result<T, #err_name> {
                     #[inline]
-                    fn from(err: Error) -> Self {
+                    fn from(err: #err_name) -> Self {
                         Err(err)
                     }
                 }
@@ -477,7 +478,7 @@ impl<'a> CodeGenerator<'a> {
         };
         let error_trait = if self.spec.error_trait() {
             quote! {
-                impl std::error::Error for Error {}
+                impl std::error::Error for #err_name {}
             }
         } else {
             TokenStream::default()
@@ -486,9 +487,9 @@ impl<'a> CodeGenerator<'a> {
             #err_doc
             #[derive(Debug)]
             #[repr(transparent)]
-            pub struct Error(#err_code_name);
+            pub struct #err_name(#err_code_name);
 
-            impl Error {
+            impl #err_name {
                 #[doc = " Returns the error code."]
                 #[inline]
                 pub fn code(&self) -> #err_code_name {
@@ -502,7 +503,7 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl tighterror::TightError for Error {
+            impl tighterror::TightError for #err_name {
                 type ReprType = _p::T;
                 type CodeType = #err_code_name;
                 const CATEGORY_BITS: usize = _p::CAT_BITS;
@@ -520,14 +521,14 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl core::convert::From<#err_code_name> for Error {
+            impl core::convert::From<#err_code_name> for #err_name {
                 #[inline]
                 fn from(code: #err_code_name) -> Self {
                     Self(code)
                 }
             }
 
-            impl core::fmt::Display for Error {
+            impl core::fmt::Display for #err_name {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                     f.pad(self.code().display())
@@ -558,7 +559,7 @@ impl<'a> CodeGenerator<'a> {
         }
 
         quote! {
-            #[doc = " Error code constants."]
+            #[doc = " Error-code constants."]
             pub mod codes {
                 use super::#err_code_name as E;
                 use super::categories as c;
