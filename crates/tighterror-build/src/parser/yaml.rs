@@ -155,6 +155,11 @@ impl MainSpecParser {
                     Self::check_ident(&err_code_name, kws::ERR_CODE_NAME)?;
                     main_spec.err_code_name = Some(err_code_name);
                 }
+                kws::ERR_CAT_NAME => {
+                    let err_cat_name = v2string(v, kws::ERR_CAT_NAME)?;
+                    Self::check_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
+                    main_spec.err_cat_name = Some(err_cat_name);
+                }
                 _ => panic!("internal error: unhandled main key {}", key),
             }
         }
@@ -168,6 +173,9 @@ impl MainSpecParser {
             return Ok(());
         }
         if kw == kws::ERR_CODE_NAME && ident == idents::ERROR_CODE {
+            return Ok(());
+        }
+        if kw == kws::ERR_CAT_NAME && ident == idents::ERROR_CATEGORY {
             return Ok(());
         }
         if idents::is_top_level_ident(ident) {

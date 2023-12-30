@@ -8,6 +8,7 @@ tighterror:
   error_trait: false
   err_name: IcError
   err_code_name: IcErrorCode
+  err_cat_name: IcErrorCategory
 
 errors:
   - FailedToOpenFile: Input file could not be open.

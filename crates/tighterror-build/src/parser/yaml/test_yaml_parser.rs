@@ -702,3 +702,37 @@ fn test_error_code_name() {
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
     }
 }
+
+#[test]
+fn test_error_cat_name() {
+    log_init();
+    for good in ["MyErrorCategory", idents::ERROR_CATEGORY] {
+        let main = MainSpec {
+            err_cat_name: Some(good.into()),
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = YamlParser::from_str(&format!(
+            "\n---\ntighterror:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
+            good
+        ))
+        .unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_IDENTS {
+        let s = format!(
+            "\n---\ntighterror:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
+
+    for bad in [idents::ERROR, idents::ERROR_CODE] {
+        let s = format!(
+            "\n---\ntighterror:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
+}

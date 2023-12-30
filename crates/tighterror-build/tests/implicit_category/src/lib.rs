@@ -63,4 +63,12 @@ mod tests {
         }
         foo(errors::codes::BAD_INPUT, "BAD_INPUT");
     }
+
+    #[test]
+    fn test_error_cat_name() {
+        fn foo(ec: errors::IcErrorCategory, name: &str) {
+            assert_eq!(format!("{ec}"), name);
+        }
+        foo(errors::categories::GENERAL, "GENERAL");
+    }
 }
