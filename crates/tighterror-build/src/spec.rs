@@ -40,6 +40,8 @@ pub struct MainSpec {
     pub error_trait: Option<bool>,
     /// A custom name for the Error struct
     pub err_name: Option<String>,
+    /// A custom name for the ErrorCode struct
+    pub err_code_name: Option<String>,
     pub oes: OverrideableErrorSpec,
 }
 
@@ -142,5 +144,12 @@ impl Spec {
 
     pub fn err_name(&self) -> &str {
         self.main.err_name.as_deref().unwrap_or(idents::ERROR)
+    }
+
+    pub fn err_code_name(&self) -> &str {
+        self.main
+            .err_code_name
+            .as_deref()
+            .unwrap_or(idents::ERROR_CODE)
     }
 }

@@ -13,9 +13,10 @@ pub const ERR_INTO_RESULT: &str = "err_into_result";
 pub const ERR_CODE_INTO_RESULT: &str = "err_code_into_result";
 pub const ERROR_TRAIT: &str = "error_trait";
 pub const ERR_NAME: &str = "err_name";
+pub const ERR_CODE_NAME: &str = "err_code_name";
 
 pub const ERR_KWS: [&str; 4] = [NAME, DISPLAY, DOC, DOC_FROM_DISPLAY];
-pub const MAIN_KWS: [&str; 10] = [
+pub const MAIN_KWS: [&str; 11] = [
     DST,
     DOC_FROM_DISPLAY,
     MOD_DOC,
@@ -26,9 +27,10 @@ pub const MAIN_KWS: [&str; 10] = [
     ERR_CODE_INTO_RESULT,
     ERROR_TRAIT,
     ERR_NAME,
+    ERR_CODE_NAME,
 ];
 pub const ROOT_KWS: [&str; 2] = [TIGHTERROR, ERRORS];
-pub const ALL_KWS: [&str; 15] = [
+pub const ALL_KWS: [&str; 16] = [
     CAT_DOC,
     DISPLAY,
     DOC,
@@ -44,6 +46,7 @@ pub const ALL_KWS: [&str; 15] = [
     ERR_CODE_INTO_RESULT,
     ERROR_TRAIT,
     ERR_NAME,
+    ERR_CODE_NAME,
 ];
 
 #[inline]

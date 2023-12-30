@@ -55,4 +55,12 @@ mod tests {
         }
         foo(errors::codes::BAD_INPUT.into(), "BAD_INPUT");
     }
+
+    #[test]
+    fn test_error_code_name() {
+        fn foo(ec: errors::IcErrorCode, name: &str) {
+            assert_eq!(format!("{ec}"), name);
+        }
+        foo(errors::codes::BAD_INPUT, "BAD_INPUT");
+    }
 }

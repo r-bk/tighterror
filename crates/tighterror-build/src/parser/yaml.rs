@@ -150,6 +150,11 @@ impl MainSpecParser {
                     Self::check_ident(&err_name, kws::ERR_NAME)?;
                     main_spec.err_name = Some(err_name);
                 }
+                kws::ERR_CODE_NAME => {
+                    let err_code_name = v2string(v, kws::ERR_CODE_NAME)?;
+                    Self::check_ident(&err_code_name, kws::ERR_CODE_NAME)?;
+                    main_spec.err_code_name = Some(err_code_name);
+                }
                 _ => panic!("internal error: unhandled main key {}", key),
             }
         }
@@ -160,6 +165,9 @@ impl MainSpecParser {
     fn check_ident(ident: &str, kw: &str) -> Result<(), TebError> {
         crate::parser::yaml::check_ident(ident, kw)?;
         if kw == kws::ERR_NAME && ident == idents::ERROR {
+            return Ok(());
+        }
+        if kw == kws::ERR_CODE_NAME && ident == idents::ERROR_CODE {
             return Ok(());
         }
         if idents::is_top_level_ident(ident) {
