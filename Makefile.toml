@@ -9,9 +9,16 @@ args = ["build", "--workspace", "--all-features"]
 args = ["test", "--workspace", "--all-features"]
 
 [tasks.clippy]
+dependencies = ["clippy-compilation-tests"]
 toolchain = "beta"
 command = "cargo"
 args = ["clippy", "--workspace", "--all-features", "--all-targets"]
+
+[tasks.clippy-compilation-tests]
+toolchain = "beta"
+command = "cargo"
+args = ["clippy", "--all-features", "--all-targets"]
+cwd = "crates/tighterror-build/tests/compilation"
 
 [tasks.tb-errors]
 condition = { files_modified = { input = [
