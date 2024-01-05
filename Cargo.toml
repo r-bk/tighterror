@@ -1,6 +1,6 @@
 [package]
 name = "tighterror"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Rafael Buchbinder <rafi@rbk.io>"]
 edition = "2021"
 description = "Error representation framework with a code generator"
