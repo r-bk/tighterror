@@ -2,7 +2,7 @@
 
 `cargo-tighterror` is a Cargo extension for the `tighterror` framework.
 
-This tool is used to lint the `tighterror` markup specification file, or to
+This tool is used to process the `tighterror` markup specification file, and to
 generate Rust source code from it.
 
 ## License

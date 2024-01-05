@@ -21,10 +21,6 @@ pub use coder::*;
 
 pub mod errors;
 
-#[allow(dead_code)]
-mod linter;
-pub use linter::*;
-
 pub(crate) mod parser;
 pub(crate) mod spec;
 pub(crate) mod util;

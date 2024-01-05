@@ -11,10 +11,6 @@ pub struct Args {
     #[arg(short, long, value_name = "OUT")]
     pub dst: Option<String>,
 
-    /// Only lint the spec file
-    #[arg(short, long)]
-    pub lint: bool,
-
     /// Include a unit-test in the generated code
     #[arg(short, long)]
     pub test: bool,
