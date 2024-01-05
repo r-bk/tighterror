@@ -9,7 +9,10 @@ args = ["build", "--workspace", "--all-features"]
 args = ["test", "--workspace", "--all-features"]
 
 [tasks.clippy]
-dependencies = ["clippy-compilation-tests"]
+clear = true
+dependencies = ["clippy-workspace", "clippy-compilation-tests"]
+
+[tasks.clippy-workspace]
 toolchain = "beta"
 command = "cargo"
 args = ["clippy", "--workspace", "--all-features", "--all-targets"]
