@@ -40,7 +40,7 @@ jobs:
         run: cargo test --workspace
 
       - name: clippy
-        run: cargo clippy --workspace
+        run: cargo clippy --workspace --all-features --all-targets
 
       - name: build yaml
         run: cargo build -p tighterror-build --no-default-features --features yaml
@@ -63,14 +63,14 @@ jobs:
         run: cargo test -p tighterror-build --all-features
 
       - name: clippy yaml
-        run: cargo clippy -p tighterror-build --no-default-features --features yaml
+        run: cargo clippy -p tighterror-build --no-default-features --features yaml --all-targets
 
       - name: clippy toml
         if: false
-        run: cargo clippy -p tighterror-build --no-default-features --features toml
+        run: cargo clippy -p tighterror-build --no-default-features --features toml --all-targets
 
       - name: clippy all-features
-        run: cargo clippy -p tighterror-build --all-features
+        run: cargo clippy -p tighterror-build --all-features --all-targets
 
   common-ci:
     runs-on: ubuntu-latest
@@ -97,4 +97,7 @@ jobs:
           components: rust-src, rustc-dev, llvm-tools-preview
       - name: test
         run: cargo test
+        working-directory: crates/tighterror-build/tests/compilation
+      - name: clippy
+        run: cargo clippy --all-features --all-targets
         working-directory: crates/tighterror-build/tests/compilation
