@@ -1,0 +1,10 @@
+---
+tighterror:
+  err_into_result: false
+  err_code_into_result: false
+  error_trait: false
+  
+errors:
+  - BadFile
+  - BadArg
+  - IoError

@@ -1,0 +1,17 @@
+[package]
+name = "test_compilation"
+edition = "2021"
+version = "0.0.1"
+
+[dependencies]
+tighterror = { path = "../../../.." }
+
+[build-dependencies]
+env_logger = "0.10"
+tighterror-build = { path = "../.." }
+
+[dev-dependencies]
+compiletest_rs = "0.10.0"
+
+# force this package out of the main workspace
+[workspace]
