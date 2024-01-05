@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5], [b-0.0.5], [c-0.0.5] - 2024-01-05
+
+This release makes `tighterror` self-hosted in `tighterror-build`.
+
+### Added
+
+- implement `PaertialEq` for the `Error` struct
+- explicitly forbid `unsafe` code in all crates
+
+### Changed
+
+- update the `errors` module in `tighterror-build` to use the `tighterror`
+  framework itself
+- implement negative compilation tests using [compiletest-rs] instead of
+  `compile_fail` doc-tests
+
+[compiletest-rs]: https://crates.io/crates/compiletest_rs
+
 ## [0.0.4], [b-0.0.4], [c-0.0.4] - 2023-12-30
 
 This is a small incremental release on the way to self-hosted `tighterror`.
@@ -64,3 +82,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.4]: https://github.com/r-bk/tighterror/releases/tag/v0.0.4
 [b-0.0.4]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.4
 [c-0.0.4]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.4
+[0.0.5]: https://github.com/r-bk/tighterror/releases/tag/v0.0.5
+[b-0.0.5]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.5
+[c-0.0.5]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.5
