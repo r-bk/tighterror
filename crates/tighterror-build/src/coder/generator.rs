@@ -561,7 +561,7 @@ impl<'a> CodeGenerator<'a> {
                     #tokens
 
                     #err_doc
-                    pub const #err_ident: E = E::new(c::#cat_ident, #err_value);
+                    pub const #err_ident: EC = EC::new(c::#cat_ident, #err_value);
                 };
             }
         }
@@ -569,7 +569,7 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[doc = " Error-code constants."]
             pub mod codes {
-                use super::#err_code_name as E;
+                use super::#err_code_name as EC;
                 use super::categories as c;
                 #tokens
             }
