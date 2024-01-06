@@ -1,14 +1,21 @@
 use clap::Parser;
 
-#[derive(Parser, Debug)]
-#[command(version, author, about, long_about = None)]
+#[derive(Parser)]
+#[command(name = "cargo")]
+#[command(bin_name = "cargo")]
+enum CargoCli {
+    Tighterror(Args),
+}
+
+#[derive(clap::Args, Debug)]
+#[command(author, version, about, long_about = None)]
 pub struct Args {
     /// The spec file path [default=tighterror.yaml]
     #[arg(short, long, value_name = "FILE")]
     pub spec: Option<String>,
 
     /// The destination file path
-    #[arg(short, long, value_name = "OUT")]
+    #[arg(short, long, value_name = "DEST")]
     pub dst: Option<String>,
 
     /// Include a unit-test in the generated code
@@ -18,7 +25,8 @@ pub struct Args {
 
 impl Args {
     pub fn parse_args() -> Self {
-        Self::parse()
+        let CargoCli::Tighterror(args) = CargoCli::parse();
+        args
     }
 
     pub fn test(&self) -> Option<bool> {
