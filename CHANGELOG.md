@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.6], [b-0.0.6], [c-0.0.6] - 2024-01-06
+
+This relase cleans up dead code and introduces a bug fix.
+
+### Fixed
+
+- fix `cargo-tighterror` to properly conform to cargo plugin specification
+
+### Removed
+
+- remove the `lint` feature. It was planned initially. However, its necessity
+  isn't clear at this moment.
+
 ## [0.0.5], [b-0.0.5], [c-0.0.5] - 2024-01-05
 
 This release makes `tighterror` self-hosted in `tighterror-build`.
@@ -85,3 +98,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.5]: https://github.com/r-bk/tighterror/releases/tag/v0.0.5
 [b-0.0.5]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.5
 [c-0.0.5]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.5
+[0.0.6]: https://github.com/r-bk/tighterror/releases/tag/v0.0.6
+[b-0.0.6]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.6
+[c-0.0.6]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.6
