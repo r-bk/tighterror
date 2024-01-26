@@ -279,29 +279,29 @@ pub mod categories {
 /// Error-code constants.
 pub mod codes {
     use super::categories as c;
-    use super::TebErrorCode as E;
+    use super::TebErrorCode as EC;
 
     /// Specification file couldn't be opened.
-    pub const FAILED_TO_OPEN_SPEC_FILE: E = E::new(c::GENERAL, 0);
+    pub const FAILED_TO_OPEN_SPEC_FILE: EC = EC::new(c::GENERAL, 0);
 
     /// Bad specification file format.
-    pub const BAD_SPEC: E = E::new(c::GENERAL, 1);
+    pub const BAD_SPEC: EC = EC::new(c::GENERAL, 1);
 
     /// Bad YAML file format.
-    pub const BAD_YAML: E = E::new(c::GENERAL, 2);
+    pub const BAD_YAML: EC = EC::new(c::GENERAL, 2);
 
     /// Bad TOML file format.
-    pub const BAD_TOML: E = E::new(c::GENERAL, 3);
+    pub const BAD_TOML: EC = EC::new(c::GENERAL, 3);
 
     /// Bad specification file name extension.
-    pub const BAD_SPEC_FILE_EXTENSION: E = E::new(c::GENERAL, 4);
+    pub const BAD_SPEC_FILE_EXTENSION: EC = EC::new(c::GENERAL, 4);
 
     /// Destination file couldn't be written.
-    pub const FAILED_TO_WRITE_TO_DST_FILE: E = E::new(c::GENERAL, 5);
+    pub const FAILED_TO_WRITE_TO_DST_FILE: EC = EC::new(c::GENERAL, 5);
 
     /// Generated code tokens couldn't be parsed.
-    pub const FAILED_TO_PARSE_TOKENS: E = E::new(c::GENERAL, 6);
+    pub const FAILED_TO_PARSE_TOKENS: EC = EC::new(c::GENERAL, 6);
 
     /// Rustfmt tool exited with an error.
-    pub const RUSTFMT_FAILED: E = E::new(c::GENERAL, 7);
+    pub const RUSTFMT_FAILED: EC = EC::new(c::GENERAL, 7);
 }
