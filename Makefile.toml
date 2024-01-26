@@ -35,6 +35,7 @@ run_task = "gen-tb-errors"
 dependencies = ["ct"]
 cwd = "crates/tighterror-build"
 command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/debug/cargo-tighterror"
+args = ["tighterror"]
 
 [tasks.ct]
 command = "cargo"
