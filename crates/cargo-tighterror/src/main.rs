@@ -1,3 +1,4 @@
+#![deny(warnings)]
 #![forbid(unsafe_code)]
 
 use log::error;

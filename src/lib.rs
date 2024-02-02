@@ -26,6 +26,7 @@
 
 #![no_std]
 #![deny(missing_docs)]
+#![deny(warnings)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 

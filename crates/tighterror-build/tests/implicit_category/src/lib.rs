@@ -2,6 +2,7 @@
 //! with implicit category.
 
 #![deny(missing_docs)]
+#![deny(warnings)]
 
 /// Crate errors.
 pub mod errors {
