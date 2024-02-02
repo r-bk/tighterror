@@ -434,7 +434,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_implicit_category_toml"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "env_logger 0.11.1",
+ "tighterror",
+ "tighterror-build",
+]
+
+[[package]]
 name = "test_minimal"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "env_logger 0.11.1",
+ "tighterror",
+ "tighterror-build",
+]
+
+[[package]]
+name = "test_minimal_toml"
 version = "0.0.0"
 dependencies = [
  "anyhow",

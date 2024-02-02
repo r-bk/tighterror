@@ -1,0 +1,28 @@
+[tighterror]
+doc_from_display = true
+err_doc = "A custom error struct doc."
+err_code_doc = "A custom error doc."
+cat_doc = "A custom category doc."
+err_into_result = false
+err_code_into_result = false
+error_trait = false
+err_name = "IcError"
+err_code_name = "IcErrorCode"
+err_cat_name = "IcErrorCategory"
+
+[[errors]]
+name = "FailedToOpenFile"
+display = "Input file could not be open."
+
+[[errors]]
+name = "BadInput"
+display = "Input file has invalid format."
+
+[[errors]]
+name = "LongDescription"
+doc = """
+This is an example for a long doc string.
+
+It continues on several lines. And can include Rust doc-string
+formatting [`String`].
+"""
