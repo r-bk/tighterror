@@ -1,15 +1,13 @@
 use crate::{
-    coder::idents,
     errors::{
         codes::{BAD_SPEC, BAD_YAML},
         TebError,
     },
-    parser::kws,
+    parser::{check_main_ident, check_name, kws},
     spec::{CategorySpec, ErrorSpec, MainSpec, Spec, IMPLICIT_CATEGORY_NAME},
     util::get_non_unique_error_names,
 };
 use log::error;
-use regex::Regex;
 use serde_yaml::{Mapping, Sequence, Value};
 use std::fs::File;
 
@@ -150,17 +148,17 @@ impl MainSpecParser {
                 kws::ERROR_TRAIT => main_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
                 kws::ERR_NAME => {
                     let err_name = v2string(v, kws::ERR_NAME)?;
-                    Self::check_ident(&err_name, kws::ERR_NAME)?;
+                    check_main_ident(&err_name, kws::ERR_NAME)?;
                     main_spec.err_name = Some(err_name);
                 }
                 kws::ERR_CODE_NAME => {
                     let err_code_name = v2string(v, kws::ERR_CODE_NAME)?;
-                    Self::check_ident(&err_code_name, kws::ERR_CODE_NAME)?;
+                    check_main_ident(&err_code_name, kws::ERR_CODE_NAME)?;
                     main_spec.err_code_name = Some(err_code_name);
                 }
                 kws::ERR_CAT_NAME => {
                     let err_cat_name = v2string(v, kws::ERR_CAT_NAME)?;
-                    Self::check_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
+                    check_main_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
                     main_spec.err_cat_name = Some(err_cat_name);
                 }
                 _ => panic!("internal error: unhandled main key {}", key),
@@ -168,25 +166,6 @@ impl MainSpecParser {
         }
 
         Ok(main_spec)
-    }
-
-    fn check_ident(ident: &str, kw: &str) -> Result<(), TebError> {
-        crate::parser::yaml::check_ident(ident, kw)?;
-        if kw == kws::ERR_NAME && ident == idents::ERROR {
-            return Ok(());
-        }
-        if kw == kws::ERR_CODE_NAME && ident == idents::ERROR_CODE {
-            return Ok(());
-        }
-        if kw == kws::ERR_CAT_NAME && ident == idents::ERROR_CATEGORY {
-            return Ok(());
-        }
-        if idents::is_top_level_ident(ident) {
-            error!("`{}` cannot be a reserved identifier: {}", kw, ident);
-            BAD_SPEC.into()
-        } else {
-            Ok(())
-        }
     }
 }
 
@@ -225,23 +204,8 @@ impl YamlErrorsParser {
 }
 
 impl YamlErrorParser {
-    fn check_name(name: &str) -> Result<(), TebError> {
-        check_ident(name, kws::NAME)?;
-        if kws::is_any_kw(name) {
-            // double check, in case any logic above changes
-            error!(
-                "`{}` cannot be a reserved keyword: `{}`. Use camel case.",
-                kws::NAME,
-                name
-            );
-            BAD_SPEC.into()
-        } else {
-            Ok(())
-        }
-    }
-
     fn from_string(s: String) -> Result<ErrorSpec, TebError> {
-        Self::check_name(&s)?;
+        check_name(&s)?;
         Ok(ErrorSpec {
             name: s,
             ..Default::default()
@@ -283,7 +247,7 @@ impl YamlErrorParser {
             }
         };
 
-        Self::check_name(&name)?;
+        check_name(&name)?;
 
         let display = match v {
             Value::String(s) => s,
@@ -322,7 +286,7 @@ impl YamlErrorParser {
             }
         }
 
-        Self::check_name(&err_spec.name)?;
+        check_name(&err_spec.name)?;
 
         Ok(err_spec)
     }
@@ -375,40 +339,6 @@ fn v2bool(v: Value, kw: &str) -> Result<bool, TebError> {
             BAD_SPEC.into()
         }
     }
-}
-
-fn check_ident_chars(ident: &str, name: &str) -> Result<(), TebError> {
-    let rg = Regex::new(r"^[A-Za-z0-9_]+$").unwrap();
-    if !rg.is_match(ident) {
-        error!(
-            "`{}` contains invalid characters. Only [A-Za-z0-9_] are allowed: {}",
-            name, ident
-        );
-        BAD_SPEC.into()
-    } else {
-        Ok(())
-    }
-}
-
-fn check_ident(ident: &str, name: &str) -> Result<(), TebError> {
-    use convert_case::{Case, Casing};
-
-    if ident.is_empty() {
-        error!("`{}` cannot be an empty string", name);
-        return BAD_SPEC.into();
-    } else if !ident.is_case(Case::UpperCamel) {
-        error!(
-            "`{}` must be specified in UpperCamel case: {} -> {}",
-            name,
-            ident,
-            ident.to_case(Case::UpperCamel)
-        );
-        return BAD_SPEC.into();
-    }
-
-    check_ident_chars(ident, name)?;
-
-    Ok(())
 }
 
 #[cfg(test)]
