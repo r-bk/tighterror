@@ -73,7 +73,7 @@ checksum = "ed570934406eb16438a4e976b1b4500774099c13b8cb96eec99f620f05090ddf"
 
 [[package]]
 name = "cargo-tighterror"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "clap",
  "log",
@@ -474,11 +474,11 @@ dependencies = [
 
 [[package]]
 name = "tighterror"
-version = "0.0.6"
+version = "0.0.7"
 
 [[package]]
 name = "tighterror-build"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "cfg-if",
  "convert_case",
