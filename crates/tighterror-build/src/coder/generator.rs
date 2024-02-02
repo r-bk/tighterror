@@ -976,11 +976,11 @@ impl<'a> CodeGenerator<'a> {
 }
 
 fn category_errors_constant_name(c: &CategorySpec) -> String {
-    format!("{}__NAMES", c.ident_name())
+    format!("{}_NAMES", c.ident_name())
 }
 
 fn category_error_code_display(c: &CategorySpec) -> String {
-    format!("{}__DISPLAY", c.ident_name())
+    format!("{}_DISPLAY", c.ident_name())
 }
 
 fn _doc_tokens(doc: &str, outer: bool) -> TokenStream {

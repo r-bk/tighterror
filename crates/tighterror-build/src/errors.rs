@@ -218,7 +218,7 @@ mod _n {
     pub const FAILED_TO_WRITE_TO_DST_FILE: &str = "FAILED_TO_WRITE_TO_DST_FILE";
     pub const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
     pub const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
-    pub static GENERAL__NAMES: [&str; 8] = [
+    pub static GENERAL_NAMES: [&str; 8] = [
         FAILED_TO_OPEN_SPEC_FILE,
         BAD_SPEC,
         BAD_YAML,
@@ -229,7 +229,7 @@ mod _n {
         RUSTFMT_FAILED,
     ];
 
-    pub static A: [&[&str]; 1] = [&GENERAL__NAMES];
+    pub static A: [&[&str]; 1] = [&GENERAL_NAMES];
 }
 
 mod _d {
@@ -241,7 +241,7 @@ mod _d {
     pub const FAILED_TO_WRITE_TO_DST_FILE: &str = "Destination file couldn't be written.";
     pub const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
     pub const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
-    pub static GENERAL__DISPLAY: [&str; 8] = [
+    pub static GENERAL_DISPLAY: [&str; 8] = [
         FAILED_TO_OPEN_SPEC_FILE,
         BAD_SPEC,
         BAD_YAML,
@@ -252,7 +252,7 @@ mod _d {
         RUSTFMT_FAILED,
     ];
 
-    pub static A: [&[&str]; 1] = [&GENERAL__DISPLAY];
+    pub static A: [&[&str]; 1] = [&GENERAL_DISPLAY];
 }
 
 mod _p {
