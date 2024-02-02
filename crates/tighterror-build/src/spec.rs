@@ -44,7 +44,7 @@ pub struct MainSpec {
     pub err_code_name: Option<String>,
     /// A custom name for the ErrorCategory struct
     pub err_cat_name: Option<String>,
-    pub oes: OverrideableErrorSpec,
+    pub oes: OverridableErrorSpec,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

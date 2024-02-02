@@ -2,7 +2,7 @@ use crate::{
     coder::idents,
     errors::codes::BAD_YAML,
     parser::yaml::*,
-    spec::{CategorySpec, ErrorSpec, OverrideableErrorSpec, Spec},
+    spec::{CategorySpec, ErrorSpec, OverridableErrorSpec, Spec},
 };
 
 const GENERAL_CAT: &str = "General";
@@ -150,7 +150,7 @@ fn test_err_doc_from_display() {
         );
         let err = ErrorSpec {
             name: "TestError".into(),
-            oes: OverrideableErrorSpec {
+            oes: OverridableErrorSpec {
                 doc_from_display: Some(good.1),
             },
             ..Default::default()
@@ -289,7 +289,7 @@ errors:
         name: "TestError".into(),
         doc: Some("An error doc.".into()),
         display: Some("An error description.".into()),
-        oes: OverrideableErrorSpec {
+        oes: OverridableErrorSpec {
             doc_from_display: Some(false),
         },
     };
@@ -329,7 +329,7 @@ errors:
         name: "TestError".into(),
         doc: Some("An error doc.".into()),
         display: Some("An error description.".into()),
-        oes: OverrideableErrorSpec {
+        oes: OverridableErrorSpec {
             doc_from_display: Some(false),
         },
     };
@@ -341,7 +341,7 @@ errors:
     let err5 = ErrorSpec {
         name: "Err3".into(),
         display: Some("A third one.".into()),
-        oes: OverrideableErrorSpec {
+        oes: OverridableErrorSpec {
             doc_from_display: Some(true),
         },
         ..Default::default()
@@ -380,7 +380,7 @@ fn test_main_doc_from_display() {
             good.0
         );
         let main = MainSpec {
-            oes: OverrideableErrorSpec {
+            oes: OverridableErrorSpec {
                 doc_from_display: Some(good.1),
             },
             ..Default::default()

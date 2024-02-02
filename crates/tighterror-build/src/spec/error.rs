@@ -1,7 +1,7 @@
 use convert_case::{Case::UpperSnake, Casing};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct OverrideableErrorSpec {
+pub struct OverridableErrorSpec {
     pub doc_from_display: Option<bool>,
 }
 
@@ -10,7 +10,7 @@ pub struct ErrorSpec {
     pub name: String,
     pub display: Option<String>,
     pub doc: Option<String>,
-    pub oes: OverrideableErrorSpec,
+    pub oes: OverridableErrorSpec,
 }
 
 impl ErrorSpec {
@@ -20,7 +20,7 @@ impl ErrorSpec {
 }
 
 #[allow(dead_code)]
-impl OverrideableErrorSpec {
+impl OverridableErrorSpec {
     pub const fn default_spec() -> Self {
         Self {
             doc_from_display: Some(false),
@@ -31,7 +31,7 @@ impl OverrideableErrorSpec {
     ///
     /// `oes` should be a less specific OES than `self`.
     /// I.e. error -> category -> global.
-    pub fn or(&self, oes: &OverrideableErrorSpec) -> Self {
+    pub fn or(&self, oes: &OverridableErrorSpec) -> Self {
         Self {
             doc_from_display: self.doc_from_display.or(oes.doc_from_display),
         }
