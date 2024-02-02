@@ -1,0 +1,20 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "words": [
+        "tighterror",
+        "tighterrors",
+        "thiserror",
+        "repr",
+        "newtype",
+        "docsrs",
+        "struct",
+        "codegen",
+        "rustfmt",
+        "tempfile",
+        "idents",
+        "consts",
+        "unsuffixed"
+    ],
+    "flagWords": []
+}

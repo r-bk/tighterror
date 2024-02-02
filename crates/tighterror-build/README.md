@@ -1,7 +1,30 @@
-# tighterror-build
+# *tighterror-build*
 
-`tighterror-build` is a part of the `tighterror` framework that implements Rust
-code generation from a specification file written in a markup language.
+**tighterror-build** is a library that deals with everything related to
+*tighterror* specification files and Rust code generation.
+
+[![crates.io][crates-badge]][crates-url]
+[![docs.rs][docs-badge]][docs-url]
+
+[crates-badge]: https://img.shields.io/crates/v/tighterror-build.svg
+[crates-url]: https://crates.io/crates/tighterror-build
+[docs-badge]: https://img.shields.io/docsrs/tighterror-build
+[docs-url]: https://docs.rs/tighterror-build/latest/tighterror-build
+
+**tighterror-build** can be used directly as a Rust library,
+e.g., in `build.rs`, or from command line via the cargo plugin
+[cargo-tighterror] that is a thin wrapper around the library.
+
+[cargo-tighterror]: https://crates.io/crates/cargo-tighterror
+
+## Documentation
+
+The documentation is on [docs.rs].
+
+The overall framework is documented in the [tighterror] crate.
+
+[docs.rs]: https://docs.rs/tighterror-build/latest/tighterror_build
+[tighterror]: https://docs.rs/tighterror/latest/tighterror
 
 ## License
 

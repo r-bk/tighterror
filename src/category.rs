@@ -3,7 +3,7 @@ use core::{
     hash::Hash,
 };
 
-/// The interface of error categories.
+/// The trait of error categories.
 pub trait TightErrorCategory:
     Eq + PartialEq + Ord + PartialOrd + Debug + Display + Copy + Clone + Hash
 {

@@ -1,6 +1,9 @@
 //! Crate errors.
 
-/// Error category type.
+/** Error category type.
+
+See the [categories] module for category constants.*/
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
 pub struct TebErrorCategory(_p::T);
@@ -36,7 +39,10 @@ impl core::fmt::Display for TebErrorCategory {
     }
 }
 
-/// Error kind type.
+/** Error kind type.
+
+See the [kinds] module for error kind constants.*/
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
 pub struct TebErrorKind(_p::T);
@@ -132,7 +138,10 @@ impl<T> core::convert::From<TebErrorKind> for Result<T, TebError> {
     }
 }
 
-/// Error type.
+/** Error type.
+
+See the [kinds] module for error kind constants.*/
+
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct TebError(TebErrorKind);

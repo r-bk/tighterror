@@ -3,7 +3,7 @@ name = "tighterror"
 version = "0.0.10"
 authors = ["Rafael Buchbinder <rafi@rbk.io>"]
 edition = "2021"
-description = "Error representation framework with a code generator"
+description = "A minimalistic error representation framework."
 license = "MIT OR Apache-2.0"
 keywords = ["error", "error-handling", "tighterror"]
 categories = ["rust-patterns", "no-std"]
@@ -16,6 +16,10 @@ members = [
     "crates/tighterror-build/tests/implicit_category",
     "crates/cargo-tighterror",
 ]
+
+[dev-dependencies]
+anyhow = "1.0"
+thiserror = "1.0"
 
 [package.metadata.docs.rs]
 all-features = true

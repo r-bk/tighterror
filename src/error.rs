@@ -1,7 +1,7 @@
 use crate::{Location, TightErrorCategory, TightErrorKind};
 use core::fmt::{Debug, Display};
 
-/// The interface of error types.
+/// The trait of error types.
 ///
 /// See the crate documentation for more information.
 pub trait TightError: Debug + Display {

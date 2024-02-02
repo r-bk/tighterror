@@ -59,7 +59,7 @@ impl CodegenOptions {
     /// If the value is `"-"`, or output file path is not set at all, the
     /// output is written to `stdout`.
     ///
-    /// A `Some` value specified here overrides the one present in the
+    /// A `Some` value defined here overrides the `output` value in the
     /// specification file.
     ///
     /// # Examples
@@ -77,11 +77,10 @@ impl CodegenOptions {
 
     /// Enables the unit test.
     ///
-    /// If the value is `true` a module unit-test is included in the generated
-    /// code.
+    /// When enabled a module unit-test is included in the generated code.
     ///
-    /// A `Some` value specified here overrides the one present in the
-    /// specification file.
+    /// Note that in `no_std` environments test cases that require `std` are
+    /// excluded.
     ///
     /// # Examples
     /// ```rust
@@ -99,6 +98,14 @@ impl CodegenOptions {
     ///
     /// If the value is `true` and the output file already exists
     /// it is not overwritten if the new content equals the existing one.
+    ///
+    /// This option is useful to avoid recompilation of a crate, because
+    /// `cargo` rebuilds a crate when one of the source file's modification
+    /// time changes. When using the *update* mode the modification time
+    /// changes only when the file data changes, and recompilation is really
+    /// needed. Without *update* mode the output file is overwritten
+    /// unconditionally, even when the new data equals the existing one.
+    /// This may cause an unnecessary recompilation.
     ///
     /// # Examples
     /// ```rust
