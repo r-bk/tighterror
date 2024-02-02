@@ -121,3 +121,58 @@ fn check_name(name: &str) -> Result<(), TebError> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod testing {
+    use crate::spec::{CategorySpec, ErrorSpec, MainSpec, Spec};
+
+    pub const GENERAL_CAT: &str = "General";
+
+    pub fn log_init() {
+        env_logger::builder().is_test(true).try_init().ok();
+    }
+
+    pub fn spec_from_err(err: ErrorSpec) -> Spec {
+        let cat = CategorySpec {
+            name: GENERAL_CAT.into(),
+            errors: vec![err],
+            ..Default::default()
+        };
+
+        Spec {
+            categories: vec![cat],
+            ..Default::default()
+        }
+    }
+
+    pub fn spec_from_err_iter(iter: impl IntoIterator<Item = ErrorSpec>) -> Spec {
+        let cat = CategorySpec {
+            name: GENERAL_CAT.into(),
+            errors: Vec::from_iter(iter),
+            ..Default::default()
+        };
+
+        Spec {
+            categories: vec![cat],
+            ..Default::default()
+        }
+    }
+
+    pub fn spec_from_main(main: MainSpec) -> Spec {
+        let err = ErrorSpec {
+            name: "DummyErr".into(),
+            ..Default::default()
+        };
+
+        let cat = CategorySpec {
+            name: GENERAL_CAT.into(),
+            errors: vec![err],
+            ..Default::default()
+        };
+
+        Spec {
+            main,
+            categories: vec![cat],
+        }
+    }
+}

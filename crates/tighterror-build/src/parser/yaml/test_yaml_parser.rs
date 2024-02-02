@@ -1,11 +1,13 @@
 use crate::{
     coder::idents,
     errors::codes::BAD_YAML,
-    parser::yaml::*,
-    spec::{CategorySpec, ErrorSpec, OverridableErrorSpec, Spec},
+    parser::{
+        testing::{log_init, spec_from_err, spec_from_err_iter, spec_from_main},
+        yaml::*,
+    },
+    spec::{ErrorSpec, OverridableErrorSpec},
 };
 
-const GENERAL_CAT: &str = "General";
 const GOOD_BOOLS: [(&str, bool); 4] = [
     ("true", true),
     ("false", false),
@@ -22,54 +24,6 @@ const BAD_IDENTS: [&str; 7] = [
     "Disallowed-Character-",
     "null",
 ];
-
-fn log_init() {
-    env_logger::builder().is_test(true).try_init().ok();
-}
-
-fn spec_from_err(err: ErrorSpec) -> Spec {
-    let cat = CategorySpec {
-        name: GENERAL_CAT.into(),
-        errors: vec![err],
-        ..Default::default()
-    };
-
-    Spec {
-        categories: vec![cat],
-        ..Default::default()
-    }
-}
-
-fn spec_from_err_iter(iter: impl IntoIterator<Item = ErrorSpec>) -> Spec {
-    let cat = CategorySpec {
-        name: GENERAL_CAT.into(),
-        errors: Vec::from_iter(iter),
-        ..Default::default()
-    };
-
-    Spec {
-        categories: vec![cat],
-        ..Default::default()
-    }
-}
-
-fn spec_from_main(main: MainSpec) -> Spec {
-    let err = ErrorSpec {
-        name: "DummyErr".into(),
-        ..Default::default()
-    };
-
-    let cat = CategorySpec {
-        name: GENERAL_CAT.into(),
-        errors: vec![err],
-        ..Default::default()
-    };
-
-    Spec {
-        main,
-        categories: vec![cat],
-    }
-}
 
 #[test]
 fn test_multiple_documents_fails() {
