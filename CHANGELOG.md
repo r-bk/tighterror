@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.8], [b-0.0.8], [c-0.0.8] - 2024-02-09
+
+This release is a big breaking change. The interfaces of *tighterror* types are
+revised.
+
+### Added
+
+- add *update mode* in which destination file ins't overwritten if the new
+  to-be-written data equals the existing one. This avoids updating destination
+  file's modification time, and transitively recompilation of a user crate.
+
+### Changed
+
+- rename `error-kind`, i.e., the unique ID of an error in a category,
+  to `error-variant`
+- rename `ErrorCode` to `ErrorKind`
+- update the public interfaces to have less associated constants
+
 ## [0.0.7], [b-0.0.7], [c-0.0.7] - 2024-02-02
 
 ### Added
@@ -115,3 +133,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.7]: https://github.com/r-bk/tighterror/releases/tag/v0.0.7
 [b-0.0.7]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.7
 [c-0.0.7]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.7
+[0.0.8]: https://github.com/r-bk/tighterror/releases/tag/v0.0.8
+[b-0.0.8]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.8
+[c-0.0.8]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.8
