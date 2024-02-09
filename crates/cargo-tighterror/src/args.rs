@@ -29,11 +29,16 @@ impl Args {
         args
     }
 
-    pub fn test(&self) -> Option<bool> {
-        if self.test {
-            Some(true)
+    #[inline]
+    fn bool_to_opt(v: bool) -> Option<bool> {
+        if v {
+            Some(v)
         } else {
             None
         }
+    }
+
+    pub fn test(&self) -> Option<bool> {
+        Self::bool_to_opt(self.test)
     }
 }
