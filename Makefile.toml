@@ -37,6 +37,11 @@ cwd = "crates/tighterror-build"
 command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/debug/cargo-tighterror"
 args = ["tighterror"]
 
+[tasks.up]
+cwd = "crates/tighterror-build"
+command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/debug/cargo-tighterror"
+args = ["tighterror", "--update"]
+
 [tasks.ct]
 command = "cargo"
 args = ["build", "-p", "cargo-tighterror"]
