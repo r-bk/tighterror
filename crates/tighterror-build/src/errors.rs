@@ -211,16 +211,18 @@ mod _n {
     pub const BAD_YAML: &str = "BAD_YAML";
     pub const BAD_TOML: &str = "BAD_TOML";
     pub const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
-    pub const FAILED_TO_WRITE_TO_DST_FILE: &str = "FAILED_TO_WRITE_TO_DST_FILE";
+    pub const FAILED_TO_WRITE_DST_FILE: &str = "FAILED_TO_WRITE_DST_FILE";
+    pub const FAILED_TO_READ_DST_FILE: &str = "FAILED_TO_READ_DST_FILE";
     pub const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
     pub const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
-    pub static GENERAL_NAMES: [&str; 8] = [
+    pub static GENERAL_NAMES: [&str; 9] = [
         FAILED_TO_OPEN_SPEC_FILE,
         BAD_SPEC,
         BAD_YAML,
         BAD_TOML,
         BAD_SPEC_FILE_EXTENSION,
-        FAILED_TO_WRITE_TO_DST_FILE,
+        FAILED_TO_WRITE_DST_FILE,
+        FAILED_TO_READ_DST_FILE,
         FAILED_TO_PARSE_TOKENS,
         RUSTFMT_FAILED,
     ];
@@ -234,16 +236,18 @@ mod _d {
     pub const BAD_YAML: &str = "Bad YAML file format.";
     pub const BAD_TOML: &str = "Bad TOML file format.";
     pub const BAD_SPEC_FILE_EXTENSION: &str = "Bad specification file name extension.";
-    pub const FAILED_TO_WRITE_TO_DST_FILE: &str = "Destination file couldn't be written.";
+    pub const FAILED_TO_WRITE_DST_FILE: &str = "Destination file couldn't be written.";
+    pub const FAILED_TO_READ_DST_FILE: &str = "Destination file couldn't be read.";
     pub const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
     pub const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
-    pub static GENERAL_DISPLAY: [&str; 8] = [
+    pub static GENERAL_DISPLAY: [&str; 9] = [
         FAILED_TO_OPEN_SPEC_FILE,
         BAD_SPEC,
         BAD_YAML,
         BAD_TOML,
         BAD_SPEC_FILE_EXTENSION,
-        FAILED_TO_WRITE_TO_DST_FILE,
+        FAILED_TO_WRITE_DST_FILE,
+        FAILED_TO_READ_DST_FILE,
         FAILED_TO_PARSE_TOKENS,
         RUSTFMT_FAILED,
     ];
@@ -253,13 +257,13 @@ mod _d {
 
 mod _p {
     pub type T = u8;
-    pub const KIND_BITS: usize = 3;
+    pub const KIND_BITS: usize = 4;
     pub const CAT_BITS: usize = 0;
     pub const CAT_MASK: T = 0;
     pub const CAT_MAX: T = 0;
-    pub const VAR_BITS: usize = 3;
-    pub const VAR_MASK: T = 7;
-    pub static VAR_MAXES: [T; 1] = [7];
+    pub const VAR_BITS: usize = 4;
+    pub const VAR_MASK: T = 15;
+    pub static VAR_MAXES: [T; 1] = [8];
     const _: () = assert!(KIND_BITS <= T::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
 }
@@ -293,11 +297,14 @@ pub mod kinds {
     pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::GENERAL, 4);
 
     /// Destination file couldn't be written.
-    pub const FAILED_TO_WRITE_TO_DST_FILE: EK = EK::new(c::GENERAL, 5);
+    pub const FAILED_TO_WRITE_DST_FILE: EK = EK::new(c::GENERAL, 5);
+
+    /// Destination file couldn't be read.
+    pub const FAILED_TO_READ_DST_FILE: EK = EK::new(c::GENERAL, 6);
 
     /// Generated code tokens couldn't be parsed.
-    pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 6);
+    pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 7);
 
     /// Rustfmt tool exited with an error.
-    pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 7);
+    pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 8);
 }

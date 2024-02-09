@@ -13,6 +13,7 @@ errors:
   - BadYaml: Bad YAML file format.
   - BadToml: Bad TOML file format.
   - BadSpecFileExtension: Bad specification file name extension.
-  - FailedToWriteToDstFile: Destination file couldn't be written.
+  - FailedToWriteDstFile: Destination file couldn't be written.
+  - FailedToReadDstFile: Destination file couldn't be read.
   - FailedToParseTokens: Generated code tokens couldn't be parsed.
   - RustfmtFailed: Rustfmt tool exited with an error.

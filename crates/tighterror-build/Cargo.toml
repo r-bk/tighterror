@@ -25,6 +25,7 @@ regex = "1.10"
 serde = "1"
 serde_yaml = { version = "0.9", optional = true }
 syn = { version = "2.0", default-features = false, features = ["parsing"] }
+tempfile = "3.10.0"
 tighterror = { path = "../..", version = "0.0.7" }
 toml = { version = "0.8", optional = true }
 

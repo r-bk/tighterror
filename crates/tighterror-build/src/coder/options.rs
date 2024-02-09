@@ -21,6 +21,7 @@ pub struct CodegenOptions {
     pub(crate) spec: Option<String>,
     pub(crate) dst: Option<String>,
     pub(crate) test: Option<bool>,
+    pub(crate) update: Option<bool>,
 }
 
 impl CodegenOptions {
@@ -85,6 +86,23 @@ impl CodegenOptions {
     /// ```
     pub fn test(&mut self, test: impl Into<Option<bool>>) -> &mut Self {
         self.test = test.into();
+        self
+    }
+
+    /// Enables the *update* mode.
+    ///
+    /// If the value is `true` and the destination file already exists
+    /// it is not overwritten if the new content equals the existing one.
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use tighterror_build::CodegenOptions;
+    /// CodegenOptions::new().update(None);
+    /// CodegenOptions::new().update(true);
+    /// CodegenOptions::new().update(Some(false));
+    /// ```
+    pub fn update(&mut self, update: impl Into<Option<bool>>) -> &mut Self {
+        self.update = update.into();
         self
     }
 

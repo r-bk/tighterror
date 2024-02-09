@@ -18,6 +18,7 @@ pub const DEFAULT_TEST: bool = false;
 pub const DEFAULT_ERR_INTO_RESULT: bool = true;
 pub const DEFAULT_ERR_KIND_INTO_RESULT: bool = true;
 pub const DEFAULT_ERROR_TRAIT: bool = true;
+pub const DEFAULT_UPDATE_MODE: bool = false;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
