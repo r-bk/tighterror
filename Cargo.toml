@@ -18,6 +18,7 @@ members = [
     "crates/tighterror-build/tests/minimal",
     "crates/tighterror-build/tests/minimal_toml",
     "crates/tighterror-build/tests/minimal_with_display",
+    "crates/tighterror-build/tests/minimal_256_variants",
     "crates/cargo-tighterror",
 ]
 

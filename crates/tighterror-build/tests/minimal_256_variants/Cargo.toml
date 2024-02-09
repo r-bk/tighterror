@@ -1,0 +1,14 @@
+[package]
+name = "test_minimal_256_variants"
+edition = "2021"
+version = "0.0.0"
+
+[dependencies]
+tighterror = { path = "../../../.." }
+
+[build-dependencies]
+env_logger = "0.11.1"
+tighterror-build = { path = "../.." }
+
+[dev-dependencies]
+anyhow = "1.0"
