@@ -1,31 +1,33 @@
-use crate::{Location, TightErrorCode};
+use crate::{Location, TightErrorCategory, TightErrorKind};
 use core::fmt::{Debug, Display};
 
 /// The interface of error types.
 ///
 /// See the crate documentation for more information.
 pub trait TightError: Debug + Display {
-    /// The number of bits required for an error category.
-    const CATEGORY_BITS: usize;
-
-    /// The number of bits required for an error kind.
-    const KIND_BITS: usize;
-
-    /// The number of categories.
-    const CATEGORIES_COUNT: usize;
-
-    /// The underlying Rust type of an error code.
+    /// The underlying Rust type of error kind.
     ///
-    /// A concrete builtin type, e.g. `u8`.
+    /// A concrete builtin type, e.g., `u8`.
     type ReprType;
 
-    /// The error code concrete type.
-    type CodeType: TightErrorCode<ReprType = Self::ReprType>;
+    /// The error category concrete type.
+    type CategoryType: TightErrorCategory<ReprType = Self::ReprType>;
 
-    /// Returns the error code.
+    /// The error kind concrete type.
+    type KindType: TightErrorKind<ReprType = Self::ReprType, CategoryType = Self::CategoryType>;
+
+    /// Returns the error kind.
     ///
-    /// The error code is unique per `TightError` instantiation.
-    fn code(&self) -> Self::CodeType;
+    /// The error kind is unique per `TightError` instantiation.
+    fn kind(&self) -> Self::KindType;
+
+    /// Returns the error category.
+    ///
+    /// This method is a shorthand for `self.kind().category()`.
+    #[inline]
+    fn category(&self) -> Self::CategoryType {
+        self.kind().category()
+    }
 
     /// Returns the error's source location.
     ///

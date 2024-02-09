@@ -9,14 +9,14 @@ pub use category::*;
 pub const STDOUT_DST: &str = "-";
 pub const DEFAULT_MODULE_DOC: &str = "";
 pub const DEFAULT_ERROR_STRUCT_DOC: &str = "Error type.";
-pub const DEFAULT_ERROR_CODE_STRUCT_DOC: &str = "Error code type.";
-pub const DEFAULT_ERROR_CODE_CONST_DOC: &str = "";
+pub const DEFAULT_ERROR_KIND_STRUCT_DOC: &str = "Error kind type.";
+pub const DEFAULT_ERROR_KIND_CONST_DOC: &str = "";
 pub const DEFAULT_CATEGORY_STRUCT_DOC: &str = "Error category type.";
 pub const DEFAULT_GENERAL_CAT_DOC: &str = "General error category.";
 pub const DEFAULT_DOC_FROM_DISPLAY: bool = false;
 pub const DEFAULT_TEST: bool = false;
 pub const DEFAULT_ERR_INTO_RESULT: bool = true;
-pub const DEFAULT_ERR_CODE_INTO_RESULT: bool = true;
+pub const DEFAULT_ERR_KIND_INTO_RESULT: bool = true;
 pub const DEFAULT_ERROR_TRAIT: bool = true;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -25,8 +25,8 @@ pub struct MainSpec {
     pub mod_doc: Option<String>,
     /// Error struct's documentation
     pub err_doc: Option<String>,
-    /// ErrorCode struct's documentation
-    pub err_code_doc: Option<String>,
+    /// ErrorKind struct's documentation
+    pub err_kind_doc: Option<String>,
     /// Category struct's documentation
     pub cat_doc: Option<String>,
     /// destination file path: relative to the specification file, or an
@@ -34,14 +34,14 @@ pub struct MainSpec {
     pub dst: Option<String>,
     /// Add `impl From<Error> for Result`
     pub err_into_result: Option<bool>,
-    /// Add `impl From<ErrorCode> for Result<T, Error>`
-    pub err_code_into_result: Option<bool>,
+    /// Add `impl From<ErrorKind> for Result<T, Error>`
+    pub err_kind_into_result: Option<bool>,
     /// Add `impl std::error::Error for Error`
     pub error_trait: Option<bool>,
     /// A custom name for the Error struct
     pub err_name: Option<String>,
-    /// A custom name for the ErrorCode struct
-    pub err_code_name: Option<String>,
+    /// A custom name for the ErrorKind struct
+    pub err_kind_name: Option<String>,
     /// A custom name for the ErrorCategory struct
     pub err_cat_name: Option<String>,
     pub oes: OverridableErrorSpec,
@@ -88,7 +88,7 @@ impl Spec {
         }
     }
 
-    pub fn err_code_const_doc<'a>(&self, c: &'a CategorySpec, e: &'a ErrorSpec) -> &'a str {
+    pub fn err_kind_const_doc<'a>(&self, c: &'a CategorySpec, e: &'a ErrorSpec) -> &'a str {
         if let Some(doc) = e.doc.as_deref() {
             return doc;
         }
@@ -101,9 +101,9 @@ impl Spec {
             .unwrap_or(DEFAULT_DOC_FROM_DISPLAY);
 
         if dfd {
-            e.display.as_deref().unwrap_or(DEFAULT_ERROR_CODE_CONST_DOC)
+            e.display.as_deref().unwrap_or(DEFAULT_ERROR_KIND_CONST_DOC)
         } else {
-            DEFAULT_ERROR_CODE_CONST_DOC
+            DEFAULT_ERROR_KIND_CONST_DOC
         }
     }
 
@@ -114,11 +114,11 @@ impl Spec {
         e.ident_name()
     }
 
-    pub fn err_code_doc(&self) -> &str {
+    pub fn err_kind_doc(&self) -> &str {
         self.main
-            .err_code_doc
+            .err_kind_doc
             .as_deref()
-            .unwrap_or(DEFAULT_ERROR_CODE_STRUCT_DOC)
+            .unwrap_or(DEFAULT_ERROR_KIND_STRUCT_DOC)
     }
 
     pub fn mod_doc(&self) -> &str {
@@ -134,10 +134,10 @@ impl Spec {
         self.main.err_into_result.unwrap_or(DEFAULT_ERR_INTO_RESULT)
     }
 
-    pub fn err_code_into_result(&self) -> bool {
+    pub fn err_kind_into_result(&self) -> bool {
         self.main
-            .err_code_into_result
-            .unwrap_or(DEFAULT_ERR_CODE_INTO_RESULT)
+            .err_kind_into_result
+            .unwrap_or(DEFAULT_ERR_KIND_INTO_RESULT)
     }
 
     pub fn error_trait(&self) -> bool {
@@ -148,11 +148,11 @@ impl Spec {
         self.main.err_name.as_deref().unwrap_or(idents::ERROR)
     }
 
-    pub fn err_code_name(&self) -> &str {
+    pub fn err_kind_name(&self) -> &str {
         self.main
-            .err_code_name
+            .err_kind_name
             .as_deref()
-            .unwrap_or(idents::ERROR_CODE)
+            .unwrap_or(idents::ERROR_KIND)
     }
 
     pub fn err_cat_name(&self) -> &str {

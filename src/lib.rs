@@ -33,8 +33,8 @@
 mod category;
 pub use category::*;
 
-mod code;
-pub use code::*;
+mod kind;
+pub use kind::*;
 
 mod error;
 pub use error::*;

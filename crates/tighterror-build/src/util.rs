@@ -1,5 +1,5 @@
 use crate::{
-    errors::{codes::FAILED_TO_OPEN_SPEC_FILE, TebError},
+    errors::{kinds::FAILED_TO_OPEN_SPEC_FILE, TebError},
     spec::Spec,
 };
 use std::{collections::HashSet, fs::File, path::PathBuf};

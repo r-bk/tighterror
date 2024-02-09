@@ -1,7 +1,7 @@
 use crate::{
     coder::idents,
     errors::{
-        codes::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
+        kinds::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
         TebError,
     },
     spec::Spec,
@@ -93,7 +93,7 @@ fn check_main_ident(ident: &str, kw: &str) -> Result<(), TebError> {
     if kw == kws::ERR_NAME && ident == idents::ERROR {
         return Ok(());
     }
-    if kw == kws::ERR_CODE_NAME && ident == idents::ERROR_CODE {
+    if kw == kws::ERR_KIND_NAME && ident == idents::ERROR_KIND {
         return Ok(());
     }
     if kw == kws::ERR_CAT_NAME && ident == idents::ERROR_CATEGORY {

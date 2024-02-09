@@ -1,6 +1,6 @@
 use crate::{
     coder::idents,
-    errors::codes::BAD_YAML,
+    errors::kinds::BAD_YAML,
     parser::{
         testing::{log_init, spec_from_err, spec_from_err_iter, spec_from_main},
         yaml::*,
@@ -471,13 +471,13 @@ errors:
 }
 
 #[test]
-fn test_main_err_code_doc() {
+fn test_main_err_kind_doc() {
     log_init();
     let s = "
 ---
 tighterror:
-  err_code_doc: |
-    ErrorCode documentation.
+  err_kind_doc: |
+    ErrorKind documentation.
 
     Multiline.
 
@@ -485,7 +485,7 @@ errors:
   - DummyErr
 ";
     let main = MainSpec {
-        err_code_doc: Some("ErrorCode documentation.\n\nMultiline.\n".into()),
+        err_kind_doc: Some("ErrorKind documentation.\n\nMultiline.\n".into()),
         ..Default::default()
     };
     let spec = spec_from_main(main);
@@ -495,13 +495,13 @@ errors:
     let s = "
 ---
 tighterror:
-    err_code_doc: \"\"
+    err_kind_doc: \"\"
 
 errors:
     - DummyErr
 ";
     let main = MainSpec {
-        err_code_doc: Some("".into()),
+        err_kind_doc: Some("".into()),
         ..Default::default()
     };
     let spec = spec_from_main(main);
@@ -537,16 +537,16 @@ fn test_main_err_into_result() {
 }
 
 #[test]
-fn test_main_err_code_into_result() {
+fn test_main_err_kind_into_result() {
     log_init();
 
     for good in GOOD_BOOLS {
         let s = format!(
-            "---\ntighterror:\n  err_code_into_result: {}\n\nerrors:\n  - DummyErr",
+            "---\ntighterror:\n  err_kind_into_result: {}\n\nerrors:\n  - DummyErr",
             good.0
         );
         let main = MainSpec {
-            err_code_into_result: Some(good.1),
+            err_kind_into_result: Some(good.1),
             ..Default::default()
         };
         let spec = spec_from_main(main);
@@ -556,7 +556,7 @@ fn test_main_err_code_into_result() {
 
     for bad in BAD_BOOLS {
         let s = format!(
-            "---\ntighterror:\n  err_code_into_result: {}\n\nerrors:\n  - DummyErr",
+            "---\ntighterror:\n  err_kind_into_result: {}\n\nerrors:\n  - DummyErr",
             bad
         );
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
@@ -615,7 +615,7 @@ fn test_error_name() {
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
     }
 
-    for bad in [idents::ERROR_CATEGORY, idents::ERROR_CODE] {
+    for bad in [idents::ERROR_CATEGORY, idents::ERROR_KIND] {
         let s = format!(
             "\n---\ntighterror:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
@@ -625,16 +625,16 @@ fn test_error_name() {
 }
 
 #[test]
-fn test_error_code_name() {
+fn test_error_kind_name() {
     log_init();
-    for good in ["MyErrorCode", idents::ERROR_CODE] {
+    for good in ["MyErrorKind", idents::ERROR_KIND] {
         let main = MainSpec {
-            err_code_name: Some(good.into()),
+            err_kind_name: Some(good.into()),
             ..Default::default()
         };
         let spec = spec_from_main(main);
         let res = YamlParser::from_str(&format!(
-            "\n---\ntighterror:\n  err_code_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\ntighterror:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             good
         ))
         .unwrap();
@@ -643,7 +643,7 @@ fn test_error_code_name() {
 
     for bad in BAD_IDENTS {
         let s = format!(
-            "\n---\ntighterror:\n  err_code_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\ntighterror:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
@@ -651,7 +651,7 @@ fn test_error_code_name() {
 
     for bad in [idents::ERROR, idents::ERROR_CATEGORY] {
         let s = format!(
-            "\n---\ntighterror:\n  err_code_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\ntighterror:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
@@ -683,7 +683,7 @@ fn test_error_cat_name() {
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
     }
 
-    for bad in [idents::ERROR, idents::ERROR_CODE] {
+    for bad in [idents::ERROR, idents::ERROR_KIND] {
         let s = format!(
             "\n---\ntighterror:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
             bad

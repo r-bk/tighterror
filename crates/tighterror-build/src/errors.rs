@@ -21,9 +21,7 @@ impl TebErrorCategory {
 
 impl tighterror::TightErrorCategory for TebErrorCategory {
     type ReprType = _p::T;
-    const CATEGORY_BITS: usize = _p::CAT_BITS;
-    const KIND_BITS: usize = _p::KIND_BITS;
-    const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
+    const BITS: usize = _p::CAT_BITS;
 
     #[inline]
     fn name(&self) -> &'static str {
@@ -38,68 +36,68 @@ impl core::fmt::Display for TebErrorCategory {
     }
 }
 
-/// Error code type.
+/// Error kind type.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct TebErrorCode(_p::T);
+pub struct TebErrorKind(_p::T);
 
-impl TebErrorCode {
-    const fn new(cat: TebErrorCategory, kind: _p::T) -> Self {
-        Self(cat.0 << _p::KIND_BITS | kind)
+impl TebErrorKind {
+    const fn new(cat: TebErrorCategory, variant: _p::T) -> Self {
+        Self(cat.0 << _p::VAR_BITS | variant)
     }
 
     #[inline]
     fn category_value(&self) -> _p::T {
-        self.0 >> _p::KIND_BITS
+        self.0.checked_shr(_p::VAR_BITS as u32).unwrap_or(0)
     }
 
     #[inline]
-    fn kind_value(&self) -> _p::T {
-        self.0 & _p::KIND_MASK
+    fn variant_value(&self) -> _p::T {
+        self.0 & _p::VAR_MASK
     }
 
-    /// Returns the error code category.
+    /// Returns the error category.
     #[inline]
     pub fn category(&self) -> TebErrorCategory {
         TebErrorCategory::new(self.category_value())
     }
 
-    /// Returns the error code name.
+    /// Returns the error kind name.
     #[inline]
     pub fn name(&self) -> &'static str {
-        _n::A[self.category_value() as usize][self.kind_value() as usize]
+        _n::A[self.category_value() as usize][self.variant_value() as usize]
     }
 
     #[inline]
     fn display(&self) -> &'static str {
-        _d::A[self.category_value() as usize][self.kind_value() as usize]
+        _d::A[self.category_value() as usize][self.variant_value() as usize]
     }
 
-    /// Returns the error code value as the underlying Rust type.
+    /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::T {
         self.0
     }
 
-    /// Creates an error code from a raw value of the underlying Rust type.
+    /// Creates an error kind from a raw value of the underlying Rust type.
     #[inline]
     pub fn from_value(value: _p::T) -> Option<Self> {
-        let cat = (value & _p::CAT_MASK) >> _p::KIND_BITS;
-        let kind = value & _p::KIND_MASK;
-        if cat == _p::CAT_MAX && kind <= _p::KIND_MAXES[cat as usize] {
-            Some(Self::new(TebErrorCategory::new(cat), kind))
+        let cat = (value & _p::CAT_MASK)
+            .checked_shr(_p::VAR_BITS as u32)
+            .unwrap_or(0);
+        let variant = value & _p::VAR_MASK;
+        if cat == _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
+            Some(Self::new(TebErrorCategory::new(cat), variant))
         } else {
             None
         }
     }
 }
 
-impl tighterror::TightErrorCode for TebErrorCode {
+impl tighterror::TightErrorKind for TebErrorKind {
     type ReprType = _p::T;
     type CategoryType = TebErrorCategory;
-    const CATEGORY_BITS: usize = _p::CAT_BITS;
-    const KIND_BITS: usize = _p::KIND_BITS;
-    const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
+    const BITS: usize = _p::KIND_BITS;
 
     #[inline]
     fn category(&self) -> Self::CategoryType {
@@ -122,16 +120,16 @@ impl tighterror::TightErrorCode for TebErrorCode {
     }
 }
 
-impl core::fmt::Display for TebErrorCode {
+impl core::fmt::Display for TebErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.pad(self.name())
     }
 }
 
-impl<T> core::convert::From<TebErrorCode> for Result<T, TebError> {
+impl<T> core::convert::From<TebErrorKind> for Result<T, TebError> {
     #[inline]
-    fn from(v: TebErrorCode) -> Self {
+    fn from(v: TebErrorKind) -> Self {
         Err(v.into())
     }
 }
@@ -139,12 +137,12 @@ impl<T> core::convert::From<TebErrorCode> for Result<T, TebError> {
 /// Error type.
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct TebError(TebErrorCode);
+pub struct TebError(TebErrorKind);
 
 impl TebError {
-    /// Returns the error code.
+    /// Returns the error kind.
     #[inline]
-    pub fn code(&self) -> TebErrorCode {
+    pub fn kind(&self) -> TebErrorKind {
         self.0
     }
 
@@ -157,14 +155,12 @@ impl TebError {
 
 impl tighterror::TightError for TebError {
     type ReprType = _p::T;
-    type CodeType = TebErrorCode;
-    const CATEGORY_BITS: usize = _p::CAT_BITS;
-    const KIND_BITS: usize = _p::KIND_BITS;
-    const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
+    type CategoryType = TebErrorCategory;
+    type KindType = TebErrorKind;
 
     #[inline]
-    fn code(&self) -> Self::CodeType {
-        self.code()
+    fn kind(&self) -> Self::KindType {
+        self.kind()
     }
 
     #[inline]
@@ -173,22 +169,22 @@ impl tighterror::TightError for TebError {
     }
 }
 
-impl core::convert::From<TebErrorCode> for TebError {
+impl core::convert::From<TebErrorKind> for TebError {
     #[inline]
-    fn from(code: TebErrorCode) -> Self {
-        Self(code)
+    fn from(kind: TebErrorKind) -> Self {
+        Self(kind)
     }
 }
 
 impl core::fmt::Display for TebError {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.pad(self.code().display())
+        f.pad(self.kind().display())
     }
 }
 
 impl core::cmp::PartialEq for TebError {
-    /// Checks equality based on the error code only.
+    /// Checks equality based on the error kind only.
     #[inline]
     fn eq(&self, other: &TebError) -> bool {
         self.0 == other.0
@@ -257,15 +253,15 @@ mod _d {
 
 mod _p {
     pub type T = u8;
+    pub const KIND_BITS: usize = 3;
     pub const CAT_BITS: usize = 0;
-    pub const CAT_COUNT: usize = 1;
     pub const CAT_MASK: T = 0;
     pub const CAT_MAX: T = 0;
-    pub const KIND_BITS: usize = 3;
-    pub const KIND_MASK: T = 7;
-    pub static KIND_MAXES: [T; 1] = [7];
-    const _: () = assert!(CAT_BITS + KIND_BITS <= T::BITS as usize);
-    const _: () = assert!(CAT_COUNT <= i16::MAX as usize);
+    pub const VAR_BITS: usize = 3;
+    pub const VAR_MASK: T = 7;
+    pub static VAR_MAXES: [T; 1] = [7];
+    const _: () = assert!(KIND_BITS <= T::BITS as usize);
+    const _: () = assert!(CAT_BITS <= usize::BITS as usize);
 }
 
 /// Error category constants.
@@ -276,32 +272,32 @@ pub mod categories {
     pub const GENERAL: C = C::new(0);
 }
 
-/// Error-code constants.
-pub mod codes {
+/// Error kind constants.
+pub mod kinds {
     use super::categories as c;
-    use super::TebErrorCode as EC;
+    use super::TebErrorKind as EK;
 
     /// Specification file couldn't be opened.
-    pub const FAILED_TO_OPEN_SPEC_FILE: EC = EC::new(c::GENERAL, 0);
+    pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::GENERAL, 0);
 
     /// Bad specification file format.
-    pub const BAD_SPEC: EC = EC::new(c::GENERAL, 1);
+    pub const BAD_SPEC: EK = EK::new(c::GENERAL, 1);
 
     /// Bad YAML file format.
-    pub const BAD_YAML: EC = EC::new(c::GENERAL, 2);
+    pub const BAD_YAML: EK = EK::new(c::GENERAL, 2);
 
     /// Bad TOML file format.
-    pub const BAD_TOML: EC = EC::new(c::GENERAL, 3);
+    pub const BAD_TOML: EK = EK::new(c::GENERAL, 3);
 
     /// Bad specification file name extension.
-    pub const BAD_SPEC_FILE_EXTENSION: EC = EC::new(c::GENERAL, 4);
+    pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::GENERAL, 4);
 
     /// Destination file couldn't be written.
-    pub const FAILED_TO_WRITE_TO_DST_FILE: EC = EC::new(c::GENERAL, 5);
+    pub const FAILED_TO_WRITE_TO_DST_FILE: EK = EK::new(c::GENERAL, 5);
 
     /// Generated code tokens couldn't be parsed.
-    pub const FAILED_TO_PARSE_TOKENS: EC = EC::new(c::GENERAL, 6);
+    pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 6);
 
     /// Rustfmt tool exited with an error.
-    pub const RUSTFMT_FAILED: EC = EC::new(c::GENERAL, 7);
+    pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 7);
 }

@@ -1,13 +1,13 @@
 tighterror:
   doc_from_display: true
   err_doc: A custom error struct doc.
-  err_code_doc: A custom error doc.
+  err_kind_doc: A custom error doc.
   cat_doc: A custom category doc.
   err_into_result: false
-  err_code_into_result: false
+  err_kind_into_result: false
   error_trait: false
   err_name: IcError
-  err_code_name: IcErrorCode
+  err_kind_name: IcErrorKind
   err_cat_name: IcErrorCategory
 
 errors:

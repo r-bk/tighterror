@@ -1,6 +1,6 @@
 use crate::{
     errors::{
-        codes::{BAD_SPEC, BAD_YAML},
+        kinds::{BAD_SPEC, BAD_YAML},
         TebError,
     },
     parser::{check_main_ident, check_name, kws},
@@ -136,14 +136,14 @@ impl MainSpecParser {
                     main_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }
                 kws::CAT_DOC => main_spec.cat_doc = Some(v2string(v, kws::CAT_DOC)?),
-                kws::ERR_CODE_DOC => main_spec.err_code_doc = Some(v2string(v, kws::ERR_CODE_DOC)?),
+                kws::ERR_KIND_DOC => main_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?),
                 kws::ERR_DOC => main_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?),
                 kws::MOD_DOC => main_spec.mod_doc = Some(v2string(v, kws::MOD_DOC)?),
                 kws::ERR_INTO_RESULT => {
                     main_spec.err_into_result = Some(v2bool(v, kws::ERR_INTO_RESULT)?)
                 }
-                kws::ERR_CODE_INTO_RESULT => {
-                    main_spec.err_code_into_result = Some(v2bool(v, kws::ERR_CODE_INTO_RESULT)?)
+                kws::ERR_KIND_INTO_RESULT => {
+                    main_spec.err_kind_into_result = Some(v2bool(v, kws::ERR_KIND_INTO_RESULT)?)
                 }
                 kws::ERROR_TRAIT => main_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
                 kws::ERR_NAME => {
@@ -151,10 +151,10 @@ impl MainSpecParser {
                     check_main_ident(&err_name, kws::ERR_NAME)?;
                     main_spec.err_name = Some(err_name);
                 }
-                kws::ERR_CODE_NAME => {
-                    let err_code_name = v2string(v, kws::ERR_CODE_NAME)?;
-                    check_main_ident(&err_code_name, kws::ERR_CODE_NAME)?;
-                    main_spec.err_code_name = Some(err_code_name);
+                kws::ERR_KIND_NAME => {
+                    let err_kind_name = v2string(v, kws::ERR_KIND_NAME)?;
+                    check_main_ident(&err_kind_name, kws::ERR_KIND_NAME)?;
+                    main_spec.err_kind_name = Some(err_kind_name);
                 }
                 kws::ERR_CAT_NAME => {
                     let err_cat_name = v2string(v, kws::ERR_CAT_NAME)?;

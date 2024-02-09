@@ -4,16 +4,16 @@ pub const DOC: &str = "doc";
 pub const DOC_FROM_DISPLAY: &str = "doc_from_display";
 pub const DST: &str = "dst";
 pub const ERR_DOC: &str = "err_doc";
-pub const ERR_CODE_DOC: &str = "err_code_doc";
+pub const ERR_KIND_DOC: &str = "err_kind_doc";
 pub const ERRORS: &str = "errors";
 pub const MOD_DOC: &str = "mod_doc";
 pub const NAME: &str = "name";
 pub const TIGHTERROR: &str = "tighterror";
 pub const ERR_INTO_RESULT: &str = "err_into_result";
-pub const ERR_CODE_INTO_RESULT: &str = "err_code_into_result";
+pub const ERR_KIND_INTO_RESULT: &str = "err_kind_into_result";
 pub const ERROR_TRAIT: &str = "error_trait";
 pub const ERR_NAME: &str = "err_name";
-pub const ERR_CODE_NAME: &str = "err_code_name";
+pub const ERR_KIND_NAME: &str = "err_kind_name";
 pub const ERR_CAT_NAME: &str = "err_cat_name";
 
 pub const ERR_KWS: [&str; 4] = [NAME, DISPLAY, DOC, DOC_FROM_DISPLAY];
@@ -23,12 +23,12 @@ pub const MAIN_KWS: [&str; 12] = [
     MOD_DOC,
     CAT_DOC,
     ERR_DOC,
-    ERR_CODE_DOC,
+    ERR_KIND_DOC,
     ERR_INTO_RESULT,
-    ERR_CODE_INTO_RESULT,
+    ERR_KIND_INTO_RESULT,
     ERROR_TRAIT,
     ERR_NAME,
-    ERR_CODE_NAME,
+    ERR_KIND_NAME,
     ERR_CAT_NAME,
 ];
 pub const ROOT_KWS: [&str; 2] = [TIGHTERROR, ERRORS];
@@ -38,17 +38,17 @@ pub const ALL_KWS: [&str; 17] = [
     DOC,
     DOC_FROM_DISPLAY,
     DST,
-    ERR_CODE_DOC,
+    ERR_KIND_DOC,
     ERR_DOC,
     ERRORS,
     NAME,
     TIGHTERROR,
     MOD_DOC,
     ERR_INTO_RESULT,
-    ERR_CODE_INTO_RESULT,
+    ERR_KIND_INTO_RESULT,
     ERROR_TRAIT,
     ERR_NAME,
-    ERR_CODE_NAME,
+    ERR_KIND_NAME,
     ERR_CAT_NAME,
 ];
 

@@ -1,6 +1,6 @@
 use crate::{
     coder::{formatter::pretty, idents, options::CodegenOptions},
-    errors::{codes::BAD_SPEC, TebError},
+    errors::{kinds::BAD_SPEC, TebError},
     spec::{CategorySpec, Spec},
 };
 use log::error;
@@ -17,41 +17,63 @@ enum ReprType {
 }
 
 #[allow(dead_code)]
-struct CodeGenerator<'a> {
+struct RustGenerator<'a> {
     opts: &'a CodegenOptions,
     spec: &'a Spec,
     /// total number of categories
     n_categories: usize,
     /// number of bits required for categories
     n_category_bits: usize,
-    /// number of bits required for errors
-    n_error_bits: usize,
+    /// number of bits required for error variant
+    n_variant_bits: usize,
+    /// number of bits required for error kind (category + variant)
+    n_kind_bits: usize,
     /// the representation type
     repr_type: ReprType,
-    /// the mask of kind bits
-    kind_mask: usize,
+    /// the mask of variant bits
+    variant_mask: u64,
     /// the mask of category bits (shifted)
-    category_mask: usize,
+    category_mask: u64,
+    /// the mask of kind bits (category + variant)
+    kind_mask: u64,
 }
 
-impl<'a> CodeGenerator<'a> {
-    fn new(opts: &'a CodegenOptions, spec: &'a Spec) -> Result<CodeGenerator<'a>, TebError> {
+impl<'a> RustGenerator<'a> {
+    fn new(opts: &'a CodegenOptions, spec: &'a Spec) -> Result<RustGenerator<'a>, TebError> {
         let n_categories = spec.categories.len();
         let n_category_bits = Self::calc_n_category_bits(n_categories)?;
-        let n_error_bits = Self::calc_n_error_bits(spec)?;
-        let kind_mask = (1usize << n_error_bits) - 1;
-        let category_mask = ((1usize << n_category_bits) - 1) << n_error_bits;
-        let repr_type = Self::calc_repr_type(n_category_bits + n_error_bits)?;
-
+        let n_variant_bits = Self::calc_n_variant_bits(spec)?;
+        let n_kind_bits = n_category_bits + n_variant_bits;
+        if n_kind_bits > u64::BITS as usize {
+            error!("not enough bits in largest supported underlying type `u64`: {n_kind_bits}");
+            return BAD_SPEC.into();
+        }
+        let variant_mask = 1u64
+            .checked_shl(n_variant_bits as u32)
+            .map(|v| v - 1)
+            .unwrap_or(u64::MAX);
+        let category_mask = 1u64
+            .checked_shl(n_category_bits as u32)
+            .map(|v| v - 1)
+            .unwrap_or(u64::MAX)
+            .checked_shl(n_variant_bits as u32)
+            .unwrap_or(0);
+        let kind_mask = 1u64
+            .checked_shl(n_kind_bits as u32)
+            .map(|v| v - 1)
+            .unwrap_or(u64::MAX);
+        let repr_type = Self::calc_repr_type(n_kind_bits)?;
         Ok(Self {
             opts,
             spec,
             n_categories,
             n_category_bits,
-            n_error_bits,
+            n_variant_bits,
+            n_kind_bits,
             repr_type,
-            kind_mask,
+            variant_mask,
             category_mask,
+            kind_mask,
         })
     }
 
@@ -79,7 +101,7 @@ impl<'a> CodeGenerator<'a> {
         }
     }
 
-    fn calc_n_error_bits(spec: &Spec) -> Result<usize, TebError> {
+    fn calc_n_variant_bits(spec: &Spec) -> Result<usize, TebError> {
         let n = match spec.n_errors_in_largest_category() {
             Some(n) => n,
             None => {
@@ -93,7 +115,7 @@ impl<'a> CodeGenerator<'a> {
                 error!("at least one error must be defined");
                 BAD_SPEC.into()
             }
-            n => Self::calc_n_bits(n, "errors"),
+            n => Self::calc_n_bits(n, "errors in largest category"),
         }
     }
 
@@ -106,23 +128,23 @@ impl<'a> CodeGenerator<'a> {
         }
     }
 
-    fn code(&self) -> Result<String, TebError> {
+    fn rust(&self) -> Result<String, TebError> {
         let mod_doc = outer_doc_tokens(self.spec.mod_doc());
         let private_modules = self.private_modules_tokens();
         let category_tokens = self.category_tokens();
-        let error_code_tokens = self.error_code_tokens();
+        let error_kind_tokens = self.error_kind_tokens();
         let error_tokens = self.error_tokens();
         let category_constants = self.category_constants_tokens();
-        let error_code_constants = self.error_code_constants_tokens();
+        let error_kind_constants = self.error_kind_constants_tokens();
         let test = self.test_tokens();
         let tokens = quote! {
             #mod_doc
             #category_tokens
-            #error_code_tokens
+            #error_kind_tokens
             #error_tokens
             #private_modules
             #category_constants
-            #error_code_constants
+            #error_kind_constants
             #test
         };
         pretty(tokens)
@@ -179,16 +201,16 @@ impl<'a> CodeGenerator<'a> {
         format_ident!("{}", self.spec.err_cat_name())
     }
 
-    fn err_code_name_ident(&self) -> Ident {
-        format_ident!("{}", self.spec.err_code_name())
+    fn err_kind_name_ident(&self) -> Ident {
+        format_ident!("{}", self.spec.err_kind_name())
     }
 
     fn tests_mod_ident(&self) -> Ident {
         format_ident!("{}", idents::TESTS_MOD)
     }
 
-    fn err_codes_mod_ident(&self) -> Ident {
-        format_ident!("{}", idents::ERROR_CODES_MOD)
+    fn err_kinds_mod_ident(&self) -> Ident {
+        format_ident!("{}", idents::ERROR_KINDS_MOD)
     }
 
     fn categories_mod_ident(&self) -> Ident {
@@ -201,45 +223,36 @@ impl<'a> CodeGenerator<'a> {
 
     fn private_constants_tokens(&self) -> TokenStream {
         let repr_type = self.repr_type.ident();
+        let n_kind_bits = Literal::usize_unsuffixed(self.n_kind_bits);
         let n_category_bits = Literal::usize_unsuffixed(self.n_category_bits);
-        let n_error_bits = Literal::usize_unsuffixed(self.n_error_bits);
+        let n_variant_bits = Literal::usize_unsuffixed(self.n_variant_bits);
         let n_categories = Literal::usize_unsuffixed(self.spec.categories.len());
-        let kind_mask = self.usize_to_repr_type_literal(self.kind_mask).unwrap();
-        let category_mask = self.usize_to_repr_type_literal(self.category_mask).unwrap();
+        let variant_mask = self.u64_to_repr_type_literal(self.variant_mask).unwrap();
+        let category_mask = self.u64_to_repr_type_literal(self.category_mask).unwrap();
         let category_max = self
             .usize_to_repr_type_literal(self.spec.category_max())
             .unwrap();
-        let kind_max = |c: &CategorySpec| {
+        let variant_max = |c: &CategorySpec| {
             let n_errors = c.errors.len();
             self.usize_to_repr_type_literal(n_errors.checked_sub(1).unwrap())
                 .unwrap()
         };
-        let kind_maxes_iter = self.spec.categories.iter().map(kind_max);
+        let variant_maxes_iter = self.spec.categories.iter().map(variant_max);
 
-        let mut tokens = quote! {
+        quote! {
             pub type T = #repr_type;
+            pub const KIND_BITS: usize = #n_kind_bits;
             pub const CAT_BITS: usize = #n_category_bits;
-            pub const CAT_COUNT: usize = #n_categories;
             pub const CAT_MASK: T = #category_mask;
             pub const CAT_MAX: T = #category_max;
-            pub const KIND_BITS: usize = #n_error_bits;
-            pub const KIND_MASK: T = #kind_mask;
-            pub static KIND_MAXES: [T; #n_categories] = [
-                #(#kind_maxes_iter),*
+            pub const VAR_BITS: usize = #n_variant_bits;
+            pub const VAR_MASK: T = #variant_mask;
+            pub static VAR_MAXES: [T; #n_categories] = [
+                #(#variant_maxes_iter),*
             ];
-            const _: () = assert!(CAT_BITS + KIND_BITS <= T::BITS as usize);
-            const _: () = assert!(CAT_COUNT <= i16::MAX as usize);
-        };
-
-        let cat_limit_literal = Literal::i16_unsuffixed(i16::MAX);
-        if self.repr_type > ReprType::U8 {
-            tokens = quote! {
-                #tokens
-                const _: () = assert!(CAT_MAX <= #cat_limit_literal);
-            };
+            const _: () = assert!(KIND_BITS <= T::BITS as usize);
+            const _: () = assert!(CAT_BITS <= usize::BITS as usize); // for casting to usize
         }
-
-        tokens
     }
 
     fn private_category_names(&self) -> TokenStream {
@@ -319,7 +332,7 @@ impl<'a> CodeGenerator<'a> {
         }
 
         for c in &self.spec.categories {
-            let ident = format_ident!("{}", category_error_code_display(c));
+            let ident = format_ident!("{}", category_error_kind_display(c));
             let n_errors = Literal::usize_unsuffixed(c.errors.len());
             let error_ident_iter = c.errors.iter().map(|e| format_ident!("{}", e.ident_name()));
             tokens = quote! {
@@ -331,33 +344,33 @@ impl<'a> CodeGenerator<'a> {
         }
 
         let n_categories = Literal::usize_unsuffixed(self.spec.categories.len());
-        let category_error_code_display_ident_iter = self.spec.categories.iter().map(|c| {
-            let ident = format_ident!("{}", category_error_code_display(c));
+        let category_error_kind_display_ident_iter = self.spec.categories.iter().map(|c| {
+            let ident = format_ident!("{}", category_error_kind_display(c));
             quote! { &#ident }
         });
         tokens = quote! {
             #tokens
             pub static A: [&[&str]; #n_categories] = [
-                #(#category_error_code_display_ident_iter),*
+                #(#category_error_kind_display_ident_iter),*
             ];
         };
         tokens
     }
 
-    fn error_code_tokens(&self) -> TokenStream {
+    fn error_kind_tokens(&self) -> TokenStream {
         let err_name = self.err_name_ident();
-        let err_code_name = self.err_code_name_ident();
+        let err_kind_name = self.err_kind_name_ident();
         let err_cat_name = self.err_cat_name_ident();
         let private_mod = Self::private_mod_ident();
         let error_names_mod = Self::error_names_mod_ident();
         let error_displays_mod = Self::error_displays_mod_ident();
-        let err_code_doc = doc_tokens(self.spec.err_code_doc());
+        let err_kind_doc = doc_tokens(self.spec.err_kind_doc());
         let category_max_comparison = self.category_max_comparison();
-        let err_code_into_result = if self.spec.err_code_into_result() {
+        let err_kind_into_result = if self.spec.err_kind_into_result() {
             quote! {
-                impl<T> core::convert::From<#err_code_name> for Result<T, #err_name> {
+                impl<T> core::convert::From<#err_kind_name> for Result<T, #err_name> {
                     #[inline]
-                    fn from(v: #err_code_name) -> Self {
+                    fn from(v: #err_kind_name) -> Self {
                         Err(v.into())
                     }
                 }
@@ -365,69 +378,78 @@ impl<'a> CodeGenerator<'a> {
         } else {
             TokenStream::default()
         };
+        let err_kind_new_tokens = if self.n_variant_bits < self.repr_type.bits() {
+            quote! { Self(cat.0 << #private_mod::VAR_BITS | variant) }
+        } else {
+            assert_eq!(self.n_variant_bits, self.repr_type.bits());
+            assert_eq!(self.n_category_bits, 0);
+            quote! {
+                debug_assert!(cat.0 == 0);
+                Self(variant)
+            }
+        };
         quote! {
-            #err_code_doc
+            #err_kind_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct #err_code_name(#private_mod::T);
+            pub struct #err_kind_name(#private_mod::T);
 
-            impl #err_code_name {
-                const fn new(cat: #err_cat_name, kind: #private_mod::T) -> Self {
-                    Self(cat.0 << #private_mod::KIND_BITS | kind)
+            impl #err_kind_name {
+                const fn new(cat: #err_cat_name, variant: #private_mod::T) -> Self {
+                    #err_kind_new_tokens
                 }
 
                 #[inline]
                 fn category_value(&self) -> #private_mod::T {
-                    self.0 >> #private_mod::KIND_BITS
+                    self.0.checked_shr(#private_mod::VAR_BITS as u32).unwrap_or(0)
                 }
 
                 #[inline]
-                fn kind_value(&self) -> #private_mod::T {
-                    self.0 & #private_mod::KIND_MASK
+                fn variant_value(&self) -> #private_mod::T {
+                    self.0 & #private_mod::VAR_MASK
                 }
 
-                #[doc = " Returns the error code category."]
+                #[doc = " Returns the error category."]
                 #[inline]
                 pub fn category(&self) -> #err_cat_name {
                     #err_cat_name::new(self.category_value())
                 }
 
-                #[doc = " Returns the error code name."]
+                #[doc = " Returns the error kind name."]
                 #[inline]
                 pub fn name(&self) -> &'static str {
-                    #error_names_mod::A[self.category_value() as usize][self.kind_value() as usize]
+                    #error_names_mod::A[self.category_value() as usize][self.variant_value() as usize]
                 }
 
                 #[inline]
                 fn display(&self) -> &'static str {
-                    #error_displays_mod::A[self.category_value() as usize][self.kind_value() as usize]
+                    #error_displays_mod::A[self.category_value() as usize][self.variant_value() as usize]
                 }
 
-                #[doc = " Returns the error code value as the underlying Rust type."]
+                #[doc = " Returns the error kind value as the underlying Rust type."]
                 #[inline]
                 pub fn value(&self) -> #private_mod::T {
                     self.0
                 }
 
-                #[doc = " Creates an error code from a raw value of the underlying Rust type."]
+                #[doc = " Creates an error kind from a raw value of the underlying Rust type."]
                 #[inline]
                 pub fn from_value(value: #private_mod::T) -> Option<Self> {
-                    let cat = (value & #private_mod::CAT_MASK) >> #private_mod::KIND_BITS;
-                    let kind = value & #private_mod::KIND_MASK;
-                    if cat #category_max_comparison #private_mod::CAT_MAX && kind <= #private_mod::KIND_MAXES[cat as usize] {
-                        Some(Self::new(#err_cat_name::new(cat), kind))
+                    let cat = (value & #private_mod::CAT_MASK).checked_shr(#private_mod::VAR_BITS as u32).unwrap_or(0);
+                    let variant = value & #private_mod::VAR_MASK;
+                    if cat #category_max_comparison #private_mod::CAT_MAX && variant <= #private_mod::VAR_MAXES[cat as usize] {
+                        Some(Self::new(#err_cat_name::new(cat), variant))
                     } else {
                         None
                     }
                 }
             }
 
-            impl tighterror::TightErrorCode for #err_code_name {
+            impl tighterror::TightErrorKind for #err_kind_name {
                 type ReprType = #private_mod::T;
                 type CategoryType = #err_cat_name;
-                const CATEGORY_BITS: usize = #private_mod::CAT_BITS;
-                const KIND_BITS: usize = #private_mod::KIND_BITS;
-                const CATEGORIES_COUNT: usize = #private_mod::CAT_COUNT;
+
+                const BITS: usize = #private_mod::KIND_BITS;
 
                 #[inline]
                 fn category(&self) -> Self::CategoryType {
@@ -450,20 +472,21 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl core::fmt::Display for #err_code_name {
+            impl core::fmt::Display for #err_kind_name {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                     f.pad(self.name())
                 }
             }
 
-            #err_code_into_result
+            #err_kind_into_result
         }
     }
 
     fn error_tokens(&self) -> TokenStream {
         let err_name = self.err_name_ident();
-        let err_code_name = self.err_code_name_ident();
+        let err_kind_name = self.err_kind_name_ident();
+        let err_cat_name = self.err_cat_name_ident();
         let err_doc = doc_tokens(self.spec.err_doc());
         let private_mod = Self::private_mod_ident();
         let err_into_result = if self.spec.err_into_result() {
@@ -489,12 +512,12 @@ impl<'a> CodeGenerator<'a> {
             #err_doc
             #[derive(Debug)]
             #[repr(transparent)]
-            pub struct #err_name(#err_code_name);
+            pub struct #err_name(#err_kind_name);
 
             impl #err_name {
-                #[doc = " Returns the error code."]
+                #[doc = " Returns the error kind."]
                 #[inline]
-                pub fn code(&self) -> #err_code_name {
+                pub fn kind(&self) -> #err_kind_name {
                     self.0
                 }
 
@@ -507,14 +530,12 @@ impl<'a> CodeGenerator<'a> {
 
             impl tighterror::TightError for #err_name {
                 type ReprType = #private_mod::T;
-                type CodeType = #err_code_name;
-                const CATEGORY_BITS: usize = #private_mod::CAT_BITS;
-                const KIND_BITS: usize = #private_mod::KIND_BITS;
-                const CATEGORIES_COUNT: usize = #private_mod::CAT_COUNT;
+                type CategoryType = #err_cat_name;
+                type KindType = #err_kind_name;
 
                 #[inline]
-                fn code(&self) -> Self::CodeType {
-                    self.code()
+                fn kind(&self) -> Self::KindType {
+                    self.kind()
                 }
 
                 #[inline]
@@ -523,22 +544,22 @@ impl<'a> CodeGenerator<'a> {
                 }
             }
 
-            impl core::convert::From<#err_code_name> for #err_name {
+            impl core::convert::From<#err_kind_name> for #err_name {
                 #[inline]
-                fn from(code: #err_code_name) -> Self {
-                    Self(code)
+                fn from(kind: #err_kind_name) -> Self {
+                    Self(kind)
                 }
             }
 
             impl core::fmt::Display for #err_name {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                    f.pad(self.code().display())
+                    f.pad(self.kind().display())
                 }
             }
 
             impl core::cmp::PartialEq for #err_name {
-                #[doc = " Checks equality based on the error code only."]
+                #[doc = " Checks equality based on the error kind only."]
                 #[inline]
                 fn eq(&self, other: &#err_name) -> bool {
                     self.0 == other.0
@@ -550,29 +571,29 @@ impl<'a> CodeGenerator<'a> {
         }
     }
 
-    fn error_code_constants_tokens(&self) -> TokenStream {
-        let err_codes_mod = self.err_codes_mod_ident();
-        let err_code_name = self.err_code_name_ident();
+    fn error_kind_constants_tokens(&self) -> TokenStream {
+        let err_kinds_mod = self.err_kinds_mod_ident();
+        let err_kind_name = self.err_kind_name_ident();
         let mut tokens = TokenStream::default();
         for c in &self.spec.categories {
             for (i, e) in c.errors.iter().enumerate() {
                 let cat_ident = format_ident!("{}", c.ident_name());
                 let err_value = self.usize_to_repr_type_literal(i).unwrap();
                 let err_ident = format_ident!("{}", e.ident_name());
-                let err_doc = doc_tokens(self.spec.err_code_const_doc(c, e));
+                let err_doc = doc_tokens(self.spec.err_kind_const_doc(c, e));
                 tokens = quote! {
                     #tokens
 
                     #err_doc
-                    pub const #err_ident: EC = EC::new(c::#cat_ident, #err_value);
+                    pub const #err_ident: EK = EK::new(c::#cat_ident, #err_value);
                 };
             }
         }
 
         quote! {
-            #[doc = " Error-code constants."]
-            pub mod #err_codes_mod {
-                use super::#err_code_name as EC;
+            #[doc = " Error kind constants."]
+            pub mod #err_kinds_mod {
+                use super::#err_kind_name as EK;
                 use super::categories as c;
                 #tokens
             }
@@ -607,9 +628,7 @@ impl<'a> CodeGenerator<'a> {
 
             impl tighterror::TightErrorCategory for #err_cat_name {
                 type ReprType = #private_mod::T;
-                const CATEGORY_BITS: usize = #private_mod::CAT_BITS;
-                const KIND_BITS: usize = #private_mod::KIND_BITS;
-                const CATEGORIES_COUNT: usize = #private_mod::CAT_COUNT;
+                const BITS: usize = #private_mod::CAT_BITS;
 
                 #[inline]
                 fn name(&self) -> &'static str {
@@ -673,6 +692,24 @@ impl<'a> CodeGenerator<'a> {
         }
     }
 
+    fn u64_to_repr_type_literal(&self, v: u64) -> Result<Literal, TryFromIntError> {
+        match self.repr_type {
+            ReprType::U8 => {
+                let v: u8 = u8::try_from(v)?;
+                Ok(Literal::u8_unsuffixed(v))
+            }
+            ReprType::U16 => {
+                let v: u16 = u16::try_from(v)?;
+                Ok(Literal::u16_unsuffixed(v))
+            }
+            ReprType::U32 => {
+                let v: u32 = u32::try_from(v)?;
+                Ok(Literal::u32_unsuffixed(v))
+            }
+            ReprType::U64 => Ok(Literal::u64_unsuffixed(v)),
+        }
+    }
+
     fn category_max_comparison(&self) -> TokenStream {
         let category_max = self.spec.category_max();
         TokenStream::from_str(if category_max == 0 { "==" } else { "<=" }).unwrap()
@@ -700,12 +737,12 @@ impl<'a> CodeGenerator<'a> {
         let ut_category_display = self.ut_category_display();
         let ut_category_uniqueness = self.ut_category_uniqueness();
         let ut_category_values = self.ut_category_values();
-        let ut_err_code_name = self.ut_err_code_name();
-        let ut_err_code_display = self.ut_err_code_display();
-        let ut_err_code_uniqueness = self.ut_err_code_uniqueness();
-        let ut_err_code_value_uniqueness = self.ut_err_code_value_uniqueness();
-        let ut_err_code_category = self.ut_err_code_category();
-        let ut_err_code_from_value = self.ut_err_code_from_value();
+        let ut_err_kind_name = self.ut_err_kind_name();
+        let ut_err_kind_display = self.ut_err_kind_display();
+        let ut_err_kind_uniqueness = self.ut_err_kind_uniqueness();
+        let ut_err_kind_value_uniqueness = self.ut_err_kind_value_uniqueness();
+        let ut_err_kind_category = self.ut_err_kind_category();
+        let ut_err_kind_from_value = self.ut_err_kind_from_value();
         let ut_err_display = self.ut_err_display();
 
         quote! {
@@ -713,12 +750,12 @@ impl<'a> CodeGenerator<'a> {
             #ut_category_display
             #ut_category_uniqueness
             #ut_category_values
-            #ut_err_code_name
-            #ut_err_code_display
-            #ut_err_code_uniqueness
-            #ut_err_code_value_uniqueness
-            #ut_err_code_category
-            #ut_err_code_from_value
+            #ut_err_kind_name
+            #ut_err_kind_display
+            #ut_err_kind_uniqueness
+            #ut_err_kind_value_uniqueness
+            #ut_err_kind_category
+            #ut_err_kind_from_value
             #ut_err_display
         }
     }
@@ -807,15 +844,15 @@ impl<'a> CodeGenerator<'a> {
         }
     }
 
-    fn ut_err_code_name(&self) -> TokenStream {
-        let err_codes_mod = self.err_codes_mod_ident();
+    fn ut_err_kind_name(&self) -> TokenStream {
+        let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
                 let ident = format_ident!("{}", ident_name);
                 quote! {
                     assert_eq!(#ident.name(), #ident_name);
-                    assert_eq!(tighterror::TightErrorCode::name(&#ident), #ident_name);
+                    assert_eq!(tighterror::TightErrorKind::name(&#ident), #ident_name);
                 }
             });
             quote! {
@@ -824,15 +861,15 @@ impl<'a> CodeGenerator<'a> {
         });
         quote! {
             #[test]
-            fn test_err_code_name() {
-                use #err_codes_mod::*;
+            fn test_err_kind_name() {
+                use #err_kinds_mod::*;
                 #(#iter)*
             }
         }
     }
 
-    fn ut_err_code_display(&self) -> TokenStream {
-        let err_codes_mod = self.err_codes_mod_ident();
+    fn ut_err_kind_display(&self) -> TokenStream {
+        let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
@@ -847,14 +884,14 @@ impl<'a> CodeGenerator<'a> {
         });
         quote! {
             #[test]
-            fn test_err_code_display() {
-                use #err_codes_mod::*;
+            fn test_err_kind_display() {
+                use #err_kinds_mod::*;
                 #(#iter)*
             }
         }
     }
 
-    fn ut_err_code_arr(&self) -> TokenStream {
+    fn ut_err_kind_arr(&self) -> TokenStream {
         let iter = self.spec.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| format_ident!("{}", e.ident_name()));
             quote! {
@@ -867,46 +904,46 @@ impl<'a> CodeGenerator<'a> {
         }
     }
 
-    fn ut_err_code_uniqueness(&self) -> TokenStream {
-        let err_code_name = self.err_code_name_ident();
-        let err_codes_mod = self.err_codes_mod_ident();
-        let err_code_arr = self.ut_err_code_arr();
+    fn ut_err_kind_uniqueness(&self) -> TokenStream {
+        let err_kind_name = self.err_kind_name_ident();
+        let err_kinds_mod = self.err_kinds_mod_ident();
+        let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
             Literal::usize_unsuffixed(self.spec.categories.iter().map(|c| c.errors.len()).sum());
         quote! {
             #[test]
-            fn test_err_code_uniqueness() {
-                use #err_codes_mod::*;
+            fn test_err_kind_uniqueness() {
+                use #err_kinds_mod::*;
                 use std::collections::HashSet;
-                let errs: [#err_code_name; #n_errors] = #err_code_arr;
-                let set = HashSet::<#err_code_name>::from_iter(errs);
+                let errs: [#err_kind_name; #n_errors] = #err_kind_arr;
+                let set = HashSet::<#err_kind_name>::from_iter(errs);
                 assert_eq!(set.len(), #n_errors);
             }
         }
     }
 
-    fn ut_err_code_value_uniqueness(&self) -> TokenStream {
-        let err_code_name = self.err_code_name_ident();
-        let err_codes_mod = self.err_codes_mod_ident();
+    fn ut_err_kind_value_uniqueness(&self) -> TokenStream {
+        let err_kind_name = self.err_kind_name_ident();
+        let err_kinds_mod = self.err_kinds_mod_ident();
         let repr_type = self.repr_type.ident();
-        let err_code_arr = self.ut_err_code_arr();
+        let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
             Literal::usize_unsuffixed(self.spec.categories.iter().map(|c| c.errors.len()).sum());
         quote! {
             #[test]
-            fn test_err_code_value_uniqueness() {
-                use #err_codes_mod::*;
+            fn test_err_kind_value_uniqueness() {
+                use #err_kinds_mod::*;
                 use std::collections::HashSet;
-                let errs: [#err_code_name; #n_errors] = #err_code_arr;
+                let errs: [#err_kind_name; #n_errors] = #err_kind_arr;
                 let set = HashSet::<#repr_type>::from_iter(errs.iter().map(|ec| ec.value()));
                 assert_eq!(set.len(), #n_errors);
             }
         }
     }
 
-    fn ut_err_code_category(&self) -> TokenStream {
+    fn ut_err_kind_category(&self) -> TokenStream {
         let categories_mod = self.categories_mod_ident();
-        let err_codes_mod = self.err_codes_mod_ident();
+        let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
                 let ident = format_ident!("{}", e.ident_name());
@@ -921,21 +958,21 @@ impl<'a> CodeGenerator<'a> {
         });
         quote! {
             #[test]
-            fn test_err_code_category() {
-                use #err_codes_mod::*;
+            fn test_err_kind_category() {
+                use #err_kinds_mod::*;
                 #(#iter)*
             }
         }
     }
 
-    fn ut_err_code_from_value(&self) -> TokenStream {
-        let err_code_name = self.err_code_name_ident();
-        let err_codes_mod = self.err_codes_mod_ident();
+    fn ut_err_kind_from_value(&self) -> TokenStream {
+        let err_kind_name = self.err_kind_name_ident();
+        let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
                 let ident = format_ident!("{}", e.ident_name());
                 quote! {
-                    assert_eq!(#err_code_name::from_value(#ident.value()).unwrap(), #ident);
+                    assert_eq!(#err_kind_name::from_value(#ident.value()).unwrap(), #ident);
                 }
             });
             quote! {
@@ -944,8 +981,8 @@ impl<'a> CodeGenerator<'a> {
         });
         quote! {
             #[test]
-            fn test_err_code_from_value() {
-                use #err_codes_mod::*;
+            fn test_err_kind_from_value() {
+                use #err_kinds_mod::*;
                 #(#iter)*
             }
         }
@@ -953,7 +990,7 @@ impl<'a> CodeGenerator<'a> {
 
     fn ut_err_display(&self) -> TokenStream {
         let err_name = self.err_name_ident();
-        let err_codes_mod = self.err_codes_mod_ident();
+        let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
                 let eident = format_ident!("{}", e.ident_name());
@@ -973,7 +1010,7 @@ impl<'a> CodeGenerator<'a> {
         quote! {
             #[test]
             fn test_err_display() {
-                use #err_codes_mod::*;
+                use #err_kinds_mod::*;
                 #(#iter)*
             }
         }
@@ -984,7 +1021,7 @@ fn category_errors_constant_name(c: &CategorySpec) -> String {
     format!("{}_NAMES", c.ident_name())
 }
 
-fn category_error_code_display(c: &CategorySpec) -> String {
+fn category_error_kind_display(c: &CategorySpec) -> String {
     format!("{}_DISPLAY", c.ident_name())
 }
 
@@ -1032,9 +1069,17 @@ impl ReprType {
     fn ident(&self) -> syn::Ident {
         format_ident!("{}", self.name())
     }
+
+    fn bits(&self) -> usize {
+        match self {
+            Self::U8 => u8::BITS as usize,
+            Self::U16 => u16::BITS as usize,
+            Self::U32 => u32::BITS as usize,
+            Self::U64 => u64::BITS as usize,
+        }
+    }
 }
 
-pub fn spec2code(opts: &CodegenOptions, spec: &Spec) -> Result<String, TebError> {
-    let gen = CodeGenerator::new(opts, spec)?;
-    gen.code()
+pub fn spec_to_rust(opts: &CodegenOptions, spec: &Spec) -> Result<String, TebError> {
+    RustGenerator::new(opts, spec)?.rust()
 }

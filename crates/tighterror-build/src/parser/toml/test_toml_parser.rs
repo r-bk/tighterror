@@ -1,6 +1,6 @@
 use crate::{
     coder::idents,
-    errors::codes::{BAD_SPEC, BAD_TOML},
+    errors::kinds::{BAD_SPEC, BAD_TOML},
     parser::{
         testing::{log_init, spec_from_err, spec_from_err_iter, spec_from_main},
         toml::*,
@@ -359,7 +359,7 @@ fn test_main_doc_from_display() {
             bad
         );
         let err = TomlParser::from_str(&s).unwrap_err();
-        assert!(matches!(err.code(), BAD_SPEC | BAD_TOML));
+        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
 
@@ -478,12 +478,12 @@ name = \"DummyErr\"
 }
 
 #[test]
-fn test_main_err_code_doc() {
+fn test_main_err_kind_doc() {
     log_init();
     let s = "
 [tighterror]
-err_code_doc = \"\"\"
-ErrorCode documentation.
+err_kind_doc = \"\"\"
+ErrorKind documentation.
 
 Multiline.
 \"\"\"
@@ -492,7 +492,7 @@ Multiline.
 name = \"DummyErr\"
 ";
     let main = MainSpec {
-        err_code_doc: Some("ErrorCode documentation.\n\nMultiline.\n".into()),
+        err_kind_doc: Some("ErrorKind documentation.\n\nMultiline.\n".into()),
         ..Default::default()
     };
     let spec = spec_from_main(main);
@@ -501,13 +501,13 @@ name = \"DummyErr\"
 
     let s = "
 [tighterror]
-err_code_doc = \"\"
+err_kind_doc = \"\"
 
 [[errors]]
 name = \"DummyErr\"
 ";
     let main = MainSpec {
-        err_code_doc: Some("".into()),
+        err_kind_doc: Some("".into()),
         ..Default::default()
     };
     let spec = spec_from_main(main);
@@ -539,21 +539,21 @@ fn test_main_err_into_result() {
             bad
         );
         let err = TomlParser::from_str(&s).unwrap_err();
-        assert!(matches!(err.code(), BAD_SPEC | BAD_TOML));
+        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
 
 #[test]
-fn test_main_err_code_into_result() {
+fn test_main_err_kind_into_result() {
     log_init();
 
     for good in GOOD_BOOLS {
         let s = format!(
-            "[tighterror]\nerr_code_into_result = {}\n\n[[errors]]\nname = \"DummyErr\"",
+            "[tighterror]\nerr_kind_into_result = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
         );
         let main = MainSpec {
-            err_code_into_result: Some(good.1),
+            err_kind_into_result: Some(good.1),
             ..Default::default()
         };
         let spec = spec_from_main(main);
@@ -563,11 +563,11 @@ fn test_main_err_code_into_result() {
 
     for bad in BAD_BOOLS {
         let s = format!(
-            "[tighterror]\nerr_code_into_result = {}\n\n[[errors]]\nname = \"DummyErr\"",
+            "[tighterror]\nerr_kind_into_result = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
         let err = TomlParser::from_str(&s).unwrap_err();
-        assert!(matches!(err.code(), BAD_SPEC | BAD_TOML));
+        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
 
@@ -595,7 +595,7 @@ fn test_error_trait() {
             bad
         );
         let err = TomlParser::from_str(&s).unwrap_err();
-        assert!(matches!(err.code(), BAD_SPEC | BAD_TOML));
+        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
 
@@ -624,7 +624,7 @@ fn test_error_name() {
         assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
     }
 
-    for bad in [idents::ERROR_CATEGORY, idents::ERROR_CODE] {
+    for bad in [idents::ERROR_CATEGORY, idents::ERROR_KIND] {
         let s = format!(
             "[tighterror]\nerr_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
@@ -634,16 +634,16 @@ fn test_error_name() {
 }
 
 #[test]
-fn test_error_code_name() {
+fn test_error_kind_name() {
     log_init();
-    for good in ["MyErrorCode", idents::ERROR_CODE] {
+    for good in ["MyErrorKind", idents::ERROR_KIND] {
         let main = MainSpec {
-            err_code_name: Some(good.into()),
+            err_kind_name: Some(good.into()),
             ..Default::default()
         };
         let spec = spec_from_main(main);
         let res = TomlParser::from_str(&format!(
-            "[tighterror]\nerr_code_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
+            "[tighterror]\nerr_kind_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             good
         ))
         .unwrap();
@@ -652,7 +652,7 @@ fn test_error_code_name() {
 
     for bad in BAD_IDENTS {
         let s = format!(
-            "[tighterror]\nerr_code_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
+            "[tighterror]\nerr_kind_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
         assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
@@ -660,7 +660,7 @@ fn test_error_code_name() {
 
     for bad in [idents::ERROR, idents::ERROR_CATEGORY] {
         let s = format!(
-            "[tighterror]\nerr_code_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
+            "[tighterror]\nerr_kind_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
         assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
@@ -692,7 +692,7 @@ fn test_error_cat_name() {
         assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
     }
 
-    for bad in [idents::ERROR, idents::ERROR_CODE] {
+    for bad in [idents::ERROR, idents::ERROR_KIND] {
         let s = format!(
             "[tighterror]\nerr_cat_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad

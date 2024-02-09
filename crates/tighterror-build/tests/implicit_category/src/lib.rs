@@ -16,17 +16,17 @@ mod tests {
     #[test]
     fn test_error_name() {
         fn foo(e: errors::IcError, name: &str) {
-            assert_eq!(format!("{}", e.code()), name);
+            assert_eq!(format!("{}", e.kind()), name);
         }
-        foo(errors::codes::BAD_INPUT.into(), "BAD_INPUT");
+        foo(errors::kinds::BAD_INPUT.into(), "BAD_INPUT");
     }
 
     #[test]
-    fn test_error_code_name() {
-        fn foo(ec: errors::IcErrorCode, name: &str) {
+    fn test_error_kind_name() {
+        fn foo(ec: errors::IcErrorKind, name: &str) {
             assert_eq!(format!("{ec}"), name);
         }
-        foo(errors::codes::BAD_INPUT, "BAD_INPUT");
+        foo(errors::kinds::BAD_INPUT, "BAD_INPUT");
     }
 
     #[test]

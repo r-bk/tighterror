@@ -1,6 +1,6 @@
 extern crate test_compilation;
 
-use test_compilation::errors::{codes::BAD_FILE, Error};
+use test_compilation::errors::{kinds::BAD_FILE, Error};
 
 fn foo<T: std::error::Error>(e: T) -> String {
     format!("{e}")

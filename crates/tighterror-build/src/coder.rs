@@ -1,5 +1,5 @@
 use crate::{
-    errors::{codes::FAILED_TO_WRITE_TO_DST_FILE, TebError},
+    errors::{kinds::FAILED_TO_WRITE_TO_DST_FILE, TebError},
     parser,
     spec::STDOUT_DST,
     DEFAULT_SPEC_PATH,
@@ -16,9 +16,9 @@ pub(crate) mod idents;
 mod options;
 pub use options::*;
 
-/// Generates code from a specification file.
+/// Generates Rust source code from a specification file.
 ///
-/// See [CodegenOptions] for the information about function parameters.
+/// See [CodegenOptions] for more information about function parameters.
 ///
 /// # Examples
 ///
@@ -40,7 +40,7 @@ pub use options::*;
 pub fn codegen(opts: &CodegenOptions) -> Result<(), TebError> {
     let path = opts.spec.as_deref().unwrap_or(DEFAULT_SPEC_PATH);
     let spec = parser::from_path(path.into())?;
-    let code = generator::spec2code(opts, &spec)?;
+    let code = generator::spec_to_rust(opts, &spec)?;
 
     match spec.dst(opts.dst.as_deref()) {
         p if p == STDOUT_DST => {

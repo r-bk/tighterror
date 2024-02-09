@@ -4,7 +4,7 @@ tighterror:
   doc_from_display: true
   mod_doc: Crate errors.
   err_name: TebError
-  err_code_name: TebErrorCode
+  err_kind_name: TebErrorKind
   err_cat_name: TebErrorCategory
 
 errors:
