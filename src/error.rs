@@ -29,7 +29,7 @@ pub trait TightError: Debug + Display {
 
     /// Returns the error's source location.
     ///
-    /// By default an undefined location is returned, unless the
+    /// By default an *undefined* location is returned, unless the
     /// concrete error type supports it and the error instance is initialized
     /// with it.
     fn location(&self) -> Location {

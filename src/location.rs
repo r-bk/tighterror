@@ -8,9 +8,9 @@ const UNDEFINED_LOCATION: &str = "<undefined location>";
 /// It is similar to [`panic::Location`] with the following differences:
 ///
 /// - it is `'static`
-/// - it can be created as undefined
+/// - it can be created as *undefined*
 ///
-/// A `Location` is undefined when the file name is an empty string.
+/// A `Location` is *undefined* when the file name is an empty string.
 ///
 /// See [`TightError::location`] for more information.
 ///
@@ -39,14 +39,14 @@ impl Location {
         }
     }
 
-    /// Creates an undefined Location.
+    /// Creates an *undefined* Location.
     ///
-    /// A location is undefined when the file name is an empty string.
+    /// A location is *undefined* when the file name is an empty string.
     pub fn undefined() -> Location {
         Self { file: "", line: 0 }
     }
 
-    /// Checks if the Location is undefined.
+    /// Checks if the Location is *undefined*.
     #[inline]
     pub fn is_undefined(&self) -> bool {
         self.file.is_empty()
@@ -56,7 +56,7 @@ impl Location {
 impl Display for Location {
     /// Formats the Location.
     ///
-    /// Undefined Locations are displayed as `<undefined location>`.
+    /// *Undefined* Locations are displayed as `<undefined location>`.
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         if self.is_undefined() {
             write!(f, "{}", UNDEFINED_LOCATION)
