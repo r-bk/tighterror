@@ -43,6 +43,7 @@ impl<'a> RustGenerator<'a> {
         let n_categories = spec.categories.len();
         let n_category_bits = Self::calc_n_category_bits(n_categories)?;
         let n_variant_bits = Self::calc_n_variant_bits(spec)?;
+        assert!(n_variant_bits >= 1);
         let n_kind_bits = n_category_bits + n_variant_bits;
         if n_kind_bits > u64::BITS as usize {
             error!("not enough bits in largest supported underlying type `u64`: {n_kind_bits}");
@@ -63,6 +64,9 @@ impl<'a> RustGenerator<'a> {
             .map(|v| v - 1)
             .unwrap_or(u64::MAX);
         let repr_type = Self::calc_repr_type(n_kind_bits)?;
+        assert!(n_category_bits < repr_type.bits());
+        assert!(n_variant_bits <= repr_type.bits());
+        assert!(n_kind_bits <= repr_type.bits());
         Ok(Self {
             opts,
             spec,
@@ -115,6 +119,7 @@ impl<'a> RustGenerator<'a> {
                 error!("at least one error must be defined");
                 BAD_SPEC.into()
             }
+            1 => Ok(1),
             n => Self::calc_n_bits(n, "errors in largest category"),
         }
     }
@@ -225,9 +230,7 @@ impl<'a> RustGenerator<'a> {
         let repr_type = self.repr_type.ident();
         let n_kind_bits = Literal::usize_unsuffixed(self.n_kind_bits);
         let n_category_bits = Literal::usize_unsuffixed(self.n_category_bits);
-        let n_variant_bits = Literal::usize_unsuffixed(self.n_variant_bits);
         let n_categories = Literal::usize_unsuffixed(self.spec.categories.len());
-        let variant_mask = self.u64_to_repr_type_literal(self.variant_mask).unwrap();
         let category_mask = self.u64_to_repr_type_literal(self.category_mask).unwrap();
         let category_max = self
             .usize_to_repr_type_literal(self.spec.category_max())
@@ -245,8 +248,6 @@ impl<'a> RustGenerator<'a> {
             pub const CAT_BITS: usize = #n_category_bits;
             pub const CAT_MASK: T = #category_mask;
             pub const CAT_MAX: T = #category_max;
-            pub const VAR_BITS: usize = #n_variant_bits;
-            pub const VAR_MASK: T = #variant_mask;
             pub static VAR_MAXES: [T; #n_categories] = [
                 #(#variant_maxes_iter),*
             ];
@@ -378,16 +379,7 @@ impl<'a> RustGenerator<'a> {
         } else {
             TokenStream::default()
         };
-        let err_kind_new_tokens = if self.n_variant_bits < self.repr_type.bits() {
-            quote! { Self(cat.0 << #private_mod::VAR_BITS | variant) }
-        } else {
-            assert_eq!(self.n_variant_bits, self.repr_type.bits());
-            assert_eq!(self.n_category_bits, 0);
-            quote! {
-                debug_assert!(cat.0 == 0);
-                Self(variant)
-            }
-        };
+
         quote! {
             #err_kind_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -396,17 +388,17 @@ impl<'a> RustGenerator<'a> {
 
             impl #err_kind_name {
                 const fn new(cat: #err_cat_name, variant: #private_mod::T) -> Self {
-                    #err_kind_new_tokens
+                    Self(variant << #private_mod::CAT_BITS | cat.0)
                 }
 
                 #[inline]
                 fn category_value(&self) -> #private_mod::T {
-                    self.0.checked_shr(#private_mod::VAR_BITS as u32).unwrap_or(0)
+                    self.0 & #private_mod::CAT_MASK
                 }
 
                 #[inline]
                 fn variant_value(&self) -> #private_mod::T {
-                    self.0 & #private_mod::VAR_MASK
+                    self.0 >> #private_mod::CAT_BITS
                 }
 
                 #[doc = " Returns the error category."]
@@ -435,8 +427,8 @@ impl<'a> RustGenerator<'a> {
                 #[doc = " Creates an error kind from a raw value of the underlying Rust type."]
                 #[inline]
                 pub fn from_value(value: #private_mod::T) -> Option<Self> {
-                    let cat = (value & #private_mod::CAT_MASK).checked_shr(#private_mod::VAR_BITS as u32).unwrap_or(0);
-                    let variant = value & #private_mod::VAR_MASK;
+                    let cat = value & #private_mod::CAT_MASK;
+                    let variant = value >> #private_mod::CAT_BITS;
                     if cat #category_max_comparison #private_mod::CAT_MAX && variant <= #private_mod::VAR_MAXES[cat as usize] {
                         Some(Self::new(#err_cat_name::new(cat), variant))
                     } else {

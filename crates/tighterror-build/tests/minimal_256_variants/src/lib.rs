@@ -15,7 +15,6 @@ pub mod errors {
         fn test_constants() {
             assert_eq!(_p::KIND_BITS, u8::BITS as usize);
             assert_eq!(_p::CAT_BITS, 0);
-            assert_eq!(_p::VAR_MASK, u8::MAX);
         }
     }
 }

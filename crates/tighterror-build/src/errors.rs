@@ -43,17 +43,17 @@ pub struct TebErrorKind(_p::T);
 
 impl TebErrorKind {
     const fn new(cat: TebErrorCategory, variant: _p::T) -> Self {
-        Self(cat.0 << _p::VAR_BITS | variant)
+        Self(variant << _p::CAT_BITS | cat.0)
     }
 
     #[inline]
     fn category_value(&self) -> _p::T {
-        self.0.checked_shr(_p::VAR_BITS as u32).unwrap_or(0)
+        self.0 & _p::CAT_MASK
     }
 
     #[inline]
     fn variant_value(&self) -> _p::T {
-        self.0 & _p::VAR_MASK
+        self.0 >> _p::CAT_BITS
     }
 
     /// Returns the error category.
@@ -82,10 +82,8 @@ impl TebErrorKind {
     /// Creates an error kind from a raw value of the underlying Rust type.
     #[inline]
     pub fn from_value(value: _p::T) -> Option<Self> {
-        let cat = (value & _p::CAT_MASK)
-            .checked_shr(_p::VAR_BITS as u32)
-            .unwrap_or(0);
-        let variant = value & _p::VAR_MASK;
+        let cat = value & _p::CAT_MASK;
+        let variant = value >> _p::CAT_BITS;
         if cat == _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
             Some(Self::new(TebErrorCategory::new(cat), variant))
         } else {
@@ -261,8 +259,6 @@ mod _p {
     pub const CAT_BITS: usize = 0;
     pub const CAT_MASK: T = 0;
     pub const CAT_MAX: T = 0;
-    pub const VAR_BITS: usize = 4;
-    pub const VAR_MASK: T = 15;
     pub static VAR_MAXES: [T; 1] = [8];
     const _: () = assert!(KIND_BITS <= T::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
