@@ -6,8 +6,10 @@ use crate::{
 };
 use log::error;
 use std::{
+    ffi::OsStr,
     fs::File,
     io::{self, Write},
+    path::Path,
 };
 
 mod formatter;
@@ -46,31 +48,45 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TebError> {
         p if p == STDOUT_DST => {
             if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
                 error!("failed to write to stdout: {e}");
-                return FAILED_TO_WRITE_TO_DST_FILE.into();
+                FAILED_TO_WRITE_TO_DST_FILE.into()
+            } else {
+                Ok(())
             }
         }
-        p => {
-            let mut file = match File::options()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .open(p)
-            {
-                Ok(f) => f,
-                Err(e) => {
-                    error!("failed to open the destination file {:?}: {e}", p);
-                    return FAILED_TO_WRITE_TO_DST_FILE.into();
-                }
-            };
-            if let Err(e) = file.write_all(code.as_bytes()) {
-                error!("failed to write to the destination file {:?}: {e}", p);
-                return FAILED_TO_WRITE_TO_DST_FILE.into();
-            }
-            file.flush().ok();
-            drop(file);
-            formatter::rustfmt(p).ok();
-        }
+        p => write_code(code, p),
     }
+}
 
+fn write_code<P>(code: String, path: P) -> Result<(), TebError>
+where
+    P: AsRef<Path> + AsRef<OsStr> + std::fmt::Debug,
+{
+    let file = match File::options()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(&path)
+    {
+        Ok(f) => f,
+        Err(e) => {
+            error!("failed to open the destination file {:?}: {e}", path);
+            return FAILED_TO_WRITE_TO_DST_FILE.into();
+        }
+    };
+
+    write_and_format(code, path, file)
+}
+
+fn write_and_format<P>(code: String, path: P, mut file: File) -> Result<(), TebError>
+where
+    P: AsRef<OsStr> + std::fmt::Debug,
+{
+    if let Err(e) = file.write_all(code.as_bytes()) {
+        error!("failed to write to the destination file {:?}: {e}", path);
+        return FAILED_TO_WRITE_TO_DST_FILE.into();
+    }
+    file.flush().ok();
+    drop(file);
+    formatter::rustfmt(path).ok();
     Ok(())
 }
