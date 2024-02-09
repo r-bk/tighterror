@@ -350,6 +350,7 @@ impl<'a> CodeGenerator<'a> {
         let err_cat_name = self.err_cat_name_ident();
         let private_mod = Self::private_mod_ident();
         let error_names_mod = Self::error_names_mod_ident();
+        let error_displays_mod = Self::error_displays_mod_ident();
         let err_code_doc = doc_tokens(self.spec.err_code_doc());
         let category_max_comparison = self.category_max_comparison();
         let err_code_into_result = if self.spec.err_code_into_result() {
@@ -399,21 +400,21 @@ impl<'a> CodeGenerator<'a> {
 
                 #[inline]
                 fn display(&self) -> &'static str {
-                    _d::A[self.category_value() as usize][self.kind_value() as usize]
+                    #error_displays_mod::A[self.category_value() as usize][self.kind_value() as usize]
                 }
 
                 #[doc = " Returns the error code value as the underlying Rust type."]
                 #[inline]
-                pub fn value(&self) -> _p::T {
+                pub fn value(&self) -> #private_mod::T {
                     self.0
                 }
 
                 #[doc = " Creates an error code from a raw value of the underlying Rust type."]
                 #[inline]
-                pub fn from_value(value: _p::T) -> Option<Self> {
-                    let cat = (value & _p::CAT_MASK) >> _p::KIND_BITS;
-                    let kind = value & _p::KIND_MASK;
-                    if cat #category_max_comparison _p::CAT_MAX && kind <= _p::KIND_MAXES[cat as usize] {
+                pub fn from_value(value: #private_mod::T) -> Option<Self> {
+                    let cat = (value & #private_mod::CAT_MASK) >> #private_mod::KIND_BITS;
+                    let kind = value & #private_mod::KIND_MASK;
+                    if cat #category_max_comparison #private_mod::CAT_MAX && kind <= #private_mod::KIND_MAXES[cat as usize] {
                         Some(Self::new(#err_cat_name::new(cat), kind))
                     } else {
                         None
@@ -422,11 +423,11 @@ impl<'a> CodeGenerator<'a> {
             }
 
             impl tighterror::TightErrorCode for #err_code_name {
-                type ReprType = _p::T;
+                type ReprType = #private_mod::T;
                 type CategoryType = #err_cat_name;
-                const CATEGORY_BITS: usize = _p::CAT_BITS;
-                const KIND_BITS: usize = _p::KIND_BITS;
-                const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
+                const CATEGORY_BITS: usize = #private_mod::CAT_BITS;
+                const KIND_BITS: usize = #private_mod::KIND_BITS;
+                const CATEGORIES_COUNT: usize = #private_mod::CAT_COUNT;
 
                 #[inline]
                 fn category(&self) -> Self::CategoryType {
@@ -464,6 +465,7 @@ impl<'a> CodeGenerator<'a> {
         let err_name = self.err_name_ident();
         let err_code_name = self.err_code_name_ident();
         let err_doc = doc_tokens(self.spec.err_doc());
+        let private_mod = Self::private_mod_ident();
         let err_into_result = if self.spec.err_into_result() {
             quote! {
                 impl<T> core::convert::From<#err_name> for core::result::Result<T, #err_name> {
@@ -504,11 +506,11 @@ impl<'a> CodeGenerator<'a> {
             }
 
             impl tighterror::TightError for #err_name {
-                type ReprType = _p::T;
+                type ReprType = #private_mod::T;
                 type CodeType = #err_code_name;
-                const CATEGORY_BITS: usize = _p::CAT_BITS;
-                const KIND_BITS: usize = _p::KIND_BITS;
-                const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
+                const CATEGORY_BITS: usize = #private_mod::CAT_BITS;
+                const KIND_BITS: usize = #private_mod::KIND_BITS;
+                const CATEGORIES_COUNT: usize = #private_mod::CAT_COUNT;
 
                 #[inline]
                 fn code(&self) -> Self::CodeType {
@@ -549,6 +551,7 @@ impl<'a> CodeGenerator<'a> {
     }
 
     fn error_code_constants_tokens(&self) -> TokenStream {
+        let err_codes_mod = self.err_codes_mod_ident();
         let err_code_name = self.err_code_name_ident();
         let mut tokens = TokenStream::default();
         for c in &self.spec.categories {
@@ -568,7 +571,7 @@ impl<'a> CodeGenerator<'a> {
 
         quote! {
             #[doc = " Error-code constants."]
-            pub mod codes {
+            pub mod #err_codes_mod {
                 use super::#err_code_name as EC;
                 use super::categories as c;
                 #tokens
@@ -580,31 +583,33 @@ impl<'a> CodeGenerator<'a> {
         let err_cat_name = self.err_cat_name_ident();
         let cat_doc = doc_tokens(self.spec.cat_doc());
         let category_max_comparison = self.category_max_comparison();
+        let category_names_mod = Self::category_names_mod_ident();
+        let private_mod = Self::private_mod_ident();
         quote! {
             #cat_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct #err_cat_name(_p::T);
+            pub struct #err_cat_name(#private_mod::T);
 
             impl #err_cat_name {
                 #[inline]
-                const fn new(v: _p::T) -> Self {
-                    debug_assert!(v #category_max_comparison _p::CAT_MAX);
+                const fn new(v: #private_mod::T) -> Self {
+                    debug_assert!(v #category_max_comparison #private_mod::CAT_MAX);
                     Self(v)
                 }
 
                 #[doc = " Returns the name of the error category."]
                 #[inline]
                 pub fn name(&self) -> &'static str {
-                    _cn::A[self.0 as usize]
+                    #category_names_mod::A[self.0 as usize]
                 }
             }
 
             impl tighterror::TightErrorCategory for #err_cat_name {
-                type ReprType = _p::T;
-                const CATEGORY_BITS: usize = _p::CAT_BITS;
-                const KIND_BITS: usize = _p::KIND_BITS;
-                const CATEGORIES_COUNT: usize = _p::CAT_COUNT;
+                type ReprType = #private_mod::T;
+                const CATEGORY_BITS: usize = #private_mod::CAT_BITS;
+                const KIND_BITS: usize = #private_mod::KIND_BITS;
+                const CATEGORIES_COUNT: usize = #private_mod::CAT_COUNT;
 
                 #[inline]
                 fn name(&self) -> &'static str {
