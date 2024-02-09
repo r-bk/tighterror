@@ -10,10 +10,12 @@ use args::*;
 
 fn codegen_main(args: Args) {
     let test = args.test();
+    let update = args.update();
     if let Err(e) = CodegenOptions::new()
         .spec(args.spec)
         .dst(args.dst)
         .test(test)
+        .update(update)
         .codegen()
     {
         error!("{e}");

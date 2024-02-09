@@ -21,6 +21,10 @@ pub struct Args {
     /// Include a unit-test in the generated code
     #[arg(short, long)]
     pub test: bool,
+
+    /// Do not overwrite destination file if data is unchanged
+    #[arg(short, long)]
+    pub update: bool,
 }
 
 impl Args {
@@ -40,5 +44,9 @@ impl Args {
 
     pub fn test(&self) -> Option<bool> {
         Self::bool_to_opt(self.test)
+    }
+
+    pub fn update(&self) -> Option<bool> {
+        Self::bool_to_opt(self.update)
     }
 }
