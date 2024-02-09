@@ -1,6 +1,6 @@
 [package]
 name = "tighterror-build"
-version = "0.0.7"
+version = "0.0.8"
 authors = ["Rafael Buchbinder <rafi@rbk.io>"]
 edition = "2021"
 description = "tighterror code generator library"
@@ -26,7 +26,7 @@ serde = "1"
 serde_yaml = { version = "0.9", optional = true }
 syn = { version = "2.0", default-features = false, features = ["parsing"] }
 tempfile = "3.10.0"
-tighterror = { path = "../..", version = "0.0.7" }
+tighterror = { path = "../..", version = "0.0.8" }
 toml = { version = "0.8", optional = true }
 
 [dev-dependencies]
