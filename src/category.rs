@@ -1,5 +1,4 @@
 use core::{
-    cmp::{Eq, Ord, PartialEq, PartialOrd},
     fmt::{Debug, Display},
     hash::Hash,
 };
