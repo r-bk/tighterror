@@ -100,3 +100,42 @@ jobs:
       - name: clippy
         run: cargo clippy --all-features --all-targets
         working-directory: crates/tighterror-build/tests/compilation
+
+  extra-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - name: test implicit_category_toml
+        run: cargo test
+        working-directory: crates/tighterror-build/tests/implicit_category_toml
+      - name: clippy implicit_category_toml
+        run: cargo clippy --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/implicit_category_toml
+      - name: test minimal
+        run: cargo test
+        working-directory: crates/tighterror-build/tests/minimal
+      - name: clippy minimal
+        run: cargo clippy --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/minimal
+      - name: test minimal_256_variants
+        run: cargo test
+        working-directory: crates/tighterror-build/tests/minimal_256_variants
+      - name: clippy minimal_256_variants
+        run: cargo clippy --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/minimal_256_variants
+      - name: test minimal_toml
+        run: cargo test
+        working-directory: crates/tighterror-build/tests/minimal_toml
+      - name: clippy minimal_toml
+        run: cargo clippy --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/minimal_toml
+      - name: test minimal_with_display
+        run: cargo test
+        working-directory: crates/tighterror-build/tests/minimal_with_display
+      - name: clippy minimal_with_display
+        run: cargo clippy --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/minimal_with_display

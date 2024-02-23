@@ -12,3 +12,6 @@ tighterror-build = { path = "../.." }
 
 [dev-dependencies]
 anyhow = "1.0"
+
+# force this package out of the main workspace
+[workspace]
