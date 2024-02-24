@@ -32,7 +32,12 @@ impl CodegenOptions {
 
     /// Sets the specification file path.
     ///
-    /// If `Some` value is not specified the path [DEFAULT_SPEC_PATH] is used.
+    /// If `Some` value is not specified the default specification filenames
+    /// are used in the following order:
+    /// * if the `yaml` feature is enabled the path [DEFAULT_SPEC_PATH_YAML]
+    ///   is used
+    /// * if specification file is still not found and the `toml` feature is
+    ///   enabled the path [DEFAULT_SPEC_PATH_TOML] is used
     ///
     /// # Examples
     /// ```rust
@@ -42,7 +47,8 @@ impl CodegenOptions {
     /// CodegenOptions::new().spec(Some("myerrors.toml".into()));
     /// ```
     ///
-    /// [DEFAULT_SPEC_PATH]: crate::DEFAULT_SPEC_PATH
+    /// [DEFAULT_SPEC_PATH_YAML]: crate::DEFAULT_SPEC_PATH_YAML
+    /// [DEFAULT_SPEC_PATH_TOML]: crate::DEFAULT_SPEC_PATH_TOML
     pub fn spec(&mut self, spec: impl Into<Option<String>>) -> &mut Self {
         self.spec = spec.into();
         self

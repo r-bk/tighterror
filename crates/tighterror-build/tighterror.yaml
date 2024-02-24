@@ -8,6 +8,7 @@ tighterror:
   err_cat_name: TebErrorCategory
 
 errors:
+  - SpecFileNotFound: Specification file couldn't be found.
   - FailedToOpenSpecFile: Specification file couldn't be opened.
   - BadSpec: Bad specification file format.
   - BadYaml: Bad YAML file format.

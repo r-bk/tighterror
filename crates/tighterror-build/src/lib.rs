@@ -7,15 +7,15 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 
-/// The default spec file path when none is provided.
-///
-/// The value of this constant depends on the set of enabled markup language
-/// features. If the `yaml` feature is enabled, the value is `tighterror.yaml`.
-/// Otherwise the value is `tighterror.toml`.
+/// The default YAML specification file path.
 #[cfg(feature = "yaml")]
-pub const DEFAULT_SPEC_PATH: &str = "tighterror.yaml";
-#[cfg(not(feature = "yaml"))]
-pub const DEFAULT_SPEC_PATH: &str = "tighterror.toml";
+#[cfg_attr(docsrs, doc(cfg(feature = "yaml")))]
+pub const DEFAULT_SPEC_PATH_YAML: &str = "tighterror.yaml";
+
+/// The default TOML specification file path.
+#[cfg(feature = "toml")]
+#[cfg_attr(docsrs, doc(cfg(feature = "toml")))]
+pub const DEFAULT_SPEC_PATH_TOML: &str = "tighterror.toml";
 
 mod coder;
 pub use coder::*;
