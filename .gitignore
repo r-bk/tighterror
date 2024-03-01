@@ -2,3 +2,4 @@
 **/*.rs.bk
 test.yaml
 test.toml
+crates/tighterror-build/tests/**/Cargo.lock
