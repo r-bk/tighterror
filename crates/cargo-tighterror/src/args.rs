@@ -10,8 +10,8 @@ enum CargoCli {
 #[derive(clap::Args, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
-    /// The spec file path [default=tighterror.yaml]
-    #[arg(short, long, value_name = "FILE")]
+    /// The specification file path
+    #[arg(short, long, value_name = "PATH")]
     pub spec: Option<String>,
 
     /// The output file path
