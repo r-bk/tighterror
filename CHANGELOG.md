@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.9], [b-0.0.9], [c-0.0.9] - 2024-03-01
+
+Another breaking change on the way to more stable documented release.
+
+### Changed
+
+- put Category bits before Variant bits. This affects the numeric value
+  of all defined errors. However, except for a diff in the output module it
+  shouldn't be noticed otherwise.
+
+- rename Destination to Output. This is a breaking change that affects the
+  public API, `cargo-tighterror` arguments, and specification file syntax.
+  `CodegenOptions::dst` is renamed to `CodegenOptions::output`. The `-d, --dst`
+  argument is renamed to `-o, --output`. The `dst` specification file keyword
+  is renamed to `output`.
+
 ## [0.0.8], [b-0.0.8], [c-0.0.8] - 2024-02-09
 
 This release is a big breaking change. The interfaces of *tighterror* types are
@@ -136,3 +152,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.8]: https://github.com/r-bk/tighterror/releases/tag/v0.0.8
 [b-0.0.8]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.8
 [c-0.0.8]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.8
+[0.0.9]: https://github.com/r-bk/tighterror/releases/tag/v0.0.9
+[b-0.0.9]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.9
+[c-0.0.9]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.9
