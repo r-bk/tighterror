@@ -68,3 +68,9 @@ args = [
 [tasks.fmt]
 command = "cargo"
 args = ["fmt", "--all", "--", "--check"]
+
+[tasks.purge]
+script = """
+find . -type d -name target | xargs rm -rf
+find crates/tighterror-build/tests -type f -name Cargo.lock | xargs rm -f
+"""
