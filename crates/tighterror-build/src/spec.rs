@@ -30,9 +30,9 @@ pub struct MainSpec {
     pub err_kind_doc: Option<String>,
     /// Category struct's documentation
     pub cat_doc: Option<String>,
-    /// destination file path: relative to the specification file, or an
+    /// output file path: relative to the specification file, or an
     /// absolute path.
-    pub dst: Option<String>,
+    pub output: Option<String>,
     /// Add `impl From<Error> for Result`
     pub err_into_result: Option<bool>,
     /// Add `impl From<ErrorKind> for Result<T, Error>`
@@ -55,8 +55,8 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn dst<'a>(&'a self, path: Option<&'a str>) -> &'a str {
-        path.or(self.main.dst.as_deref()).unwrap_or(STDOUT_DST)
+    pub fn output<'a>(&'a self, path: Option<&'a str>) -> &'a str {
+        path.or(self.main.output.as_deref()).unwrap_or(STDOUT_DST)
     }
 
     pub fn test(&self, test: Option<bool>) -> bool {

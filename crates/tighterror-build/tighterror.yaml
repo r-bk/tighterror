@@ -1,6 +1,6 @@
 ---
 tighterror:
-  dst: src/errors.rs
+  output: src/errors.rs
   doc_from_display: true
   mod_doc: Crate errors.
   err_name: TebError
@@ -14,7 +14,7 @@ errors:
   - BadYaml: Bad YAML file format.
   - BadToml: Bad TOML file format.
   - BadSpecFileExtension: Bad specification file name extension.
-  - FailedToWriteDstFile: Destination file couldn't be written.
-  - FailedToReadDstFile: Destination file couldn't be read.
+  - FailedToWriteOutputFile: Output file couldn't be written.
+  - FailedToReadOutputFile: Output file couldn't be read.
   - FailedToParseTokens: Generated code tokens couldn't be parsed.
   - RustfmtFailed: Rustfmt tool exited with an error.

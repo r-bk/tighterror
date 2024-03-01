@@ -1,6 +1,6 @@
 use crate::{
     errors::{
-        kinds::{FAILED_TO_READ_DST_FILE, FAILED_TO_WRITE_DST_FILE, SPEC_FILE_NOT_FOUND},
+        kinds::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE, SPEC_FILE_NOT_FOUND},
         TebError,
     },
     parser,
@@ -67,11 +67,11 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TebError> {
     let spec = parser::from_path(path.into())?;
     let code = generator::spec_to_rust(opts, &spec)?;
 
-    match spec.dst(opts.dst.as_deref()) {
+    match spec.output(opts.output.as_deref()) {
         p if p == STDOUT_DST => {
             if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
                 error!("failed to write to stdout: {e}");
-                FAILED_TO_WRITE_DST_FILE.into()
+                FAILED_TO_WRITE_OUTPUT_FILE.into()
             } else {
                 Ok(())
             }
@@ -98,8 +98,8 @@ where
     {
         Ok(f) => f,
         Err(e) => {
-            error!("failed to open the destination file {:?}: {e}", path);
-            return FAILED_TO_WRITE_DST_FILE.into();
+            error!("failed to open the output file {:?}: {e}", path);
+            return FAILED_TO_WRITE_OUTPUT_FILE.into();
         }
     };
 
@@ -111,8 +111,8 @@ where
     P: AsRef<OsStr> + std::fmt::Debug,
 {
     if let Err(e) = file.write_all(code.as_bytes()) {
-        error!("failed to write to the destination file {:?}: {e}", path);
-        return FAILED_TO_WRITE_DST_FILE.into();
+        error!("failed to write to the output file {:?}: {e}", path);
+        return FAILED_TO_WRITE_OUTPUT_FILE.into();
     }
     file.flush().ok();
     drop(file);
@@ -127,15 +127,15 @@ where
     let mut file = match File::options().read(true).open(&path) {
         Ok(f) => f,
         Err(e) => {
-            error!("failed to open destination file {:?}: {e}", path);
-            return FAILED_TO_READ_DST_FILE.into();
+            error!("failed to open the output file {:?}: {e}", path);
+            return FAILED_TO_READ_OUTPUT_FILE.into();
         }
     };
 
     let mut data = String::with_capacity(4096);
     file.read_to_string(&mut data).map_err(|e| {
-        error!("failed to read destination file {:?}: {e}", path);
-        TebError::from(FAILED_TO_WRITE_DST_FILE)
+        error!("failed to read the output file {:?}: {e}", path);
+        TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
     })?;
 
     Ok(data)
@@ -160,12 +160,12 @@ fn update_code(code: String, path: &str) -> Result<(), TebError> {
         .tempfile_in(dir)
         .map_err(|e| {
             error!("failed to create a temporary file [dir={:?}]: {e}", dir);
-            TebError::from(FAILED_TO_WRITE_DST_FILE)
+            TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
         })?;
 
     let (tmp_file, tmp_path) = tmp_file.keep().map_err(|e| {
         error!("failed to keep the temporary file: {e}");
-        TebError::from(FAILED_TO_WRITE_DST_FILE)
+        TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
     })?;
 
     write_and_format(code, &tmp_path, tmp_file)?;
@@ -175,15 +175,15 @@ fn update_code(code: String, path: &str) -> Result<(), TebError> {
     if existing_data != new_data {
         std::fs::rename(&tmp_path, path).map_err(|e| {
             error!(
-                "failed to rename updated file {:?} to destination path {:?}: {e}",
+                "failed to rename updated file {:?} to output file path {:?}: {e}",
                 tmp_path, path
             );
-            TebError::from(FAILED_TO_WRITE_DST_FILE)
+            TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
         })
     } else {
         std::fs::remove_file(&tmp_path).map_err(|e| {
             error!("failed to unlink temporary file {:?}: {e}", tmp_path);
-            TebError::from(FAILED_TO_WRITE_DST_FILE)
+            TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
         })
     }
 }

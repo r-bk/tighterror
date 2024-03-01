@@ -13,7 +13,7 @@ fn codegen_main(args: Args) {
     let update = args.update();
     if let Err(e) = CodegenOptions::new()
         .spec(args.spec)
-        .dst(args.dst)
+        .output(args.output)
         .test(test)
         .update(update)
         .codegen()

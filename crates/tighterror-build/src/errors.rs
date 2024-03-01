@@ -210,8 +210,8 @@ mod _n {
     pub const BAD_YAML: &str = "BAD_YAML";
     pub const BAD_TOML: &str = "BAD_TOML";
     pub const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
-    pub const FAILED_TO_WRITE_DST_FILE: &str = "FAILED_TO_WRITE_DST_FILE";
-    pub const FAILED_TO_READ_DST_FILE: &str = "FAILED_TO_READ_DST_FILE";
+    pub const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
+    pub const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
     pub const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
     pub const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
     pub static GENERAL_NAMES: [&str; 10] = [
@@ -221,8 +221,8 @@ mod _n {
         BAD_YAML,
         BAD_TOML,
         BAD_SPEC_FILE_EXTENSION,
-        FAILED_TO_WRITE_DST_FILE,
-        FAILED_TO_READ_DST_FILE,
+        FAILED_TO_WRITE_OUTPUT_FILE,
+        FAILED_TO_READ_OUTPUT_FILE,
         FAILED_TO_PARSE_TOKENS,
         RUSTFMT_FAILED,
     ];
@@ -237,8 +237,8 @@ mod _d {
     pub const BAD_YAML: &str = "Bad YAML file format.";
     pub const BAD_TOML: &str = "Bad TOML file format.";
     pub const BAD_SPEC_FILE_EXTENSION: &str = "Bad specification file name extension.";
-    pub const FAILED_TO_WRITE_DST_FILE: &str = "Destination file couldn't be written.";
-    pub const FAILED_TO_READ_DST_FILE: &str = "Destination file couldn't be read.";
+    pub const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
+    pub const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
     pub const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
     pub const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
     pub static GENERAL_DISPLAY: [&str; 10] = [
@@ -248,8 +248,8 @@ mod _d {
         BAD_YAML,
         BAD_TOML,
         BAD_SPEC_FILE_EXTENSION,
-        FAILED_TO_WRITE_DST_FILE,
-        FAILED_TO_READ_DST_FILE,
+        FAILED_TO_WRITE_OUTPUT_FILE,
+        FAILED_TO_READ_OUTPUT_FILE,
         FAILED_TO_PARSE_TOKENS,
         RUSTFMT_FAILED,
     ];
@@ -299,11 +299,11 @@ pub mod kinds {
     /// Bad specification file name extension.
     pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::GENERAL, 5);
 
-    /// Destination file couldn't be written.
-    pub const FAILED_TO_WRITE_DST_FILE: EK = EK::new(c::GENERAL, 6);
+    /// Output file couldn't be written.
+    pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 6);
 
-    /// Destination file couldn't be read.
-    pub const FAILED_TO_READ_DST_FILE: EK = EK::new(c::GENERAL, 7);
+    /// Output file couldn't be read.
+    pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 7);
 
     /// Generated code tokens couldn't be parsed.
     pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 8);

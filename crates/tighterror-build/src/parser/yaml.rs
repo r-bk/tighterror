@@ -131,7 +131,7 @@ impl MainSpecParser {
             }
 
             match key.as_str() {
-                kws::DST => main_spec.dst = Some(v2string(v, kws::DST)?),
+                kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?),
                 kws::DOC_FROM_DISPLAY => {
                     main_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }

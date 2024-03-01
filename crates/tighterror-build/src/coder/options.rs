@@ -10,7 +10,7 @@ use crate::errors::TebError;
 /// # pub fn foo() -> Result<(), TebError> {
 /// CodegenOptions::new()
 ///     .spec("tighterror.yaml".to_owned())
-///     .dst("src/errors.rs".to_owned())
+///     .output("src/errors.rs".to_owned())
 ///     .codegen()?;
 /// # Ok(())
 /// # }
@@ -19,7 +19,7 @@ use crate::errors::TebError;
 #[derive(Debug, Clone, Default)]
 pub struct CodegenOptions {
     pub(crate) spec: Option<String>,
-    pub(crate) dst: Option<String>,
+    pub(crate) output: Option<String>,
     pub(crate) test: Option<bool>,
     pub(crate) update: Option<bool>,
 }
@@ -54,9 +54,9 @@ impl CodegenOptions {
         self
     }
 
-    /// Sets the destination file path.
+    /// Sets the output file path.
     ///
-    /// If the value is `"-"`, or destination file path is not set at all, the
+    /// If the value is `"-"`, or output file path is not set at all, the
     /// output is written to `stdout`.
     ///
     /// A `Some` value specified here overrides the one present in the
@@ -66,12 +66,12 @@ impl CodegenOptions {
     ///
     /// ```rust
     /// # use tighterror_build::CodegenOptions;
-    /// CodegenOptions::new().dst(None);
-    /// CodegenOptions::new().dst("src/errors.rs".to_owned());
-    /// CodegenOptions::new().dst(Some("myerrors.rs".into()));
+    /// CodegenOptions::new().output(None);
+    /// CodegenOptions::new().output("src/errors.rs".to_owned());
+    /// CodegenOptions::new().output(Some("myerrors.rs".into()));
     /// ```
-    pub fn dst(&mut self, dst: impl Into<Option<String>>) -> &mut Self {
-        self.dst = dst.into();
+    pub fn output(&mut self, output: impl Into<Option<String>>) -> &mut Self {
+        self.output = output.into();
         self
     }
 
@@ -97,7 +97,7 @@ impl CodegenOptions {
 
     /// Enables the *update* mode.
     ///
-    /// If the value is `true` and the destination file already exists
+    /// If the value is `true` and the output file already exists
     /// it is not overwritten if the new content equals the existing one.
     ///
     /// # Examples

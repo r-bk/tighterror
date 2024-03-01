@@ -2,7 +2,7 @@ pub const CAT_DOC: &str = "cat_doc";
 pub const DISPLAY: &str = "display";
 pub const DOC: &str = "doc";
 pub const DOC_FROM_DISPLAY: &str = "doc_from_display";
-pub const DST: &str = "dst";
+pub const OUTPUT: &str = "output";
 pub const ERR_DOC: &str = "err_doc";
 pub const ERR_KIND_DOC: &str = "err_kind_doc";
 pub const ERRORS: &str = "errors";
@@ -18,7 +18,7 @@ pub const ERR_CAT_NAME: &str = "err_cat_name";
 
 pub const ERR_KWS: [&str; 4] = [NAME, DISPLAY, DOC, DOC_FROM_DISPLAY];
 pub const MAIN_KWS: [&str; 12] = [
-    DST,
+    OUTPUT,
     DOC_FROM_DISPLAY,
     MOD_DOC,
     CAT_DOC,
@@ -37,7 +37,7 @@ pub const ALL_KWS: [&str; 17] = [
     DISPLAY,
     DOC,
     DOC_FROM_DISPLAY,
-    DST,
+    OUTPUT,
     ERR_KIND_DOC,
     ERR_DOC,
     ERRORS,

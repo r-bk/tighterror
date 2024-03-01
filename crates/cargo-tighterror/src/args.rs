@@ -14,15 +14,15 @@ pub struct Args {
     #[arg(short, long, value_name = "FILE")]
     pub spec: Option<String>,
 
-    /// The destination file path
-    #[arg(short, long, value_name = "DEST")]
-    pub dst: Option<String>,
+    /// The output file path
+    #[arg(short, long, value_name = "PATH")]
+    pub output: Option<String>,
 
     /// Include a unit-test in the generated code
     #[arg(short, long)]
     pub test: bool,
 
-    /// Do not overwrite destination file if data is unchanged
+    /// Do not overwrite the output file if data is unchanged
     #[arg(short, long)]
     pub update: bool,
 }
