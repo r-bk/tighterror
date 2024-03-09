@@ -13,7 +13,7 @@ mod tests {
     use super::errors::*;
 
     #[test]
-    fn test_err_into_result() {
+    fn test_result_from_err() {
         let _res: Result<(), Error> = Error::from(kinds::BAD_FILE).into();
     }
 

@@ -34,7 +34,7 @@ pub struct MainSpec {
     /// absolute path.
     pub output: Option<String>,
     /// Add `impl From<Error> for Result`
-    pub err_into_result: Option<bool>,
+    pub result_from_err: Option<bool>,
     /// Add `impl From<ErrorKind> for Result<T, Error>`
     pub err_kind_into_result: Option<bool>,
     /// Add `impl std::error::Error for Error`
@@ -131,8 +131,8 @@ impl Spec {
         self.categories.len() - 1
     }
 
-    pub fn err_into_result(&self) -> bool {
-        self.main.err_into_result.unwrap_or(DEFAULT_ERR_INTO_RESULT)
+    pub fn result_from_err(&self) -> bool {
+        self.main.result_from_err.unwrap_or(DEFAULT_ERR_INTO_RESULT)
     }
 
     pub fn err_kind_into_result(&self) -> bool {

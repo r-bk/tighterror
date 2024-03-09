@@ -516,16 +516,16 @@ name = \"DummyErr\"
 }
 
 #[test]
-fn test_main_err_into_result() {
+fn test_main_result_from_err() {
     log_init();
 
     for good in GOOD_BOOLS {
         let s = format!(
-            "[tighterror]\nerr_into_result = {}\n\n[[errors]]\nname = \"DummyErr\"",
+            "[tighterror]\nresult_from_err = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
         );
         let main = MainSpec {
-            err_into_result: Some(good.1),
+            result_from_err: Some(good.1),
             ..Default::default()
         };
         let spec = spec_from_main(main);
@@ -535,7 +535,7 @@ fn test_main_err_into_result() {
 
     for bad in BAD_BOOLS {
         let s = format!(
-            "[tighterror]\nerr_into_result = {}\n\n[[errors]]\nname = \"DummyErr\"",
+            "[tighterror]\nresult_from_err = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
         let err = TomlParser::from_str(&s).unwrap_err();

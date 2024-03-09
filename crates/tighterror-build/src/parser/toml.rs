@@ -125,8 +125,8 @@ impl MainSpecParser {
                 kws::ERR_KIND_DOC => main_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?),
                 kws::ERR_DOC => main_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?),
                 kws::MOD_DOC => main_spec.mod_doc = Some(v2string(v, kws::MOD_DOC)?),
-                kws::ERR_INTO_RESULT => {
-                    main_spec.err_into_result = Some(v2bool(v, kws::ERR_INTO_RESULT)?)
+                kws::RESULT_FROM_ERR => {
+                    main_spec.result_from_err = Some(v2bool(v, kws::RESULT_FROM_ERR)?)
                 }
                 kws::ERR_KIND_INTO_RESULT => {
                     main_spec.err_kind_into_result = Some(v2bool(v, kws::ERR_KIND_INTO_RESULT)?)

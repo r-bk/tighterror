@@ -481,7 +481,7 @@ impl<'a> RustGenerator<'a> {
         let err_cat_name = self.err_cat_name_ident();
         let err_doc = doc_tokens(self.spec.err_doc());
         let private_mod = Self::private_mod_ident();
-        let err_into_result = if self.spec.err_into_result() {
+        let result_from_err = if self.spec.result_from_err() {
             quote! {
                 impl<T> core::convert::From<#err_name> for core::result::Result<T, #err_name> {
                     #[inline]
@@ -558,7 +558,7 @@ impl<'a> RustGenerator<'a> {
                 }
             }
 
-            #err_into_result
+            #result_from_err
             #error_trait
         }
     }

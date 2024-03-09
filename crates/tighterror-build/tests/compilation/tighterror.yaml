@@ -1,6 +1,6 @@
 ---
 tighterror:
-  err_into_result: false
+  result_from_err: false
   err_kind_into_result: false
   error_trait: false
   
