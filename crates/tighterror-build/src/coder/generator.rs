@@ -367,7 +367,7 @@ impl<'a> RustGenerator<'a> {
         let error_displays_mod = Self::error_displays_mod_ident();
         let err_kind_doc = doc_tokens(self.spec.err_kind_doc());
         let category_max_comparison = self.category_max_comparison();
-        let err_kind_into_result = if self.spec.err_kind_into_result() {
+        let result_from_err_kind = if self.spec.result_from_err_kind() {
             quote! {
                 impl<T> core::convert::From<#err_kind_name> for Result<T, #err_name> {
                     #[inline]
@@ -471,7 +471,7 @@ impl<'a> RustGenerator<'a> {
                 }
             }
 
-            #err_kind_into_result
+            #result_from_err_kind
         }
     }
 

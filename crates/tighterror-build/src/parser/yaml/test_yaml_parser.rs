@@ -537,16 +537,16 @@ fn test_main_result_from_err() {
 }
 
 #[test]
-fn test_main_err_kind_into_result() {
+fn test_main_result_from_err_kind() {
     log_init();
 
     for good in GOOD_BOOLS {
         let s = format!(
-            "---\ntighterror:\n  err_kind_into_result: {}\n\nerrors:\n  - DummyErr",
+            "---\ntighterror:\n  result_from_err_kind: {}\n\nerrors:\n  - DummyErr",
             good.0
         );
         let main = MainSpec {
-            err_kind_into_result: Some(good.1),
+            result_from_err_kind: Some(good.1),
             ..Default::default()
         };
         let spec = spec_from_main(main);
@@ -556,7 +556,7 @@ fn test_main_err_kind_into_result() {
 
     for bad in BAD_BOOLS {
         let s = format!(
-            "---\ntighterror:\n  err_kind_into_result: {}\n\nerrors:\n  - DummyErr",
+            "---\ntighterror:\n  result_from_err_kind: {}\n\nerrors:\n  - DummyErr",
             bad
         );
         assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());

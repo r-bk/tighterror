@@ -142,8 +142,8 @@ impl MainSpecParser {
                 kws::RESULT_FROM_ERR => {
                     main_spec.result_from_err = Some(v2bool(v, kws::RESULT_FROM_ERR)?)
                 }
-                kws::ERR_KIND_INTO_RESULT => {
-                    main_spec.err_kind_into_result = Some(v2bool(v, kws::ERR_KIND_INTO_RESULT)?)
+                kws::RESULT_FROM_ERR_KIND => {
+                    main_spec.result_from_err_kind = Some(v2bool(v, kws::RESULT_FROM_ERR_KIND)?)
                 }
                 kws::ERROR_TRAIT => main_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
                 kws::ERR_NAME => {

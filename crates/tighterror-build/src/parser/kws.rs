@@ -10,7 +10,7 @@ pub const MOD_DOC: &str = "mod_doc";
 pub const NAME: &str = "name";
 pub const TIGHTERROR: &str = "tighterror";
 pub const RESULT_FROM_ERR: &str = "result_from_err";
-pub const ERR_KIND_INTO_RESULT: &str = "err_kind_into_result";
+pub const RESULT_FROM_ERR_KIND: &str = "result_from_err_kind";
 pub const ERROR_TRAIT: &str = "error_trait";
 pub const ERR_NAME: &str = "err_name";
 pub const ERR_KIND_NAME: &str = "err_kind_name";
@@ -25,7 +25,7 @@ pub const MAIN_KWS: [&str; 12] = [
     ERR_DOC,
     ERR_KIND_DOC,
     RESULT_FROM_ERR,
-    ERR_KIND_INTO_RESULT,
+    RESULT_FROM_ERR_KIND,
     ERROR_TRAIT,
     ERR_NAME,
     ERR_KIND_NAME,
@@ -45,7 +45,7 @@ pub const ALL_KWS: [&str; 17] = [
     TIGHTERROR,
     MOD_DOC,
     RESULT_FROM_ERR,
-    ERR_KIND_INTO_RESULT,
+    RESULT_FROM_ERR_KIND,
     ERROR_TRAIT,
     ERR_NAME,
     ERR_KIND_NAME,

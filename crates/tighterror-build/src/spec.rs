@@ -36,7 +36,7 @@ pub struct MainSpec {
     /// Add `impl From<Error> for Result`
     pub result_from_err: Option<bool>,
     /// Add `impl From<ErrorKind> for Result<T, Error>`
-    pub err_kind_into_result: Option<bool>,
+    pub result_from_err_kind: Option<bool>,
     /// Add `impl std::error::Error for Error`
     pub error_trait: Option<bool>,
     /// A custom name for the Error struct
@@ -135,9 +135,9 @@ impl Spec {
         self.main.result_from_err.unwrap_or(DEFAULT_ERR_INTO_RESULT)
     }
 
-    pub fn err_kind_into_result(&self) -> bool {
+    pub fn result_from_err_kind(&self) -> bool {
         self.main
-            .err_kind_into_result
+            .result_from_err_kind
             .unwrap_or(DEFAULT_ERR_KIND_INTO_RESULT)
     }
 

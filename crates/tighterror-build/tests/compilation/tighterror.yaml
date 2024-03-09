@@ -1,7 +1,7 @@
 ---
 tighterror:
   result_from_err: false
-  err_kind_into_result: false
+  result_from_err_kind: false
   error_trait: false
   
 errors:

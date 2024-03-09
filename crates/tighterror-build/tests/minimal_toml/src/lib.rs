@@ -18,7 +18,7 @@ mod tests {
     }
 
     #[test]
-    fn test_err_kind_into_result() {
+    fn test_result_from_err_kind() {
         let _res: Result<(), Error> = kinds::BAD_FILE.into();
     }
 
