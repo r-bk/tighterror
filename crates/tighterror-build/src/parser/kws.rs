@@ -1,4 +1,4 @@
-pub const CAT_DOC: &str = "cat_doc";
+pub const ERR_CAT_DOC: &str = "err_cat_doc";
 pub const DISPLAY: &str = "display";
 pub const DOC: &str = "doc";
 pub const DOC_FROM_DISPLAY: &str = "doc_from_display";
@@ -21,7 +21,7 @@ pub const MAIN_KWS: [&str; 12] = [
     OUTPUT,
     DOC_FROM_DISPLAY,
     MOD_DOC,
-    CAT_DOC,
+    ERR_CAT_DOC,
     ERR_DOC,
     ERR_KIND_DOC,
     ERR_INTO_RESULT,
@@ -33,7 +33,7 @@ pub const MAIN_KWS: [&str; 12] = [
 ];
 pub const ROOT_KWS: [&str; 2] = [TIGHTERROR, ERRORS];
 pub const ALL_KWS: [&str; 17] = [
-    CAT_DOC,
+    ERR_CAT_DOC,
     DISPLAY,
     DOC,
     DOC_FROM_DISPLAY,

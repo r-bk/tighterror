@@ -121,7 +121,7 @@ impl MainSpecParser {
                 kws::DOC_FROM_DISPLAY => {
                     main_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }
-                kws::CAT_DOC => main_spec.cat_doc = Some(v2string(v, kws::CAT_DOC)?),
+                kws::ERR_CAT_DOC => main_spec.err_cat_doc = Some(v2string(v, kws::ERR_CAT_DOC)?),
                 kws::ERR_KIND_DOC => main_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?),
                 kws::ERR_DOC => main_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?),
                 kws::MOD_DOC => main_spec.mod_doc = Some(v2string(v, kws::MOD_DOC)?),

@@ -402,11 +402,11 @@ name = \"DummyErr\"
 }
 
 #[test]
-fn test_main_cat_doc() {
+fn test_main_err_cat_doc() {
     log_init();
     let s = "
 [tighterror]
-cat_doc = \"\"\"
+err_cat_doc = \"\"\"
 Category documentation.
 
 Multiline.
@@ -416,7 +416,7 @@ Multiline.
 name = \"DummyErr\"
 ";
     let main = MainSpec {
-        cat_doc: Some("Category documentation.\n\nMultiline.\n".into()),
+        err_cat_doc: Some("Category documentation.\n\nMultiline.\n".into()),
         ..Default::default()
     };
     let spec = spec_from_main(main);
@@ -425,13 +425,13 @@ name = \"DummyErr\"
 
     let s = "
 [tighterror]
-cat_doc = \"\"
+err_cat_doc = \"\"
 
 [[errors]]
 name = \"DummyErr\"
 ";
     let main = MainSpec {
-        cat_doc: Some("".into()),
+        err_cat_doc: Some("".into()),
         ..Default::default()
     };
     let spec = spec_from_main(main);

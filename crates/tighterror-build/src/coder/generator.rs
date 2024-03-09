@@ -594,12 +594,12 @@ impl<'a> RustGenerator<'a> {
 
     fn category_tokens(&self) -> TokenStream {
         let err_cat_name = self.err_cat_name_ident();
-        let cat_doc = doc_tokens(self.spec.cat_doc());
+        let err_cat_doc = doc_tokens(self.spec.err_cat_doc());
         let category_max_comparison = self.category_max_comparison();
         let category_names_mod = Self::category_names_mod_ident();
         let private_mod = Self::private_mod_ident();
         quote! {
-            #cat_doc
+            #err_cat_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
             pub struct #err_cat_name(#private_mod::T);

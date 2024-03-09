@@ -2,7 +2,7 @@ tighterror:
   doc_from_display: true
   err_doc: A custom error struct doc.
   err_kind_doc: A custom error doc.
-  cat_doc: A custom category doc.
+  err_cat_doc: A custom category doc.
   err_into_result: false
   err_kind_into_result: false
   error_trait: false

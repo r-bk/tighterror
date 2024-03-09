@@ -28,8 +28,8 @@ pub struct MainSpec {
     pub err_doc: Option<String>,
     /// ErrorKind struct's documentation
     pub err_kind_doc: Option<String>,
-    /// Category struct's documentation
-    pub cat_doc: Option<String>,
+    /// A doc string for the ErrorCategory struct
+    pub err_cat_doc: Option<String>,
     /// output file path: relative to the specification file, or an
     /// absolute path.
     pub output: Option<String>,
@@ -74,9 +74,9 @@ impl Spec {
             .unwrap_or(DEFAULT_ERROR_STRUCT_DOC)
     }
 
-    pub fn cat_doc(&self) -> &str {
+    pub fn err_cat_doc(&self) -> &str {
         self.main
-            .cat_doc
+            .err_cat_doc
             .as_deref()
             .unwrap_or(DEFAULT_CATEGORY_STRUCT_DOC)
     }
