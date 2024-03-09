@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.10], [b-0.0.10], [c-0.0.10] - 2024-03-09
+
+More breaking cleanups on the way to stability and documentation.
+
+### Changed
+
+- rename `cat_doc` keyword to `err_cat_doc` in main specification section
+- rename `err_into_result` to `result_from_err` in main specification section
+- rename `err_kind_into_result` to `result_from_err_kind` in main specification
+  section
+
 ## [0.0.9], [b-0.0.9], [c-0.0.9] - 2024-03-01
 
 Another breaking change on the way to more stable documented release.
@@ -155,3 +166,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.9]: https://github.com/r-bk/tighterror/releases/tag/v0.0.9
 [b-0.0.9]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.9
 [c-0.0.9]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.9
+[0.0.10]: https://github.com/r-bk/tighterror/releases/tag/v0.0.10
+[b-0.0.10]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.10
+[c-0.0.10]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.10
