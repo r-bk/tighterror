@@ -147,6 +147,7 @@ impl MainSpecParser {
                     check_main_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
                     main_spec.err_cat_name = Some(err_cat_name);
                 }
+                kws::NO_STD => main_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
                 _ => panic!("internal error: unhandled main key {}", key),
             }
         }

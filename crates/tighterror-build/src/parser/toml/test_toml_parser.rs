@@ -600,6 +600,34 @@ fn test_error_trait() {
 }
 
 #[test]
+fn test_no_std() {
+    log_init();
+
+    for good in GOOD_BOOLS {
+        let s = format!(
+            "[tighterror]\nno_std = {}\n\n[[errors]]\nname = \"DummyErr\"",
+            good.0
+        );
+        let main = MainSpec {
+            no_std: Some(good.1),
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = TomlParser::from_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_BOOLS {
+        let s = format!(
+            "[tighterror]\nno_std = {}\n\n[[errors]]\nname = \"DummyErr\"",
+            bad
+        );
+        let err = TomlParser::from_str(&s).unwrap_err();
+        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+    }
+}
+
+#[test]
 fn test_error_name() {
     log_init();
     for good in ["MyError", idents::ERROR] {

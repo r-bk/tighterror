@@ -15,9 +15,10 @@ pub const ERROR_TRAIT: &str = "error_trait";
 pub const ERR_NAME: &str = "err_name";
 pub const ERR_KIND_NAME: &str = "err_kind_name";
 pub const ERR_CAT_NAME: &str = "err_cat_name";
+pub const NO_STD: &str = "no_std";
 
 pub const ERR_KWS: [&str; 4] = [NAME, DISPLAY, DOC, DOC_FROM_DISPLAY];
-pub const MAIN_KWS: [&str; 12] = [
+pub const MAIN_KWS: [&str; 13] = [
     OUTPUT,
     DOC_FROM_DISPLAY,
     MOD_DOC,
@@ -30,9 +31,10 @@ pub const MAIN_KWS: [&str; 12] = [
     ERR_NAME,
     ERR_KIND_NAME,
     ERR_CAT_NAME,
+    NO_STD,
 ];
 pub const ROOT_KWS: [&str; 2] = [TIGHTERROR, ERRORS];
-pub const ALL_KWS: [&str; 17] = [
+pub const ALL_KWS: [&str; 18] = [
     ERR_CAT_DOC,
     DISPLAY,
     DOC,
@@ -50,6 +52,7 @@ pub const ALL_KWS: [&str; 17] = [
     ERR_NAME,
     ERR_KIND_NAME,
     ERR_CAT_NAME,
+    NO_STD,
 ];
 
 #[inline]

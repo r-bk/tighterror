@@ -591,6 +591,33 @@ fn test_error_trait() {
 }
 
 #[test]
+fn test_no_std() {
+    log_init();
+
+    for good in GOOD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  no_std: {}\n\nerrors:\n  - DummyErr",
+            good.0
+        );
+        let main = MainSpec {
+            no_std: Some(good.1),
+            ..Default::default()
+        };
+        let spec = spec_from_main(main);
+        let res = YamlParser::from_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_BOOLS {
+        let s = format!(
+            "---\ntighterror:\n  no_std: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+    }
+}
+
+#[test]
 fn test_error_name() {
     log_init();
     for good in ["MyError", idents::ERROR] {

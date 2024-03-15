@@ -772,6 +772,9 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_category_display(&self) -> TokenStream {
+        if self.spec.no_std() {
+            return TokenStream::default();
+        }
         let categories_mod = self.categories_mod_ident();
         let check_cat_display_iter = self.spec.categories.iter().map(|c| {
             let ident_name = c.ident_name();
@@ -790,6 +793,9 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_category_uniqueness(&self) -> TokenStream {
+        if self.spec.no_std() {
+            return TokenStream::default();
+        }
         let err_cat_name = self.err_cat_name_ident();
         let categories_mod = self.categories_mod_ident();
         let cat_arr = self.ut_cat_arr();
@@ -861,6 +867,9 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_display(&self) -> TokenStream {
+        if self.spec.no_std() {
+            return TokenStream::default();
+        }
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
@@ -897,6 +906,9 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_uniqueness(&self) -> TokenStream {
+        if self.spec.no_std() {
+            return TokenStream::default();
+        }
         let err_kind_name = self.err_kind_name_ident();
         let err_kinds_mod = self.err_kinds_mod_ident();
         let err_kind_arr = self.ut_err_kind_arr();
@@ -915,6 +927,9 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_value_uniqueness(&self) -> TokenStream {
+        if self.spec.no_std() {
+            return TokenStream::default();
+        }
         let err_kind_name = self.err_kind_name_ident();
         let err_kinds_mod = self.err_kinds_mod_ident();
         let repr_type = self.repr_type.ident();
@@ -981,6 +996,9 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_display(&self) -> TokenStream {
+        if self.spec.no_std() {
+            return TokenStream::default();
+        }
         let err_name = self.err_name_ident();
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.categories.iter().map(|c| {

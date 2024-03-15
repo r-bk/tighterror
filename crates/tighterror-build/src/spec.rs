@@ -19,6 +19,7 @@ pub const DEFAULT_ERR_INTO_RESULT: bool = true;
 pub const DEFAULT_ERR_KIND_INTO_RESULT: bool = true;
 pub const DEFAULT_ERROR_TRAIT: bool = true;
 pub const DEFAULT_UPDATE_MODE: bool = false;
+pub const DEFAULT_NO_STD: bool = false;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
@@ -46,6 +47,8 @@ pub struct MainSpec {
     /// A custom name for the ErrorCategory struct
     pub err_cat_name: Option<String>,
     pub oes: OverridableErrorSpec,
+    /// Generate code for `no_std` environment
+    pub no_std: Option<bool>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -142,7 +145,11 @@ impl Spec {
     }
 
     pub fn error_trait(&self) -> bool {
-        self.main.error_trait.unwrap_or(DEFAULT_ERROR_TRAIT)
+        self.main
+            .no_std
+            .map(|v| !v)
+            .or(self.main.error_trait)
+            .unwrap_or(DEFAULT_ERROR_TRAIT)
     }
 
     pub fn err_name(&self) -> &str {
@@ -161,5 +168,9 @@ impl Spec {
             .err_cat_name
             .as_deref()
             .unwrap_or(idents::ERROR_CATEGORY)
+    }
+
+    pub fn no_std(&self) -> bool {
+        self.main.no_std.unwrap_or(DEFAULT_NO_STD)
     }
 }
