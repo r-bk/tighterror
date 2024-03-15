@@ -3,8 +3,8 @@ use crate::{
         kinds::{BAD_SPEC, BAD_YAML},
         TebError,
     },
-    parser::{check_main_ident, check_name, kws},
-    spec::{CategorySpec, ErrorSpec, MainSpec, Spec, IMPLICIT_CATEGORY_NAME},
+    parser::{check_module_ident, check_name, kws},
+    spec::{CategorySpec, ErrorSpec, ModuleSpec, Spec, IMPLICIT_CATEGORY_NAME},
     util::get_non_unique_error_names,
 };
 use log::error;
@@ -21,7 +21,7 @@ struct YamlErrorsParser;
 struct YamlErrorParser;
 
 #[derive(Debug)]
-struct MainSpecParser;
+struct ModuleSpecParser;
 
 impl YamlParser {
     pub fn from_file(file: File) -> Result<Spec, TebError> {
@@ -77,7 +77,7 @@ impl YamlParser {
         let mut spec = Spec::default();
 
         if let Some(v) = m.remove(kws::TIGHTERROR) {
-            spec.main = MainSpecParser::from_value(v)?;
+            spec.module = ModuleSpecParser::from_value(v)?;
         }
 
         if let Some(v) = m.remove(kws::ERRORS) {
@@ -104,8 +104,8 @@ impl YamlParser {
     }
 }
 
-impl MainSpecParser {
-    fn from_value(v: Value) -> Result<MainSpec, TebError> {
+impl ModuleSpecParser {
+    fn from_value(v: Value) -> Result<ModuleSpec, TebError> {
         match v {
             Value::Mapping(m) => Self::from_mapping(m),
             ref ov => {
@@ -119,54 +119,54 @@ impl MainSpecParser {
         }
     }
 
-    fn from_mapping(m: Mapping) -> Result<MainSpec, TebError> {
-        let mut main_spec = MainSpec::default();
+    fn from_mapping(m: Mapping) -> Result<ModuleSpec, TebError> {
+        let mut mod_spec = ModuleSpec::default();
 
         for (k, v) in m.into_iter() {
             let key = v2key(k)?;
 
-            if !kws::is_main_kw(&key) {
+            if !kws::is_mod_kw(&key) {
                 error!("invalid `{}` key: {}", kws::TIGHTERROR, key);
                 return BAD_SPEC.into();
             }
 
             match key.as_str() {
-                kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?),
+                kws::OUTPUT => mod_spec.output = Some(v2string(v, kws::OUTPUT)?),
                 kws::DOC_FROM_DISPLAY => {
-                    main_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
+                    mod_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }
-                kws::ERR_CAT_DOC => main_spec.err_cat_doc = Some(v2string(v, kws::ERR_CAT_DOC)?),
-                kws::ERR_KIND_DOC => main_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?),
-                kws::ERR_DOC => main_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?),
-                kws::MOD_DOC => main_spec.mod_doc = Some(v2string(v, kws::MOD_DOC)?),
+                kws::ERR_CAT_DOC => mod_spec.err_cat_doc = Some(v2string(v, kws::ERR_CAT_DOC)?),
+                kws::ERR_KIND_DOC => mod_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?),
+                kws::ERR_DOC => mod_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?),
+                kws::MOD_DOC => mod_spec.mod_doc = Some(v2string(v, kws::MOD_DOC)?),
                 kws::RESULT_FROM_ERR => {
-                    main_spec.result_from_err = Some(v2bool(v, kws::RESULT_FROM_ERR)?)
+                    mod_spec.result_from_err = Some(v2bool(v, kws::RESULT_FROM_ERR)?)
                 }
                 kws::RESULT_FROM_ERR_KIND => {
-                    main_spec.result_from_err_kind = Some(v2bool(v, kws::RESULT_FROM_ERR_KIND)?)
+                    mod_spec.result_from_err_kind = Some(v2bool(v, kws::RESULT_FROM_ERR_KIND)?)
                 }
-                kws::ERROR_TRAIT => main_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
+                kws::ERROR_TRAIT => mod_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
                 kws::ERR_NAME => {
                     let err_name = v2string(v, kws::ERR_NAME)?;
-                    check_main_ident(&err_name, kws::ERR_NAME)?;
-                    main_spec.err_name = Some(err_name);
+                    check_module_ident(&err_name, kws::ERR_NAME)?;
+                    mod_spec.err_name = Some(err_name);
                 }
                 kws::ERR_KIND_NAME => {
                     let err_kind_name = v2string(v, kws::ERR_KIND_NAME)?;
-                    check_main_ident(&err_kind_name, kws::ERR_KIND_NAME)?;
-                    main_spec.err_kind_name = Some(err_kind_name);
+                    check_module_ident(&err_kind_name, kws::ERR_KIND_NAME)?;
+                    mod_spec.err_kind_name = Some(err_kind_name);
                 }
                 kws::ERR_CAT_NAME => {
                     let err_cat_name = v2string(v, kws::ERR_CAT_NAME)?;
-                    check_main_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
-                    main_spec.err_cat_name = Some(err_cat_name);
+                    check_module_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
+                    mod_spec.err_cat_name = Some(err_cat_name);
                 }
-                kws::NO_STD => main_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
-                _ => panic!("internal error: unhandled main key {}", key),
+                kws::NO_STD => mod_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
+                _ => panic!("internal error: unhandled module key {}", key),
             }
         }
 
-        Ok(main_spec)
+        Ok(mod_spec)
     }
 }
 

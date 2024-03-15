@@ -88,7 +88,7 @@ fn check_ident(ident: &str, name: &str) -> Result<(), TebError> {
     Ok(())
 }
 
-fn check_main_ident(ident: &str, kw: &str) -> Result<(), TebError> {
+fn check_module_ident(ident: &str, kw: &str) -> Result<(), TebError> {
     crate::parser::check_ident(ident, kw)?;
     if kw == kws::ERR_NAME && ident == idents::ERROR {
         return Ok(());
@@ -124,7 +124,7 @@ fn check_name(name: &str) -> Result<(), TebError> {
 
 #[cfg(test)]
 mod testing {
-    use crate::spec::{CategorySpec, ErrorSpec, MainSpec, Spec};
+    use crate::spec::{CategorySpec, ErrorSpec, ModuleSpec, Spec};
 
     pub const GENERAL_CAT: &str = "General";
 
@@ -158,7 +158,7 @@ mod testing {
         }
     }
 
-    pub fn spec_from_main(main: MainSpec) -> Spec {
+    pub fn spec_from_module(module: ModuleSpec) -> Spec {
         let err = ErrorSpec {
             name: "DummyErr".into(),
             ..Default::default()
@@ -171,7 +171,7 @@ mod testing {
         };
 
         Spec {
-            main,
+            module,
             categories: vec![cat],
         }
     }

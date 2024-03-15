@@ -22,7 +22,7 @@ pub const DEFAULT_UPDATE_MODE: bool = false;
 pub const DEFAULT_NO_STD: bool = false;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct MainSpec {
+pub struct ModuleSpec {
     /// Module documentation
     pub mod_doc: Option<String>,
     /// Error struct's documentation
@@ -53,13 +53,13 @@ pub struct MainSpec {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Spec {
-    pub main: MainSpec,
+    pub module: ModuleSpec,
     pub categories: Vec<CategorySpec>,
 }
 
 impl Spec {
     pub fn output<'a>(&'a self, path: Option<&'a str>) -> &'a str {
-        path.or(self.main.output.as_deref()).unwrap_or(STDOUT_DST)
+        path.or(self.module.output.as_deref()).unwrap_or(STDOUT_DST)
     }
 
     pub fn test(&self, test: Option<bool>) -> bool {
@@ -71,14 +71,14 @@ impl Spec {
     }
 
     pub fn err_doc(&self) -> &str {
-        self.main
+        self.module
             .err_doc
             .as_deref()
             .unwrap_or(DEFAULT_ERROR_STRUCT_DOC)
     }
 
     pub fn err_cat_doc(&self) -> &str {
-        self.main
+        self.module
             .err_cat_doc
             .as_deref()
             .unwrap_or(DEFAULT_CATEGORY_STRUCT_DOC)
@@ -101,7 +101,7 @@ impl Spec {
             .oes
             .doc_from_display
             .or(c.oes.doc_from_display)
-            .or(self.main.oes.doc_from_display)
+            .or(self.module.oes.doc_from_display)
             .unwrap_or(DEFAULT_DOC_FROM_DISPLAY);
 
         if dfd {
@@ -119,14 +119,14 @@ impl Spec {
     }
 
     pub fn err_kind_doc(&self) -> &str {
-        self.main
+        self.module
             .err_kind_doc
             .as_deref()
             .unwrap_or(DEFAULT_ERROR_KIND_STRUCT_DOC)
     }
 
     pub fn mod_doc(&self) -> &str {
-        self.main.mod_doc.as_deref().unwrap_or(DEFAULT_MODULE_DOC)
+        self.module.mod_doc.as_deref().unwrap_or(DEFAULT_MODULE_DOC)
     }
 
     pub fn category_max(&self) -> usize {
@@ -135,42 +135,44 @@ impl Spec {
     }
 
     pub fn result_from_err(&self) -> bool {
-        self.main.result_from_err.unwrap_or(DEFAULT_ERR_INTO_RESULT)
+        self.module
+            .result_from_err
+            .unwrap_or(DEFAULT_ERR_INTO_RESULT)
     }
 
     pub fn result_from_err_kind(&self) -> bool {
-        self.main
+        self.module
             .result_from_err_kind
             .unwrap_or(DEFAULT_ERR_KIND_INTO_RESULT)
     }
 
     pub fn error_trait(&self) -> bool {
-        self.main
+        self.module
             .no_std
             .map(|v| !v)
-            .or(self.main.error_trait)
+            .or(self.module.error_trait)
             .unwrap_or(DEFAULT_ERROR_TRAIT)
     }
 
     pub fn err_name(&self) -> &str {
-        self.main.err_name.as_deref().unwrap_or(idents::ERROR)
+        self.module.err_name.as_deref().unwrap_or(idents::ERROR)
     }
 
     pub fn err_kind_name(&self) -> &str {
-        self.main
+        self.module
             .err_kind_name
             .as_deref()
             .unwrap_or(idents::ERROR_KIND)
     }
 
     pub fn err_cat_name(&self) -> &str {
-        self.main
+        self.module
             .err_cat_name
             .as_deref()
             .unwrap_or(idents::ERROR_CATEGORY)
     }
 
     pub fn no_std(&self) -> bool {
-        self.main.no_std.unwrap_or(DEFAULT_NO_STD)
+        self.module.no_std.unwrap_or(DEFAULT_NO_STD)
     }
 }

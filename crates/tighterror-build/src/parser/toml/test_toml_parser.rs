@@ -2,7 +2,7 @@ use crate::{
     coder::idents,
     errors::kinds::{BAD_SPEC, BAD_TOML},
     parser::{
-        testing::{log_init, spec_from_err, spec_from_err_iter, spec_from_main},
+        testing::{log_init, spec_from_err, spec_from_err_iter, spec_from_module},
         toml::*,
     },
     spec::{ErrorSpec, OverridableErrorSpec},
@@ -334,7 +334,7 @@ doc_from_display = true
 }
 
 #[test]
-fn test_main_doc_from_display() {
+fn test_module_doc_from_display() {
     log_init();
 
     for good in GOOD_BOOLS {
@@ -342,13 +342,13 @@ fn test_main_doc_from_display() {
             "[tighterror]\ndoc_from_display = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
         );
-        let main = MainSpec {
+        let module = ModuleSpec {
             oes: OverridableErrorSpec {
                 doc_from_display: Some(good.1),
             },
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&s).unwrap();
         assert_eq!(spec, res);
     }
@@ -364,7 +364,7 @@ fn test_main_doc_from_display() {
 }
 
 #[test]
-fn test_main_mod_doc() {
+fn test_module_mod_doc() {
     log_init();
     let s = "
 [tighterror]
@@ -377,11 +377,11 @@ Multiline.
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         mod_doc: Some("Module documentation.\n\nMultiline.\n".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 
@@ -392,17 +392,17 @@ mod_doc = \"\"
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         mod_doc: Some("".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
 #[test]
-fn test_main_err_cat_doc() {
+fn test_module_err_cat_doc() {
     log_init();
     let s = "
 [tighterror]
@@ -415,11 +415,11 @@ Multiline.
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         err_cat_doc: Some("Category documentation.\n\nMultiline.\n".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 
@@ -430,17 +430,17 @@ err_cat_doc = \"\"
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         err_cat_doc: Some("".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
 #[test]
-fn test_main_err_doc() {
+fn test_module_err_doc() {
     log_init();
     let s = "
 [tighterror]
@@ -453,11 +453,11 @@ Multiline.
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         err_doc: Some("Error documentation.\n\nMultiline.\n".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 
@@ -468,17 +468,17 @@ err_doc = \"\"
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         err_doc: Some("".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
 #[test]
-fn test_main_err_kind_doc() {
+fn test_module_err_kind_doc() {
     log_init();
     let s = "
 [tighterror]
@@ -491,11 +491,11 @@ Multiline.
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         err_kind_doc: Some("ErrorKind documentation.\n\nMultiline.\n".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 
@@ -506,17 +506,17 @@ err_kind_doc = \"\"
 [[errors]]
 name = \"DummyErr\"
 ";
-    let main = MainSpec {
+    let module = ModuleSpec {
         err_kind_doc: Some("".into()),
         ..Default::default()
     };
-    let spec = spec_from_main(main);
+    let spec = spec_from_module(module);
     let res = TomlParser::from_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
 #[test]
-fn test_main_result_from_err() {
+fn test_module_result_from_err() {
     log_init();
 
     for good in GOOD_BOOLS {
@@ -524,11 +524,11 @@ fn test_main_result_from_err() {
             "[tighterror]\nresult_from_err = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
         );
-        let main = MainSpec {
+        let module = ModuleSpec {
             result_from_err: Some(good.1),
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&s).unwrap();
         assert_eq!(spec, res);
     }
@@ -544,7 +544,7 @@ fn test_main_result_from_err() {
 }
 
 #[test]
-fn test_main_result_from_err_kind() {
+fn test_module_result_from_err_kind() {
     log_init();
 
     for good in GOOD_BOOLS {
@@ -552,11 +552,11 @@ fn test_main_result_from_err_kind() {
             "[tighterror]\nresult_from_err_kind = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
         );
-        let main = MainSpec {
+        let module = ModuleSpec {
             result_from_err_kind: Some(good.1),
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&s).unwrap();
         assert_eq!(spec, res);
     }
@@ -580,11 +580,11 @@ fn test_error_trait() {
             "[tighterror]\nerror_trait = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
         );
-        let main = MainSpec {
+        let module = ModuleSpec {
             error_trait: Some(good.1),
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&s).unwrap();
         assert_eq!(spec, res);
     }
@@ -608,11 +608,11 @@ fn test_no_std() {
             "[tighterror]\nno_std = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
         );
-        let main = MainSpec {
+        let module = ModuleSpec {
             no_std: Some(good.1),
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&s).unwrap();
         assert_eq!(spec, res);
     }
@@ -631,11 +631,11 @@ fn test_no_std() {
 fn test_error_name() {
     log_init();
     for good in ["MyError", idents::ERROR] {
-        let main = MainSpec {
+        let module = ModuleSpec {
             err_name: Some(good.into()),
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&format!(
             "[tighterror]\nerr_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             good
@@ -665,11 +665,11 @@ fn test_error_name() {
 fn test_error_kind_name() {
     log_init();
     for good in ["MyErrorKind", idents::ERROR_KIND] {
-        let main = MainSpec {
+        let module = ModuleSpec {
             err_kind_name: Some(good.into()),
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&format!(
             "[tighterror]\nerr_kind_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             good
@@ -699,11 +699,11 @@ fn test_error_kind_name() {
 fn test_error_cat_name() {
     log_init();
     for good in ["MyErrorCategory", idents::ERROR_CATEGORY] {
-        let main = MainSpec {
+        let module = ModuleSpec {
             err_cat_name: Some(good.into()),
             ..Default::default()
         };
-        let spec = spec_from_main(main);
+        let spec = spec_from_module(module);
         let res = TomlParser::from_str(&format!(
             "[tighterror]\nerr_cat_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             good

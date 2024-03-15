@@ -76,6 +76,6 @@ pub fn is_err_kw(s: &str) -> bool {
 }
 
 #[inline]
-pub fn is_main_kw(s: &str) -> bool {
+pub fn is_mod_kw(s: &str) -> bool {
     contains(&MAIN_KWS, s)
 }
