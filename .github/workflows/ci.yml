@@ -157,3 +157,12 @@ jobs:
       - name: fmt minimal_with_display
         run: cargo fmt --check
         working-directory: crates/tighterror-build/tests/minimal_with_display
+      - name: test minimal_no_std
+        run: cargo test
+        working-directory: crates/tighterror-build/tests/minimal_no_std
+      - name: clippy minimal_no_std
+        run: cargo clippy --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/minimal_no_std
+      - name: fmt minimal_no_std
+        run: cargo fmt --check
+        working-directory: crates/tighterror-build/tests/minimal_no_std

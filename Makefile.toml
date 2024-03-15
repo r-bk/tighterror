@@ -201,6 +201,26 @@ cwd = "crates/tighterror-build/tests/compilation"
 command = "cargo"
 args = ["fmt", "--check"]
 
+[tasks.extra_tests_minimal_no_std_build]
+cwd = "crates/tighterror-build/tests/minimal_no_std"
+command = "cargo"
+args = ["build"]
+
+[tasks.extra_tests_minimal_no_std_test]
+cwd = "crates/tighterror-build/tests/minimal_no_std"
+command = "cargo"
+args = ["test", "--all-features", "--all-targets"]
+
+[tasks.extra_tests_minimal_no_std_clippy]
+cwd = "crates/tighterror-build/tests/minimal_no_std"
+command = "cargo"
+args = ["clippy", "--all-features", "--all-targets"]
+
+[tasks.extra_tests_minimal_no_std_rustfmt]
+cwd = "crates/tighterror-build/tests/minimal_no_std"
+command = "cargo"
+args = ["fmt", "--check"]
+
 [tasks.et_build]
 dependencies = [
     "extra_tests_implicit_category_toml_build",
@@ -209,6 +229,7 @@ dependencies = [
     "extra_tests_minimal_toml_build",
     "extra_tests_minimal_with_display_build",
     "extra_tests_compilation_build",
+    "extra_tests_minimal_no_std_build",
 ]
 
 [tasks.et_test]
@@ -219,6 +240,7 @@ dependencies = [
     "extra_tests_minimal_toml_test",
     "extra_tests_minimal_with_display_test",
     # "extra_tests_compilation_test", -- !! must be run separately !!
+    "extra_tests_minimal_no_std_test",
 ]
 
 [tasks.et_clippy]
@@ -229,6 +251,7 @@ dependencies = [
     "extra_tests_minimal_toml_clippy",
     "extra_tests_minimal_with_display_clippy",
     "extra_tests_compilation_clippy",
+    "extra_tests_minimal_no_std_clippy",
 ]
 
 [tasks.et_fmt]
@@ -239,6 +262,7 @@ dependencies = [
     "extra_tests_minimal_toml_rustfmt",
     "extra_tests_minimal_with_display_rustfmt",
     "extra_tests_compilation_rustfmt",
+    "extra_tests_minimal_no_std_rustfmt",
 ]
 
 [tasks.et]

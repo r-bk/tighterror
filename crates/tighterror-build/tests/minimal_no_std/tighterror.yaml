@@ -1,0 +1,7 @@
+---
+tighterror:
+  no_std: true
+errors:
+  - BadFile
+  - BadArg
+  - IoError
