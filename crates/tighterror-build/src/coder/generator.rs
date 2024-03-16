@@ -243,15 +243,15 @@ impl<'a> RustGenerator<'a> {
         let variant_maxes_iter = self.spec.categories.iter().map(variant_max);
 
         quote! {
-            pub type T = #repr_type;
+            pub type R = #repr_type;
             pub const KIND_BITS: usize = #n_kind_bits;
             pub const CAT_BITS: usize = #n_category_bits;
-            pub const CAT_MASK: T = #category_mask;
-            pub const CAT_MAX: T = #category_max;
-            pub static VAR_MAXES: [T; #n_categories] = [
+            pub const CAT_MASK: R = #category_mask;
+            pub const CAT_MAX: R = #category_max;
+            pub static VAR_MAXES: [R; #n_categories] = [
                 #(#variant_maxes_iter),*
             ];
-            const _: () = assert!(KIND_BITS <= T::BITS as usize);
+            const _: () = assert!(KIND_BITS <= R::BITS as usize);
             const _: () = assert!(CAT_BITS <= usize::BITS as usize); // for casting to usize
         }
     }
@@ -384,20 +384,20 @@ impl<'a> RustGenerator<'a> {
             #err_kind_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct #err_kind_name(#private_mod::T);
+            pub struct #err_kind_name(#private_mod::R);
 
             impl #err_kind_name {
-                const fn new(cat: #err_cat_name, variant: #private_mod::T) -> Self {
+                const fn new(cat: #err_cat_name, variant: #private_mod::R) -> Self {
                     Self(variant << #private_mod::CAT_BITS | cat.0)
                 }
 
                 #[inline]
-                fn category_value(&self) -> #private_mod::T {
+                fn category_value(&self) -> #private_mod::R {
                     self.0 & #private_mod::CAT_MASK
                 }
 
                 #[inline]
-                fn variant_value(&self) -> #private_mod::T {
+                fn variant_value(&self) -> #private_mod::R {
                     self.0 >> #private_mod::CAT_BITS
                 }
 
@@ -420,13 +420,13 @@ impl<'a> RustGenerator<'a> {
 
                 #[doc = " Returns the error kind value as the underlying Rust type."]
                 #[inline]
-                pub fn value(&self) -> #private_mod::T {
+                pub fn value(&self) -> #private_mod::R {
                     self.0
                 }
 
                 #[doc = " Creates an error kind from a raw value of the underlying Rust type."]
                 #[inline]
-                pub fn from_value(value: #private_mod::T) -> Option<Self> {
+                pub fn from_value(value: #private_mod::R) -> Option<Self> {
                     let cat = value & #private_mod::CAT_MASK;
                     let variant = value >> #private_mod::CAT_BITS;
                     if cat #category_max_comparison #private_mod::CAT_MAX && variant <= #private_mod::VAR_MAXES[cat as usize] {
@@ -438,13 +438,13 @@ impl<'a> RustGenerator<'a> {
             }
 
             impl tighterror::TightErrorKind for #err_kind_name {
-                type ReprType = #private_mod::T;
-                type CategoryType = #err_cat_name;
+                type R = #private_mod::R;
+                type Category = #err_cat_name;
 
                 const BITS: usize = #private_mod::KIND_BITS;
 
                 #[inline]
-                fn category(&self) -> Self::CategoryType {
+                fn category(&self) -> Self::Category {
                     self.category()
                 }
 
@@ -454,12 +454,12 @@ impl<'a> RustGenerator<'a> {
                 }
 
                 #[inline]
-                fn value(&self) -> Self::ReprType {
+                fn value(&self) -> Self::R {
                     self.value()
                 }
 
                 #[inline]
-                fn from_value(value: Self::ReprType) -> Option<Self> {
+                fn from_value(value: Self::R) -> Option<Self> {
                     Self::from_value(value)
                 }
             }
@@ -521,12 +521,12 @@ impl<'a> RustGenerator<'a> {
             }
 
             impl tighterror::TightError for #err_name {
-                type ReprType = #private_mod::T;
-                type CategoryType = #err_cat_name;
-                type KindType = #err_kind_name;
+                type R = #private_mod::R;
+                type Category = #err_cat_name;
+                type Kind = #err_kind_name;
 
                 #[inline]
-                fn kind(&self) -> Self::KindType {
+                fn kind(&self) -> Self::Kind {
                     self.kind()
                 }
 
@@ -602,11 +602,11 @@ impl<'a> RustGenerator<'a> {
             #err_cat_doc
             #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct #err_cat_name(#private_mod::T);
+            pub struct #err_cat_name(#private_mod::R);
 
             impl #err_cat_name {
                 #[inline]
-                const fn new(v: #private_mod::T) -> Self {
+                const fn new(v: #private_mod::R) -> Self {
                     debug_assert!(v #category_max_comparison #private_mod::CAT_MAX);
                     Self(v)
                 }
@@ -619,7 +619,7 @@ impl<'a> RustGenerator<'a> {
             }
 
             impl tighterror::TightErrorCategory for #err_cat_name {
-                type ReprType = #private_mod::T;
+                type R = #private_mod::R;
                 const BITS: usize = #private_mod::CAT_BITS;
 
                 #[inline]

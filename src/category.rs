@@ -13,7 +13,7 @@ pub trait TightErrorCategory:
     /// The underlying Rust type of the error kind.
     ///
     /// A concrete builtin type, e.g., `u8`.
-    type ReprType;
+    type R;
 
     /// Returns the category name.
     fn name(&self) -> &'static str;

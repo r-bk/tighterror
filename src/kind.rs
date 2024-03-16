@@ -16,13 +16,13 @@ pub trait TightErrorKind:
     /// The underlying Rust type of the error kind.
     ///
     /// A concrete builtin type, e.g., `u8`.
-    type ReprType;
+    type R;
 
     /// The error category concrete type.
-    type CategoryType: TightErrorCategory<ReprType = Self::ReprType>;
+    type Category: TightErrorCategory<R = Self::R>;
 
     /// Returns the error category.
-    fn category(&self) -> Self::CategoryType;
+    fn category(&self) -> Self::Category;
 
     /// Returns the error kind name.
     fn name(&self) -> &'static str;
@@ -36,7 +36,7 @@ pub trait TightErrorKind:
     /// of a program (possibly compiled with another version of error's origin crate)
     /// may lead to bugs because the mapping between an error kind and its
     /// underlying raw value may change.
-    fn value(&self) -> Self::ReprType;
+    fn value(&self) -> Self::R;
 
     /// Creates an error kind from a value of the underlying Rust type.
     ///
@@ -50,5 +50,5 @@ pub trait TightErrorKind:
     /// of a program (possibly compiled with another version of error's origin crate)
     /// may lead to bugs because the mapping between an error kind and its
     /// underlying raw value may change.
-    fn from_value(value: Self::ReprType) -> Option<Self>;
+    fn from_value(value: Self::R) -> Option<Self>;
 }

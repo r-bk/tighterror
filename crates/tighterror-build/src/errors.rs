@@ -6,11 +6,11 @@ See the [categories] module for category constants.*/
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct TebErrorCategory(_p::T);
+pub struct TebErrorCategory(_p::R);
 
 impl TebErrorCategory {
     #[inline]
-    const fn new(v: _p::T) -> Self {
+    const fn new(v: _p::R) -> Self {
         debug_assert!(v == _p::CAT_MAX);
         Self(v)
     }
@@ -23,7 +23,7 @@ impl TebErrorCategory {
 }
 
 impl tighterror::TightErrorCategory for TebErrorCategory {
-    type ReprType = _p::T;
+    type R = _p::R;
     const BITS: usize = _p::CAT_BITS;
 
     #[inline]
@@ -45,20 +45,20 @@ See the [kinds] module for error kind constants.*/
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct TebErrorKind(_p::T);
+pub struct TebErrorKind(_p::R);
 
 impl TebErrorKind {
-    const fn new(cat: TebErrorCategory, variant: _p::T) -> Self {
+    const fn new(cat: TebErrorCategory, variant: _p::R) -> Self {
         Self(variant << _p::CAT_BITS | cat.0)
     }
 
     #[inline]
-    fn category_value(&self) -> _p::T {
+    fn category_value(&self) -> _p::R {
         self.0 & _p::CAT_MASK
     }
 
     #[inline]
-    fn variant_value(&self) -> _p::T {
+    fn variant_value(&self) -> _p::R {
         self.0 >> _p::CAT_BITS
     }
 
@@ -81,13 +81,13 @@ impl TebErrorKind {
 
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
-    pub fn value(&self) -> _p::T {
+    pub fn value(&self) -> _p::R {
         self.0
     }
 
     /// Creates an error kind from a raw value of the underlying Rust type.
     #[inline]
-    pub fn from_value(value: _p::T) -> Option<Self> {
+    pub fn from_value(value: _p::R) -> Option<Self> {
         let cat = value & _p::CAT_MASK;
         let variant = value >> _p::CAT_BITS;
         if cat == _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
@@ -99,12 +99,12 @@ impl TebErrorKind {
 }
 
 impl tighterror::TightErrorKind for TebErrorKind {
-    type ReprType = _p::T;
-    type CategoryType = TebErrorCategory;
+    type R = _p::R;
+    type Category = TebErrorCategory;
     const BITS: usize = _p::KIND_BITS;
 
     #[inline]
-    fn category(&self) -> Self::CategoryType {
+    fn category(&self) -> Self::Category {
         self.category()
     }
 
@@ -114,12 +114,12 @@ impl tighterror::TightErrorKind for TebErrorKind {
     }
 
     #[inline]
-    fn value(&self) -> Self::ReprType {
+    fn value(&self) -> Self::R {
         self.value()
     }
 
     #[inline]
-    fn from_value(value: Self::ReprType) -> Option<Self> {
+    fn from_value(value: Self::R) -> Option<Self> {
         Self::from_value(value)
     }
 }
@@ -161,12 +161,12 @@ impl TebError {
 }
 
 impl tighterror::TightError for TebError {
-    type ReprType = _p::T;
-    type CategoryType = TebErrorCategory;
-    type KindType = TebErrorKind;
+    type R = _p::R;
+    type Category = TebErrorCategory;
+    type Kind = TebErrorKind;
 
     #[inline]
-    fn kind(&self) -> Self::KindType {
+    fn kind(&self) -> Self::Kind {
         self.kind()
     }
 
@@ -267,13 +267,13 @@ mod _d {
 }
 
 mod _p {
-    pub type T = u8;
+    pub type R = u8;
     pub const KIND_BITS: usize = 4;
     pub const CAT_BITS: usize = 0;
-    pub const CAT_MASK: T = 0;
-    pub const CAT_MAX: T = 0;
-    pub static VAR_MAXES: [T; 1] = [9];
-    const _: () = assert!(KIND_BITS <= T::BITS as usize);
+    pub const CAT_MASK: R = 0;
+    pub const CAT_MAX: R = 0;
+    pub static VAR_MAXES: [R; 1] = [9];
+    const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
 }
 
