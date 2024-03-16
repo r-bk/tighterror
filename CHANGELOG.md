@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.11], [b-0.0.11], [c-0.0.11] - 2024-03-16
+
+Finally, some sufficient documentation.
+
+### Changed
+
+- renamed `MainSpec` to `ModuleSpec` in preparation for supporting
+  multiple *tighterror* modules in a single specification file
+
+### Added
+
+- add `no_std` module spec attribute. This enables code generation for Rust
+  `no_std` crates. At this stage this flag implicitly disables the `error_trait`
+  flag, because `std::error::Error` trait isn't available in `core`,
+  and transitively in `no_std`. Moreover, this flag skips generation of
+  some unit tests that require `std`.
+
+- add sufficient framework documentation in all crates, both for docs.rs and
+  in README files.
+
 ## [0.0.10], [b-0.0.10], [c-0.0.10] - 2024-03-09
 
 More breaking cleanups on the way to stability and documentation.
@@ -169,3 +189,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.10]: https://github.com/r-bk/tighterror/releases/tag/v0.0.10
 [b-0.0.10]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.10
 [c-0.0.10]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.10
+[0.0.11]: https://github.com/r-bk/tighterror/releases/tag/v0.0.11
+[b-0.0.11]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.11
+[c-0.0.11]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.11
