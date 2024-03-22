@@ -14,7 +14,8 @@
         "tempfile",
         "idents",
         "consts",
-        "unsuffixed"
+        "unsuffixed",
+        "datetime"
     ],
     "flagWords": []
 }
