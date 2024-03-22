@@ -7,13 +7,13 @@
 //! to have *tighterror-build* in its `[dependencies]`. This library is at
 //! most a build-dependency of the project, not required at runtime (unless
 //! the project implements a tool similar to [cargo-tighterror]).
-//!                                                                                                                                                                                                                                                                                                                         
+//!
 //! *tighterror-build* itself uses the *tighterror* framework.
 //! The [errors] module is a good example of how the end result looks like.
-//!                                                                                                                                                 
+//!
 //! The following sections compare two main ways to use *tighterror-build*.
 //!
-//! # `cargo-tighterror`
+//! # cargo-tighterror
 //!
 //! The recommended way to use the library is through the framework's cargo
 //! plugin [cargo-tighterror]. The plugin is a thin wrapper around
@@ -41,7 +41,7 @@
 //!
 //! See [tighterror] documentation for more information about the plugin.
 //!
-//! # `build.rs`
+//! # build.rs
 //!
 //! In cases where using the cargo plugin is inconvenient or impossible
 //! *tighterror-build* can be used in `[build-dependencies]` of a project,

@@ -27,8 +27,8 @@
 //!     * [Error List](#error-list)
 //!     * [Categories](#categories)
 //!     * [Module Object](#module-object)
-//! 1. [`tighterror-build`](#tighterror-build)
-//! 1. [`cargo-tighterror`](#cargo-tighterror)
+//! 1. [tighterror-build](#tighterror-build)
+//! 1. [cargo-tighterror](#cargo-tighterror)
 //! 1. [Motivation](#motivation)
 //!     * [Error as Trait Object](#error-as-trait-object)
 //!     * [Error as Enum](#error-as-enum)
@@ -545,7 +545,7 @@
 //!    to create a `Result<T, Error>` from `ErrorKind`.<br>
 //!    Default: `true`<br><br>
 //!
-//! # `tighterror-build`
+//! # tighterror-build
 //!
 //! [tighterror-build][tb-docs] is a library that implements *tighterror*
 //! specification file parsing, processing, and code generation.
@@ -561,7 +561,7 @@
 //!
 //! [tb-docs]: https://docs.rs/tighterror-build/latest/tighterror_build
 //!
-//! # `cargo-tighterror`
+//! # cargo-tighterror
 //!
 //! [`cargo-tighterror`][ct-docs] is the cargo plugin of the framework.
 //! It is a thin wrapper around the [`tighterror-build`] library.
