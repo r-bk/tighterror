@@ -133,15 +133,15 @@ impl tighterror::TightErrorKind for ErrorKind { ... }
 impl tighterror::TightError for Error { ... }
 
 pub mod categories {
-   use super::ErrorCategory as C;
-   pub const GENERAL: C = C::new(0);
+   use super::ErrorCategory;
+   pub const GENERAL: ErrorCategory = ErrorCategory::new(0);
 }
 
 pub mod kinds {
-   use super::categories as c;
-   use super::ErrorKind as EK;
-   pub const BAD_ARG: EK = EK::new(c::GENERAL, 0);
-   pub const BAD_FILE_PATH: EK = EK::new(c::GENERAL, 1);
+   use super::categories::*;
+   use super::ErrorKind;
+   pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 0);
+   pub const BAD_FILE_PATH: ErrorKind = ErrorKind::new(GENERAL, 1);
 }
 ```
 
