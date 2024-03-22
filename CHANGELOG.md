@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.12], [b-0.0.12], [c-0.0.12] - 2024-03-22
+
+A breaking change to clean the interface traits.
+
+### Changed
+
+- rename `TightErrorCategory::ReprType` to `TightErrorCategory::R`
+- rename `TightErrorKind::ReprType` to `TightErrorKind::R`
+- rename `TightErrorKind::CategoryType` to `TightErrorKind::Category`
+- rename `TightError::ReprType` to `TightError::R`
+- rename `TightError::CategoryType` to `TightError::Category`
+- rename `TightError::KindType` to `TightError::Kind`
+- cleanup documentation
+
 ## [0.0.11], [b-0.0.11], [c-0.0.11] - 2024-03-16
 
 Finally, some sufficient documentation.
@@ -192,3 +206,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.11]: https://github.com/r-bk/tighterror/releases/tag/v0.0.11
 [b-0.0.11]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.11
 [c-0.0.11]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.11
+[0.0.12]: https://github.com/r-bk/tighterror/releases/tag/v0.0.12
+[b-0.0.12]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.12
+[c-0.0.12]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.12
