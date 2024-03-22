@@ -56,6 +56,15 @@ jobs:
         run: cargo clippy -p tighterror-build --no-default-features --features toml --all-targets
       - name: clippy all-features
         run: cargo clippy -p tighterror-build --all-features --all-targets
+      - name: extra-tests build
+        run: cargo build --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
+      - name: extra-tests test
+        run: cargo test --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
+      - name: extra-tests clippy
+        run: cargo clippy --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
 
   common-ci:
     runs-on: ubuntu-latest
@@ -67,6 +76,9 @@ jobs:
           components: rustfmt
       - name: format all
         run: cargo fmt -- --check
+      - name: extra-tests fmt
+        run: cargo fmt --check
+        working-directory: crates/tighterror-build/tests/extra
       - name: doc
         env:
           RUSTDOCFLAGS: "--cfg docsrs"
@@ -92,24 +104,3 @@ jobs:
       - name: fmt-inner
         run: cargo fmt -- --check tests/compile-fail/*.rs
         working-directory: crates/tighterror-build/tests/compilation
-
-  extra-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt, clippy
-      - name: build
-        run: cargo build --workspace --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/extra
-      - name: test
-        run: cargo test --workspace --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/extra
-      - name: clippy
-        run: cargo clippy --workspace --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/extra
-      - name: fmt
-        run: cargo fmt --check
-        working-directory: crates/tighterror-build/tests/extra
