@@ -75,103 +75,23 @@ find . -type d -name target | xargs rm -rf
 find crates/tighterror-build/tests -type f -name Cargo.lock | xargs rm -f
 """
 
-[tasks.extra_tests_implicit_category_toml_build]
-cwd = "crates/tighterror-build/tests/implicit_category_toml"
+[tasks.extra_tests_build]
+cwd = "crates/tighterror-build/tests/extra"
 command = "cargo"
-args = ["build"]
+args = ["build", "--workspace"]
 
-[tasks.extra_tests_implicit_category_toml_test]
-cwd = "crates/tighterror-build/tests/implicit_category_toml"
+[tasks.extra_tests_test]
+cwd = "crates/tighterror-build/tests/extra"
 command = "cargo"
-args = ["test", "--all-features", "--all-targets"]
+args = ["test", "--workspace", "--all-features", "--all-targets"]
 
-[tasks.extra_tests_implicit_category_toml_clippy]
-cwd = "crates/tighterror-build/tests/implicit_category_toml"
+[tasks.extra_tests_clippy]
+cwd = "crates/tighterror-build/tests/extra"
 command = "cargo"
-args = ["clippy", "--all-features", "--all-targets"]
+args = ["clippy", "--workspace", "--all-features", "--all-targets"]
 
-[tasks.extra_tests_implicit_category_toml_rustfmt]
-cwd = "crates/tighterror-build/tests/implicit_category_toml"
-command = "cargo"
-args = ["fmt", "--check"]
-
-[tasks.extra_tests_minimal_build]
-cwd = "crates/tighterror-build/tests/minimal"
-command = "cargo"
-args = ["build"]
-
-[tasks.extra_tests_minimal_test]
-cwd = "crates/tighterror-build/tests/minimal"
-command = "cargo"
-args = ["test", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_clippy]
-cwd = "crates/tighterror-build/tests/minimal"
-command = "cargo"
-args = ["clippy", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_rustfmt]
-cwd = "crates/tighterror-build/tests/minimal"
-command = "cargo"
-args = ["fmt", "--check"]
-
-[tasks.extra_tests_minimal_256_variants_build]
-cwd = "crates/tighterror-build/tests/minimal_256_variants"
-command = "cargo"
-args = ["build"]
-
-[tasks.extra_tests_minimal_256_variants_test]
-cwd = "crates/tighterror-build/tests/minimal_256_variants"
-command = "cargo"
-args = ["test", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_256_variants_clippy]
-cwd = "crates/tighterror-build/tests/minimal_256_variants"
-command = "cargo"
-args = ["clippy", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_256_variants_rustfmt]
-cwd = "crates/tighterror-build/tests/minimal_256_variants"
-command = "cargo"
-args = ["fmt", "--check"]
-
-[tasks.extra_tests_minimal_toml_build]
-cwd = "crates/tighterror-build/tests/minimal_toml"
-command = "cargo"
-args = ["build"]
-
-[tasks.extra_tests_minimal_toml_test]
-cwd = "crates/tighterror-build/tests/minimal_toml"
-command = "cargo"
-args = ["test", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_toml_clippy]
-cwd = "crates/tighterror-build/tests/minimal_toml"
-command = "cargo"
-args = ["clippy", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_toml_rustfmt]
-cwd = "crates/tighterror-build/tests/minimal_toml"
-command = "cargo"
-args = ["fmt", "--check"]
-
-[tasks.extra_tests_minimal_with_display_build]
-cwd = "crates/tighterror-build/tests/minimal_with_display"
-command = "cargo"
-args = ["build"]
-
-[tasks.extra_tests_minimal_with_display_test]
-cwd = "crates/tighterror-build/tests/minimal_with_display"
-command = "cargo"
-args = ["test", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_with_display_clippy]
-cwd = "crates/tighterror-build/tests/minimal_with_display"
-command = "cargo"
-args = ["clippy", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_with_display_rustfmt]
-cwd = "crates/tighterror-build/tests/minimal_with_display"
+[tasks.extra_tests_rustfmt]
+cwd = "crates/tighterror-build/tests/extra"
 command = "cargo"
 args = ["fmt", "--check"]
 
@@ -201,69 +121,17 @@ cwd = "crates/tighterror-build/tests/compilation"
 command = "cargo"
 args = ["fmt", "--check"]
 
-[tasks.extra_tests_minimal_no_std_build]
-cwd = "crates/tighterror-build/tests/minimal_no_std"
-command = "cargo"
-args = ["build"]
-
-[tasks.extra_tests_minimal_no_std_test]
-cwd = "crates/tighterror-build/tests/minimal_no_std"
-command = "cargo"
-args = ["test", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_no_std_clippy]
-cwd = "crates/tighterror-build/tests/minimal_no_std"
-command = "cargo"
-args = ["clippy", "--all-features", "--all-targets"]
-
-[tasks.extra_tests_minimal_no_std_rustfmt]
-cwd = "crates/tighterror-build/tests/minimal_no_std"
-command = "cargo"
-args = ["fmt", "--check"]
-
 [tasks.et_build]
-dependencies = [
-    "extra_tests_implicit_category_toml_build",
-    "extra_tests_minimal_build",
-    "extra_tests_minimal_256_variants_build",
-    "extra_tests_minimal_toml_build",
-    "extra_tests_minimal_with_display_build",
-    "extra_tests_compilation_build",
-    "extra_tests_minimal_no_std_build",
-]
+dependencies = ["extra_tests_build", "extra_tests_compilation_build"]
 
 [tasks.et_test]
-dependencies = [
-    "extra_tests_implicit_category_toml_test",
-    "extra_tests_minimal_test",
-    "extra_tests_minimal_256_variants_test",
-    "extra_tests_minimal_toml_test",
-    "extra_tests_minimal_with_display_test",
-    # "extra_tests_compilation_test", -- !! must be run separately !!
-    "extra_tests_minimal_no_std_test",
-]
+dependencies = ["extra_tests_test", "extra_tests_compilation_test"]
 
 [tasks.et_clippy]
-dependencies = [
-    "extra_tests_implicit_category_toml_clippy",
-    "extra_tests_minimal_clippy",
-    "extra_tests_minimal_256_variants_clippy",
-    "extra_tests_minimal_toml_clippy",
-    "extra_tests_minimal_with_display_clippy",
-    "extra_tests_compilation_clippy",
-    "extra_tests_minimal_no_std_clippy",
-]
+dependencies = ["extra_tests_clippy", "extra_tests_compilation_clippy"]
 
 [tasks.et_fmt]
-dependencies = [
-    "extra_tests_implicit_category_toml_rustfmt",
-    "extra_tests_minimal_rustfmt",
-    "extra_tests_minimal_256_variants_rustfmt",
-    "extra_tests_minimal_toml_rustfmt",
-    "extra_tests_minimal_with_display_rustfmt",
-    "extra_tests_compilation_rustfmt",
-    "extra_tests_minimal_no_std_rustfmt",
-]
+dependencies = ["extra_tests_rustfmt", "extra_tests_compilation_rustfmt"]
 
 [tasks.et]
 dependencies = ["et_fmt", "et_build", "et_test", "et_clippy"]

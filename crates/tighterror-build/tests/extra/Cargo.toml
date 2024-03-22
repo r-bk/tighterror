@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "implicit_category_toml",
+    "minimal",
+    "minimal_256_variants",
+    "minimal_no_std",
+    "minimal_toml",
+    "minimal_with_display",
+]
+resolver = "2"

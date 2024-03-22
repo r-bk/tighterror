@@ -112,57 +112,15 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
-      - name: test implicit_category_toml
-        run: cargo test
-        working-directory: crates/tighterror-build/tests/implicit_category_toml
-      - name: clippy implicit_category_toml
-        run: cargo clippy --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/implicit_category_toml
-      - name: fmt implicit_category_toml
+      - name: build
+        run: cargo build --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
+      - name: test
+        run: cargo test --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
+      - name: clippy
+        run: cargo clippy --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
+      - name: fmt
         run: cargo fmt --check
-        working-directory: crates/tighterror-build/tests/implicit_category_toml
-      - name: test minimal
-        run: cargo test
-        working-directory: crates/tighterror-build/tests/minimal
-      - name: clippy minimal
-        run: cargo clippy --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/minimal
-      - name: fmt minimal
-        run: cargo fmt --check
-        working-directory: crates/tighterror-build/tests/minimal
-      - name: test minimal_256_variants
-        run: cargo test
-        working-directory: crates/tighterror-build/tests/minimal_256_variants
-      - name: clippy minimal_256_variants
-        run: cargo clippy --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/minimal_256_variants
-      - name: fmt minimal_256_variants
-        run: cargo fmt --check
-        working-directory: crates/tighterror-build/tests/minimal_256_variants
-      - name: test minimal_toml
-        run: cargo test
-        working-directory: crates/tighterror-build/tests/minimal_toml
-      - name: clippy minimal_toml
-        run: cargo clippy --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/minimal_toml
-      - name: fmt minimal_toml
-        run: cargo fmt --check
-        working-directory: crates/tighterror-build/tests/minimal_toml
-      - name: test minimal_with_display
-        run: cargo test
-        working-directory: crates/tighterror-build/tests/minimal_with_display
-      - name: clippy minimal_with_display
-        run: cargo clippy --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/minimal_with_display
-      - name: fmt minimal_with_display
-        run: cargo fmt --check
-        working-directory: crates/tighterror-build/tests/minimal_with_display
-      - name: test minimal_no_std
-        run: cargo test
-        working-directory: crates/tighterror-build/tests/minimal_no_std
-      - name: clippy minimal_no_std
-        run: cargo clippy --all-features --all-targets
-        working-directory: crates/tighterror-build/tests/minimal_no_std
-      - name: fmt minimal_no_std
-        run: cargo fmt --check
-        working-directory: crates/tighterror-build/tests/minimal_no_std
+        working-directory: crates/tighterror-build/tests/extra
