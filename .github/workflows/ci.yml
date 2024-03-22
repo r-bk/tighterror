@@ -12,6 +12,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: --deny warnings
+
 jobs:
   ci:
     runs-on: ${{ matrix.runs_on }}
@@ -30,41 +31,29 @@ jobs:
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          components: rustfmt,clippy
-
+          components: rustfmt, clippy
       - name: build
         run: cargo build --workspace
-
       - name: test
         run: cargo test --workspace
-
       - name: clippy
         run: cargo clippy --workspace --all-features --all-targets
-
       - name: build yaml
         run: cargo build -p tighterror-build --no-default-features --features yaml
-
       - name: build toml
         run: cargo build -p tighterror-build --no-default-features --features toml
-
       - name: build all-features
         run: cargo build -p tighterror-build --all-features
-
       - name: test yaml
         run: cargo test -p tighterror-build --no-default-features --features yaml
-
       - name: test toml
         run: cargo test -p tighterror-build --no-default-features --features toml
-
       - name: test all-features
         run: cargo test -p tighterror-build --all-features
-
       - name: clippy yaml
         run: cargo clippy -p tighterror-build --no-default-features --features yaml --all-targets
-
       - name: clippy toml
         run: cargo clippy -p tighterror-build --no-default-features --features toml --all-targets
-
       - name: clippy all-features
         run: cargo clippy -p tighterror-build --all-features --all-targets
 
