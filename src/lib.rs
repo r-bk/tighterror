@@ -175,18 +175,14 @@
 //! large enough to accommodate a required layout. Supported underlying
 //! types are `u8`, `u16`, `u32` and `u64`.
 //!
-//! <div class="warning">
-//!
 //! Note that the layout of *error kind* is packed and may change
 //! during project's lifetime. For example, addition of a new *error category*
 //! may lead to a left-shift of *variant* bits, thus changing the numeric
-//! value of all *error kinds* of the project, and change of the underlying
-//! Rust type to a wider unsigned integer. Consequently, *error kinds* should be
-//! matched only using named constants defined by their origin crate.
-//! No assumption should be made about a named constant having any specific
-//! numeric value.
-//!
-//! </div>
+//! value of all *error kinds* of the project, and possibly changing the
+//! underlying Rust type to a wider unsigned integer.
+//! Consequently, *error kinds* should be matched only using named constants
+//! defined by their origin crate. No assumption should be made about a named
+//! constant having any specific numeric value.
 //!
 //! [`tighterror-build`]: #tighterror-build
 //! [`cargo-tighterror`]: #cargo-tighterror
@@ -575,12 +571,8 @@
 //! cargo install cargo-tighterror
 //! ```
 //!
-//! <div class="warning">
-//!
 //! Note that the plugin needs to be periodically upgraded to follow
 //! releases of [`tighterror-build`].
-//!
-//! </div>
 //!
 //! The plugin is the recommended way to process *tighterror* specification
 //! files and generate code. It allows a project to generate code in pre-build
