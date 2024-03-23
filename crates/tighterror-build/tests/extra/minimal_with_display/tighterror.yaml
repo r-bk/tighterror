@@ -1,5 +1,5 @@
 ---
-tighterror:
+module:
   doc_from_display: true
 
 errors:

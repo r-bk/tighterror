@@ -1,8 +1,10 @@
 ---
-tighterror:
+main:
   output: src/errors.rs
+
+module:
   doc_from_display: true
-  mod_doc: Crate errors.
+  doc: Crate errors.
   err_name: TebError
   err_kind_name: TebErrorKind
   err_cat_name: TebErrorCategory

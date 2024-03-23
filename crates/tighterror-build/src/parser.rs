@@ -124,7 +124,7 @@ fn check_name(name: &str) -> Result<(), TebError> {
 
 #[cfg(test)]
 mod testing {
-    use crate::spec::{CategorySpec, ErrorSpec, ModuleSpec, Spec};
+    use crate::spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec};
 
     pub const GENERAL_CAT: &str = "General";
 
@@ -139,8 +139,13 @@ mod testing {
             ..Default::default()
         };
 
-        Spec {
+        let module = ModuleSpec {
             categories: vec![cat],
+            ..Default::default()
+        };
+
+        Spec {
+            module,
             ..Default::default()
         }
     }
@@ -152,13 +157,18 @@ mod testing {
             ..Default::default()
         };
 
-        Spec {
+        let module = ModuleSpec {
             categories: vec![cat],
+            ..Default::default()
+        };
+
+        Spec {
+            module,
             ..Default::default()
         }
     }
 
-    pub fn spec_from_module(module: ModuleSpec) -> Spec {
+    pub fn spec_from_module(mut module: ModuleSpec) -> Spec {
         let err = ErrorSpec {
             name: "DummyErr".into(),
             ..Default::default()
@@ -170,9 +180,31 @@ mod testing {
             ..Default::default()
         };
 
+        module.categories = vec![cat];
+
         Spec {
             module,
-            categories: vec![cat],
+            ..Default::default()
         }
+    }
+
+    pub fn spec_from_main(main: MainSpec) -> Spec {
+        let err = ErrorSpec {
+            name: "DummyErr".into(),
+            ..Default::default()
+        };
+
+        let cat = CategorySpec {
+            name: GENERAL_CAT.into(),
+            errors: vec![err],
+            ..Default::default()
+        };
+
+        let module = ModuleSpec {
+            categories: vec![cat],
+            ..Default::default()
+        };
+
+        Spec { main, module }
     }
 }

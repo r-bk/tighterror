@@ -18,7 +18,7 @@ pub fn get_non_unique_error_names(spec: &Spec) -> Vec<String> {
     let mut ans = HashSet::new();
     let mut hs = HashSet::new();
 
-    for c in &spec.categories {
+    for c in &spec.module.categories {
         for e in &c.errors {
             let name = e.name.to_lowercase();
             if hs.contains(&name) {

@@ -27,6 +27,7 @@
 //!     * [Error List](#error-list)
 //!     * [Categories](#categories)
 //!     * [Module Object](#module-object)
+//!     * [Main Object](#main-object)
 //! 1. [tighterror-build](#tighterror-build)
 //! 1. [cargo-tighterror](#cargo-tighterror)
 //! 1. [Motivation](#motivation)
@@ -240,8 +241,8 @@
 //!   The `display` attribute must be explicitly set for this to take effect.<br>
 //!
 //!   This attribute can be set on a higher level in
-//!   [module specification](#main-doc-from-display)
-//!   to affect all errors in the specification file.
+//!   [module specification](#module-doc-from-display)
+//!   to affect all errors in the module.
 //!   Values defined on lower levels win.<br>
 //!   Default: `false`<br>
 //!
@@ -379,14 +380,18 @@
 //!
 //! ## Module Object
 //!
-//! *tighterror* module object is identified by the `tighterror` keyword
+//! The module object is identified by the `module` keyword
 //! and is found at the top-level of a specification file.
+//! It defines attributes of objects that are present at the Rust module level
+//! and below.
+//!
 //! All attributes of the *module object* have default values. Therefore,
-//! the whole `tighterror` section is optional.
+//! the whole `module` section is optional.
 //!
 //! ```yaml
 //! ---
-//! tighterror:
+//! module:
+//!   doc: <string>
 //!   doc_from_display: <bool>
 //!   err_cat_doc: <string>
 //!   err_cat_name: <string>
@@ -395,14 +400,16 @@
 //!   err_kind_name: <string>
 //!   err_name: <string>
 //!   error_trait: <bool>
-//!   mod_doc: <string>
-//!   no_std: <bool>
-//!   output: <string>
 //!   result_from_err: <bool>
 //!   result_from_err_kind: <bool>
 //! ```
 //!
-//! * `doc_from_display` - bool (optional)<a name="main-doc-from-display"></a>
+//! * `doc` - string (optional)
+//!
+//!   Defines the doc comment of the generated module.<br>
+//!   By default module doc comment is not defined.<br><br>
+//!
+//! * `doc_from_display` - bool (optional)<a name="module-doc-from-display"></a>
 //!
 //!   Sets a default value for the [`doc_from_display`](#err-obj-doc-from-display)
 //!   *error object* attribute.
@@ -414,7 +421,7 @@
 //!
 //!   ```yaml
 //!   ---
-//!   tighterror:
+//!   module:
 //!     doc_from_display: true
 //!   errors:
 //!     - MissingAttribute: An object attribute is missing.
@@ -431,7 +438,7 @@
 //!   The default value is equivalent to the following YAML specification:
 //!   ```yaml
 //!   ---
-//!   tighterror:
+//!   module:
 //!     err_cat_doc: |
 //!       Error category type.
 //!
@@ -457,7 +464,7 @@
 //!   The default value is equivalent to the following YAML specification:
 //!   ```yaml
 //!   ---
-//!   tighterror:
+//!   module:
 //!     err_doc: |
 //!       Error type.
 //!
@@ -474,7 +481,7 @@
 //!   The default value is equivalent to the following YAML specification:
 //!   ```yaml
 //!   ---
-//!   tighterror:
+//!   module:
 //!     err_kind_doc: |
 //!       Error kind type.
 //!
@@ -507,28 +514,6 @@
 //!   This attribute is ignored when `no_std` is enabled.<br>
 //!   Default: `true`<br><br>
 //!
-//! * `mod_doc` - string (optional)
-//!
-//!   Defines the doc comment of the generated module.<br>
-//!   By default module doc comment is not defined.<br><br>
-//!
-//! * `no_std` - bool (optional)
-//!
-//!   Generates code suitable for Rust `no_std` environment.
-//!
-//!   Currently this implicitly disables `error_trait` and skips unit tests that
-//!   require `std`.<br>
-//!   Default: `false`<br><br>
-//!
-//! * `output` - string (optional)
-//!
-//!   Defines the output file path.
-//!
-//!   The value `-` forces the output to be written to `stdout`.
-//!
-//!   This attribute is overridden by the `-o, --output` command-line
-//!   argument in *cargo-tighterror*.<br><br>
-//!
 //! * `result_from_err` - bool (optional)
 //!
 //!   When enabled an implementation of [From] trait is added
@@ -540,6 +525,42 @@
 //!    When enabled an implementation of [From] trait is added
 //!    to create a `Result<T, Error>` from `ErrorKind`.<br>
 //!    Default: `true`<br><br>
+//!
+//! ## Main Object
+//!
+//! The main configuration object is identified by the `main`
+//! keyword and is found at the top-level of a specification file. It defines
+//! attributes that affect the code generation globally, applicable to all
+//! other specification objects in the file.
+//!
+//! All attributes of the *main object* have default values. Therefore, the
+//! whole `main` section is optional.
+//!
+//! The *main object* is comprised of the following attributes:
+//!
+//! ```yaml
+//! main:
+//!   no_std: <bool>
+//!   output: <string>
+//! ```
+//!
+//! * `no_std` - bool (optional)
+//!
+//!   Generates code suitable for Rust `no_std` environment.
+//!
+//!   When enabled this attribute implicitly disables `error_trait` and
+//!   skips unit tests that require `std`.<br>
+//!   Default: `false`<br><br>
+//!
+//! * `output` - string (optional)
+//!
+//!   Defines the output file path. When undefined the output is written to
+//!   `stdout`.
+//!
+//!   The value `-` forces the output to be written to `stdout`.
+//!
+//!   This attribute is overridden by the `-o, --output` command-line
+//!   argument in *cargo-tighterror*.<br><br>
 //!
 //! # tighterror-build
 //!

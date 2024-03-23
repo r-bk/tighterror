@@ -4,7 +4,7 @@ use crate::{
         TebError,
     },
     parser::{check_module_ident, check_name, kws},
-    spec::{CategorySpec, ErrorSpec, ModuleSpec, Spec, IMPLICIT_CATEGORY_NAME},
+    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec, IMPLICIT_CATEGORY_NAME},
     util::get_non_unique_error_names,
 };
 use log::error;
@@ -22,6 +22,9 @@ struct YamlErrorParser;
 
 #[derive(Debug)]
 struct ModuleSpecParser;
+
+#[derive(Debug)]
+struct MainSpecParser;
 
 impl YamlParser {
     pub fn from_file(file: File) -> Result<Spec, TebError> {
@@ -76,13 +79,17 @@ impl YamlParser {
 
         let mut spec = Spec::default();
 
-        if let Some(v) = m.remove(kws::TIGHTERROR) {
+        if let Some(v) = m.remove(kws::MAIN) {
+            spec.main = MainSpecParser::from_value(v)?;
+        }
+
+        if let Some(v) = m.remove(kws::MODULE) {
             spec.module = ModuleSpecParser::from_value(v)?;
         }
 
         if let Some(v) = m.remove(kws::ERRORS) {
             let errors = YamlErrorsParser::from_value(v)?;
-            spec.categories.push(CategorySpec {
+            spec.module.categories.push(CategorySpec {
                 name: IMPLICIT_CATEGORY_NAME.into(),
                 errors,
                 ..Default::default()
@@ -104,6 +111,43 @@ impl YamlParser {
     }
 }
 
+impl MainSpecParser {
+    fn from_value(v: Value) -> Result<MainSpec, TebError> {
+        match v {
+            Value::Mapping(m) => Self::from_mapping(m),
+            ref ov => {
+                error!(
+                    "`{}` must be a Mapping: deserialized a {}",
+                    kws::MAIN,
+                    value_type_name(ov)
+                );
+                BAD_SPEC.into()
+            }
+        }
+    }
+
+    fn from_mapping(m: Mapping) -> Result<MainSpec, TebError> {
+        let mut main_spec = MainSpec::default();
+
+        for (k, v) in m.into_iter() {
+            let key = v2key(k)?;
+
+            if !kws::is_main_kw(&key) {
+                error!("invalid `{}` key: {}", kws::MAIN, key);
+                return BAD_SPEC.into();
+            }
+
+            match key.as_str() {
+                kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?),
+                kws::NO_STD => main_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
+                _ => panic!("internal error: unhandled module key {}", key),
+            }
+        }
+
+        Ok(main_spec)
+    }
+}
+
 impl ModuleSpecParser {
     fn from_value(v: Value) -> Result<ModuleSpec, TebError> {
         match v {
@@ -111,7 +155,7 @@ impl ModuleSpecParser {
             ref ov => {
                 error!(
                     "`{}` must be a Mapping: deserialized a {}",
-                    kws::TIGHTERROR,
+                    kws::MODULE,
                     value_type_name(ov)
                 );
                 BAD_SPEC.into()
@@ -126,19 +170,18 @@ impl ModuleSpecParser {
             let key = v2key(k)?;
 
             if !kws::is_mod_kw(&key) {
-                error!("invalid `{}` key: {}", kws::TIGHTERROR, key);
+                error!("invalid `{}` key: {}", kws::MODULE, key);
                 return BAD_SPEC.into();
             }
 
             match key.as_str() {
-                kws::OUTPUT => mod_spec.output = Some(v2string(v, kws::OUTPUT)?),
                 kws::DOC_FROM_DISPLAY => {
                     mod_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }
                 kws::ERR_CAT_DOC => mod_spec.err_cat_doc = Some(v2string(v, kws::ERR_CAT_DOC)?),
                 kws::ERR_KIND_DOC => mod_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?),
                 kws::ERR_DOC => mod_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?),
-                kws::MOD_DOC => mod_spec.mod_doc = Some(v2string(v, kws::MOD_DOC)?),
+                kws::DOC => mod_spec.doc = Some(v2string(v, kws::DOC)?),
                 kws::RESULT_FROM_ERR => {
                     mod_spec.result_from_err = Some(v2bool(v, kws::RESULT_FROM_ERR)?)
                 }
@@ -161,7 +204,6 @@ impl ModuleSpecParser {
                     check_module_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
                     mod_spec.err_cat_name = Some(err_cat_name);
                 }
-                kws::NO_STD => mod_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
                 _ => panic!("internal error: unhandled module key {}", key),
             }
         }

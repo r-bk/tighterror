@@ -1,5 +1,5 @@
 ---
-tighterror:
+main:
   no_std: true
 errors:
   - BadFile

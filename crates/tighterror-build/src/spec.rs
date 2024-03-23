@@ -27,16 +27,13 @@ pub const DEFAULT_NO_STD: bool = false;
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ModuleSpec {
     /// Module documentation
-    pub mod_doc: Option<String>,
+    pub doc: Option<String>,
     /// Error struct's documentation
     pub err_doc: Option<String>,
     /// ErrorKind struct's documentation
     pub err_kind_doc: Option<String>,
     /// A doc string for the ErrorCategory struct
     pub err_cat_doc: Option<String>,
-    /// output file path: relative to the specification file, or an
-    /// absolute path.
-    pub output: Option<String>,
     /// Add `impl From<Error> for Result`
     pub result_from_err: Option<bool>,
     /// Add `impl From<ErrorKind> for Result<T, Error>`
@@ -50,19 +47,30 @@ pub struct ModuleSpec {
     /// A custom name for the ErrorCategory struct
     pub err_cat_name: Option<String>,
     pub oes: OverridableErrorSpec,
+    /// Module categories
+    pub categories: Vec<CategorySpec>,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct MainSpec {
+    /// Output file path: relative to the specification file, or an
+    /// absolute path.
+    pub output: Option<String>,
     /// Generate code for `no_std` environment
     pub no_std: Option<bool>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Spec {
+    /// The main spec
+    pub main: MainSpec,
+    /// A tighterror module spec
     pub module: ModuleSpec,
-    pub categories: Vec<CategorySpec>,
 }
 
 impl Spec {
     pub fn output<'a>(&'a self, path: Option<&'a str>) -> &'a str {
-        path.or(self.module.output.as_deref()).unwrap_or(STDOUT_DST)
+        path.or(self.main.output.as_deref()).unwrap_or(STDOUT_DST)
     }
 
     pub fn test(&self, test: Option<bool>) -> bool {
@@ -70,7 +78,7 @@ impl Spec {
     }
 
     pub fn n_errors_in_largest_category(&self) -> Option<usize> {
-        self.categories.iter().map(|c| c.errors.len()).max()
+        self.module.categories.iter().map(|c| c.errors.len()).max()
     }
 
     pub fn err_doc(&self) -> &str {
@@ -88,7 +96,7 @@ impl Spec {
     }
 
     pub fn cat_const_doc<'a>(&'a self, c: &'a CategorySpec) -> &'a str {
-        if self.categories.len() == 1 {
+        if self.module.categories.len() == 1 {
             c.doc.as_deref().unwrap_or(DEFAULT_GENERAL_CAT_DOC)
         } else {
             c.doc.as_deref().unwrap_or_default()
@@ -129,12 +137,12 @@ impl Spec {
     }
 
     pub fn mod_doc(&self) -> &str {
-        self.module.mod_doc.as_deref().unwrap_or(DEFAULT_MODULE_DOC)
+        self.module.doc.as_deref().unwrap_or(DEFAULT_MODULE_DOC)
     }
 
     pub fn category_max(&self) -> usize {
-        debug_assert!(!self.categories.is_empty());
-        self.categories.len() - 1
+        debug_assert!(!self.module.categories.is_empty());
+        self.module.categories.len() - 1
     }
 
     pub fn result_from_err(&self) -> bool {
@@ -150,7 +158,7 @@ impl Spec {
     }
 
     pub fn error_trait(&self) -> bool {
-        self.module
+        self.main
             .no_std
             .map(|v| !v)
             .or(self.module.error_trait)
@@ -176,6 +184,6 @@ impl Spec {
     }
 
     pub fn no_std(&self) -> bool {
-        self.module.no_std.unwrap_or(DEFAULT_NO_STD)
+        self.main.no_std.unwrap_or(DEFAULT_NO_STD)
     }
 }
