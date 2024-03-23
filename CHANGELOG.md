@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.13], [b-0.0.13], [c-0.0.13] - 2024-03-23
+
+A breaking change to prepare for multiple *tighterror* modules in a single
+specification file.
+
+### Changed
+
+- move module-specific attributes from `[tighterror]` to `[module]` section
+- remove `mod_doc` attribute and use `doc` instead
+- rename `[tighterror]` section to `[main]`
+
 ## [0.0.12], [b-0.0.12], [c-0.0.12] - 2024-03-22
 
 A breaking change to clean the interface traits.
@@ -159,6 +170,7 @@ milestone of being self-hosted in its inner crates.
 - enhance `CodegenOptions` documentation
 - `Display for ErrorCode` now shows the error name. The content of `display`
   attribute is used in `Display for Error`
+- update documentation accordingly
 
 ## [0.0.2], [b-0.0.2], [c-0.0.2] - 2023-12-09
 
@@ -209,3 +221,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.12]: https://github.com/r-bk/tighterror/releases/tag/v0.0.12
 [b-0.0.12]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.12
 [c-0.0.12]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.12
+[0.0.13]: https://github.com/r-bk/tighterror/releases/tag/v0.0.13
+[b-0.0.13]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.13
+[c-0.0.13]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.13
