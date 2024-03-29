@@ -8,8 +8,8 @@ use crate::{
     spec::{ErrorSpec, OverridableErrorSpec},
 };
 
-const GOOD_BOOLS: [(&str, bool); 2] = [("true", true), ("false", false)];
-const BAD_BOOLS: [&str; 8] = ["yes", "tr ue", "1", "on", "null", "True", "False", "no"];
+const GOOD_BOOLEANS: [(&str, bool); 2] = [("true", true), ("false", false)];
+const BAD_BOOLEANS: [&str; 8] = ["yes", "tr ue", "1", "on", "null", "True", "False", "no"];
 const BAD_IDENTS: [&str; 7] = [
     "\"notUpperCamelCase\"",
     "\"With Spaces\"",
@@ -83,7 +83,7 @@ name = \"SingleError\"
 fn test_err_doc_from_display() {
     log_init();
 
-    for good in GOOD_BOOLS {
+    for good in GOOD_BOOLEANS {
         let s = format!(
             "[[errors]]\nname = \"TestError\"\ndoc_from_display = {}",
             good.0
@@ -100,7 +100,7 @@ fn test_err_doc_from_display() {
         assert_eq!(res, spec);
     }
 
-    for bad in BAD_BOOLS {
+    for bad in BAD_BOOLEANS {
         let s = format!(
             "[[errors]]\nname = \"TestError\"\ndoc_from_display = {}",
             bad
@@ -337,7 +337,7 @@ doc_from_display = true
 fn test_module_doc_from_display() {
     log_init();
 
-    for good in GOOD_BOOLS {
+    for good in GOOD_BOOLEANS {
         let s = format!(
             "[module]\ndoc_from_display = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
@@ -353,7 +353,7 @@ fn test_module_doc_from_display() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLS {
+    for bad in BAD_BOOLEANS {
         let s = format!(
             "[module]\ndoc_from_display = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
@@ -519,7 +519,7 @@ name = \"DummyErr\"
 fn test_module_result_from_err() {
     log_init();
 
-    for good in GOOD_BOOLS {
+    for good in GOOD_BOOLEANS {
         let s = format!(
             "[module]\nresult_from_err = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
@@ -533,7 +533,7 @@ fn test_module_result_from_err() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLS {
+    for bad in BAD_BOOLEANS {
         let s = format!(
             "[module]\nresult_from_err = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
@@ -547,7 +547,7 @@ fn test_module_result_from_err() {
 fn test_module_result_from_err_kind() {
     log_init();
 
-    for good in GOOD_BOOLS {
+    for good in GOOD_BOOLEANS {
         let s = format!(
             "[module]\nresult_from_err_kind = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
@@ -561,7 +561,7 @@ fn test_module_result_from_err_kind() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLS {
+    for bad in BAD_BOOLEANS {
         let s = format!(
             "[module]\nresult_from_err_kind = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
@@ -575,7 +575,7 @@ fn test_module_result_from_err_kind() {
 fn test_error_trait() {
     log_init();
 
-    for good in GOOD_BOOLS {
+    for good in GOOD_BOOLEANS {
         let s = format!(
             "[module]\nerror_trait = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
@@ -589,7 +589,7 @@ fn test_error_trait() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLS {
+    for bad in BAD_BOOLEANS {
         let s = format!(
             "[module]\nerror_trait = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
@@ -603,7 +603,7 @@ fn test_error_trait() {
 fn test_no_std() {
     log_init();
 
-    for good in GOOD_BOOLS {
+    for good in GOOD_BOOLEANS {
         let s = format!(
             "[main]\nno_std = {}\n\n[[errors]]\nname = \"DummyErr\"",
             good.0
@@ -617,7 +617,7 @@ fn test_no_std() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLS {
+    for bad in BAD_BOOLEANS {
         let s = format!(
             "[main]\nno_std = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
