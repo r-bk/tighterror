@@ -728,3 +728,14 @@ fn test_error_cat_name() {
         assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
     }
 }
+
+#[test]
+fn test_error_list_unique_names() {
+    log_init();
+
+    let s = "errors = [\"FirstError\",  \"FirstError\", \"SecondError\"]";
+    assert_eq!(TomlParser::from_str(s), BAD_SPEC.into());
+
+    let s = "errors = [\"FirstError\",  \"SecondError\"]";
+    assert!(TomlParser::from_str(s).is_ok());
+}

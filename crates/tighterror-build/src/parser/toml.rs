@@ -79,7 +79,7 @@ impl TomlParser {
             return BAD_SPEC.into();
         };
 
-        let non_unique_errors = get_non_unique_error_names(&spec);
+        let non_unique_errors = get_non_unique_error_names(spec.module.errors_iter());
         for name in &non_unique_errors {
             log::error!("error names must be unique: {}", name);
         }

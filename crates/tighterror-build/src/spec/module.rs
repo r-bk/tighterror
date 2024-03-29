@@ -1,4 +1,4 @@
-use super::{CategorySpec, OverridableErrorSpec};
+use super::{CategorySpec, ErrorSpec, OverridableErrorSpec};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ModuleSpec {
@@ -25,4 +25,39 @@ pub struct ModuleSpec {
     pub oes: OverridableErrorSpec,
     /// Module categories
     pub categories: Vec<CategorySpec>,
+}
+
+impl ModuleSpec {
+    pub fn errors_iter(&self) -> ModuleSpecErrorIter {
+        ModuleSpecErrorIter {
+            categories: self.categories.iter(),
+            errors: [].iter(),
+        }
+    }
+}
+
+pub struct ModuleSpecErrorIter<'a> {
+    categories: std::slice::Iter<'a, CategorySpec>,
+    errors: std::slice::Iter<'a, ErrorSpec>,
+}
+
+impl<'a> Iterator for ModuleSpecErrorIter<'a> {
+    type Item = &'a ErrorSpec;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(e) = self.errors.next() {
+            return Some(e);
+        }
+        loop {
+            if let Some(c) = self.categories.next() {
+                if c.errors.is_empty() {
+                    continue;
+                }
+                self.errors = c.errors.iter();
+                break self.errors.next();
+            } else {
+                break None;
+            }
+        }
+    }
 }
