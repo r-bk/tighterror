@@ -19,7 +19,7 @@ impl TomlParser {
 
         let mut s = String::new();
         if let Err(e) = file.read_to_string(&mut s) {
-            log::error!("failed to read the spec file: {e}");
+            log::error!("failed to read the specification file: {e}");
             return BAD_TOML.into();
         }
 
@@ -41,7 +41,7 @@ impl TomlParser {
             Value::Table(t) => Self::from_table(t),
             v => {
                 log::error!(
-                    "spec document must be a Table: deserialized a {}",
+                    "specification document must be a Table: deserialized a {}",
                     value_type_name(&v)
                 );
                 BAD_SPEC.into()
@@ -52,7 +52,7 @@ impl TomlParser {
     fn from_table(mut table: toml::Table) -> Result<Spec, TebError> {
         for k in table.keys() {
             if !kws::is_root_kw(k) {
-                log::error!("invalid top-level key: {}", k);
+                log::error!("invalid top-level keyword: {}", k);
                 return BAD_SPEC.into();
             }
         }
@@ -75,7 +75,7 @@ impl TomlParser {
                 ..Default::default()
             });
         } else {
-            log::error!("'{}' key is missing", kws::ERRORS);
+            log::error!("'{}' attribute is missing", kws::ERRORS);
             return BAD_SPEC.into();
         };
 
@@ -100,8 +100,7 @@ impl MainSpecParser {
             Value::Table(t) => Self::from_table(t),
             ref ov => {
                 log::error!(
-                    "`{}` must be a Table: deserialized a {}",
-                    kws::MAIN,
+                    "MainObject must be a Table: deserialized a {}",
                     value_type_name(ov)
                 );
                 BAD_SPEC.into()
@@ -116,14 +115,14 @@ impl MainSpecParser {
             let key = check_key(&k)?;
 
             if !kws::is_main_kw(key) {
-                log::error!("invalid `{}` key: {}", kws::MAIN, key);
+                log::error!("invalid MainObject attribute: {}", key);
                 return BAD_SPEC.into();
             }
 
             match key {
                 kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?),
                 kws::NO_STD => main_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
-                _ => panic!("internal error: unhandled module key {}", key),
+                _ => panic!("internal error: unhandled MainObject attribute: {}", key),
             }
         }
 
@@ -140,8 +139,7 @@ impl ModuleSpecParser {
             Value::Table(t) => Self::from_table(t),
             ref ov => {
                 log::error!(
-                    "`{}` must be a Table: deserialized a {}",
-                    kws::MODULE,
+                    "ModuleObject must be a Table: deserialized a {}",
                     value_type_name(ov)
                 );
                 BAD_SPEC.into()
@@ -156,7 +154,7 @@ impl ModuleSpecParser {
             let key = check_key(&k)?;
 
             if !kws::is_mod_kw(key) {
-                log::error!("invalid `{}` key: {}", kws::MODULE, key);
+                log::error!("invalid ModuleObject attribute: {}", key);
                 return BAD_SPEC.into();
             }
 
@@ -190,7 +188,7 @@ impl ModuleSpecParser {
                     check_module_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
                     mod_spec.err_cat_name = Some(err_cat_name);
                 }
-                _ => panic!("internal error: unhandled module key {}", key),
+                _ => panic!("internal error: unhandled ModuleObject attribute: {}", key),
             }
         }
 
@@ -224,7 +222,7 @@ impl TomlErrorsParser {
                 Value::Table(t) => errors.push(TomlErrorParser::from_table(t)?),
                 ov => {
                     log::error!(
-                        "an error must be a String or a Table: deserialized {:?}",
+                        "ErrorObject must be a String or a Table: deserialized {:?}",
                         ov
                     );
                     return BAD_SPEC.into();
@@ -254,7 +252,7 @@ impl TomlErrorParser {
             let key = check_key(&k)?;
 
             if !kws::is_err_kw(key) {
-                log::error!("invalid error Table key: {}", key);
+                log::error!("invalid ErrorObject attribute: {}", key);
                 return BAD_SPEC.into();
             }
 
@@ -265,7 +263,7 @@ impl TomlErrorParser {
                 kws::DOC_FROM_DISPLAY => {
                     err_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }
-                _ => panic!("internal error: unhandled error keyword {}", key),
+                _ => panic!("internal error: unhandled ErrorObject attribute: {}", key),
             }
         }
 

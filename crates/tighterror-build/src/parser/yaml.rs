@@ -53,7 +53,7 @@ impl YamlParser {
             Value::Mapping(m) => Self::from_mapping(m),
             v => {
                 error!(
-                    "spec document must be a Mapping: deserialized a {}",
+                    "specification YAML document must be a Mapping: deserialized a {}",
                     value_type_name(&v)
                 );
                 BAD_SPEC.into()
@@ -66,7 +66,7 @@ impl YamlParser {
             match k {
                 Value::String(s) => {
                     if !kws::is_root_kw(s) {
-                        error!("invalid top-level key: {}", s);
+                        error!("invalid top-level keyword: {}", s);
                         return BAD_SPEC.into();
                     }
                 }
@@ -95,7 +95,7 @@ impl YamlParser {
                 ..Default::default()
             });
         } else {
-            error!("'{}' key is missing", kws::ERRORS);
+            error!("'{}' is not found", kws::ERRORS);
             return BAD_SPEC.into();
         };
 
@@ -117,8 +117,7 @@ impl MainSpecParser {
             Value::Mapping(m) => Self::from_mapping(m),
             ref ov => {
                 error!(
-                    "`{}` must be a Mapping: deserialized a {}",
-                    kws::MAIN,
+                    "MainObject must be a Mapping: deserialized a {}",
                     value_type_name(ov)
                 );
                 BAD_SPEC.into()
@@ -133,14 +132,14 @@ impl MainSpecParser {
             let key = v2key(k)?;
 
             if !kws::is_main_kw(&key) {
-                error!("invalid `{}` key: {}", kws::MAIN, key);
+                error!("invalid MainObject attribute: {}", key);
                 return BAD_SPEC.into();
             }
 
             match key.as_str() {
                 kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?),
                 kws::NO_STD => main_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
-                _ => panic!("internal error: unhandled module key {}", key),
+                _ => panic!("internal error: unhandled MainObject attribute: {}", key),
             }
         }
 
@@ -154,8 +153,7 @@ impl ModuleSpecParser {
             Value::Mapping(m) => Self::from_mapping(m),
             ref ov => {
                 error!(
-                    "`{}` must be a Mapping: deserialized a {}",
-                    kws::MODULE,
+                    "ModuleObject must be a Mapping: deserialized a {}",
                     value_type_name(ov)
                 );
                 BAD_SPEC.into()
@@ -170,7 +168,7 @@ impl ModuleSpecParser {
             let key = v2key(k)?;
 
             if !kws::is_mod_kw(&key) {
-                error!("invalid `{}` key: {}", kws::MODULE, key);
+                error!("invalid ModuleObject attribute: {}", key);
                 return BAD_SPEC.into();
             }
 
@@ -204,7 +202,7 @@ impl ModuleSpecParser {
                     check_module_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
                     mod_spec.err_cat_name = Some(err_cat_name);
                 }
-                _ => panic!("internal error: unhandled module key {}", key),
+                _ => panic!("internal error: unhandled ModuleObject attribute: {}", key),
             }
         }
 
@@ -217,11 +215,7 @@ impl YamlErrorsParser {
         match v {
             Value::Sequence(s) => Self::from_sequence(s),
             ref ov => {
-                error!(
-                    "`{}` must be a Sequence: deserialized a {}",
-                    kws::ERRORS,
-                    value_type_name(ov)
-                );
+                error!("ErrorsList must be a Sequence: deserialized {:?}", ov);
                 BAD_SPEC.into()
             }
         }
@@ -235,7 +229,7 @@ impl YamlErrorsParser {
                 Value::Mapping(m) => errors.push(YamlErrorParser::from_mapping(m)?),
                 ov => {
                     error!(
-                        "an error must be a String or a Mapping: deserialized {:?}",
+                        "ErrorObject in ErrorsList must be a String or a Mapping: deserialized {:?}",
                         ov
                     );
                     return BAD_SPEC.into();
@@ -270,7 +264,10 @@ impl YamlErrorParser {
     fn from_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
         match m.len() {
             0 => {
-                error!("an error must be a non-empty Mapping: deserialized {:?}", m);
+                error!(
+                    "ErrorObject must be a non-empty Mapping: deserialized {:?}",
+                    m
+                );
                 BAD_SPEC.into()
             }
             1 if Self::is_short_mapping(&m) => Self::from_short_mapping(m),
@@ -285,7 +282,10 @@ impl YamlErrorParser {
         let name = match k {
             Value::String(s) => s,
             ov => {
-                error!("`{}` must be a String: deserialized {:?}", kws::NAME, ov);
+                error!(
+                    "name in name-display notation must be a String: deserialized {:?}",
+                    ov
+                );
                 return BAD_SPEC.into();
             }
         };
@@ -295,7 +295,10 @@ impl YamlErrorParser {
         let display = match v {
             Value::String(s) => s,
             ov => {
-                error!("`{}` must be a String: deserialized {:?}", kws::DISPLAY, ov);
+                error!(
+                    "display in name-display notation must be a String: deserialized {:?}",
+                    ov
+                );
                 return BAD_SPEC.into();
             }
         };
@@ -314,7 +317,7 @@ impl YamlErrorParser {
             let key = v2key(k)?;
 
             if !kws::is_err_kw(&key) {
-                error!("invalid error Mapping key: {}", key);
+                error!("invalid ErrorObject attribute: {}", key);
                 return BAD_SPEC.into();
             }
 
@@ -325,7 +328,7 @@ impl YamlErrorParser {
                 kws::DOC_FROM_DISPLAY => {
                     err_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }
-                _ => panic!("internal error: unhandled error keyword {}", key),
+                _ => panic!("internal error: unhandled ErrorObject attribute: {}", key),
             }
         }
 
