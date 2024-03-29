@@ -3,9 +3,8 @@ use crate::{
         kinds::{BAD_SPEC, BAD_TOML},
         TebError,
     },
-    parser::{check_module_ident, check_name, kws},
+    parser::{check_error_name_uniqueness, check_module_ident, check_name, kws},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec, IMPLICIT_CATEGORY_NAME},
-    util::get_non_unique_error_names,
 };
 use std::fs::File;
 use toml::Value;
@@ -78,14 +77,6 @@ impl TomlParser {
             log::error!("'{}' attribute is missing", kws::ERRORS);
             return BAD_SPEC.into();
         };
-
-        let non_unique_errors = get_non_unique_error_names(spec.module.errors_iter());
-        for name in &non_unique_errors {
-            log::error!("error names must be unique: {}", name);
-        }
-        if !non_unique_errors.is_empty() {
-            return BAD_SPEC.into();
-        }
 
         Ok(spec)
     }
@@ -229,6 +220,7 @@ impl TomlErrorsParser {
                 }
             }
         }
+        check_error_name_uniqueness(errors.iter())?;
         Ok(errors)
     }
 }

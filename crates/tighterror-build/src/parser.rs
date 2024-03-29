@@ -4,8 +4,8 @@ use crate::{
         kinds::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
         TebError,
     },
-    spec::Spec,
-    util::open_spec_file,
+    spec::{ErrorSpec, Spec},
+    util::{get_non_unique_error_names, open_spec_file},
 };
 use regex::Regex;
 use std::path::PathBuf;
@@ -120,6 +120,20 @@ fn check_name(name: &str) -> Result<(), TebError> {
     } else {
         Ok(())
     }
+}
+
+fn check_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+where
+    I: IntoIterator<Item = &'a ErrorSpec>,
+{
+    let non_unique_errors = get_non_unique_error_names(iter);
+    for name in &non_unique_errors {
+        log::error!("error names must be unique: {}", name);
+    }
+    non_unique_errors
+        .is_empty()
+        .then_some(())
+        .ok_or_else(|| BAD_SPEC.into())
 }
 
 #[cfg(test)]

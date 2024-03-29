@@ -28,6 +28,7 @@ pub struct ModuleSpec {
 }
 
 impl ModuleSpec {
+    #[allow(dead_code)]
     pub fn errors_iter(&self) -> ModuleSpecErrorIter {
         ModuleSpecErrorIter {
             categories: self.categories.iter(),
