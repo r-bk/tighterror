@@ -99,8 +99,8 @@ impl Spec {
     }
 
     pub fn error_display(&self, _c: &CategorySpec, e: &ErrorSpec) -> String {
-        if let Some(disp) = e.display.as_ref() {
-            return disp.clone();
+        if let Some(dsp) = e.display.as_ref() {
+            return dsp.clone();
         }
         e.ident_name()
     }
