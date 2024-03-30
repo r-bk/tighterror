@@ -5,7 +5,13 @@ authors = ["Rafael Buchbinder <rafi@rbk.io>"]
 edition = "2021"
 description = "A minimalistic error representation framework."
 license = "MIT OR Apache-2.0"
-keywords = ["error", "error-handling", "tighterror", "no_std"]
+keywords = [
+    "error",
+    "error-handling",
+    "error-reporting",
+    "tighterror",
+    "no_std",
+]
 categories = ["rust-patterns", "no-std", "no-std::no-alloc"]
 repository = "https://github.com/r-bk/tighterror"
 exclude = [".git*", "Makefile.toml"]
