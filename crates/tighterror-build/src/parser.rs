@@ -4,7 +4,7 @@ use crate::{
         kinds::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
         TebError,
     },
-    spec::{ErrorSpec, Spec},
+    spec::Spec,
     util::{get_non_unique_names, open_spec_file},
 };
 use regex::Regex;
@@ -122,18 +122,25 @@ fn check_name(name: &str) -> Result<(), TebError> {
     }
 }
 
-fn check_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+fn check_name_uniqueness<'a, I>(item_name: &str, iter: I) -> Result<(), TebError>
 where
-    I: IntoIterator<Item = &'a ErrorSpec>,
+    I: IntoIterator<Item = &'a str>,
 {
-    let non_unique_errors = get_non_unique_names(iter.into_iter().map(|e| e.name.as_str()));
-    for name in &non_unique_errors {
-        log::error!("error names must be unique: {}", name);
+    let non_unique_names = get_non_unique_names(iter);
+    for name in &non_unique_names {
+        log::error!("{} names must be unique: {}", item_name, name);
     }
-    non_unique_errors
+    non_unique_names
         .is_empty()
         .then_some(())
         .ok_or_else(|| BAD_SPEC.into())
+}
+
+fn check_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    check_name_uniqueness("error", iter)
 }
 
 #[cfg(test)]

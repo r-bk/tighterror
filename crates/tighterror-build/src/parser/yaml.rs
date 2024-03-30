@@ -232,7 +232,7 @@ impl ErrorsParser {
                 }
             }
         }
-        check_error_name_uniqueness(errors.iter())?;
+        check_error_name_uniqueness(errors.iter().map(|e| e.name.as_str()))?;
         Ok(errors)
     }
 }
