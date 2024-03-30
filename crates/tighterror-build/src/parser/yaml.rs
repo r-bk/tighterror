@@ -10,20 +10,10 @@ use log::error;
 use serde_yaml::{Mapping, Sequence, Value};
 use std::fs::File;
 
+// ----------------------------------------------------------------------------
+
 #[derive(Debug)]
 pub struct YamlParser;
-
-#[derive(Debug)]
-struct YamlErrorsParser;
-
-#[derive(Debug)]
-struct YamlErrorParser;
-
-#[derive(Debug)]
-struct ModuleSpecParser;
-
-#[derive(Debug)]
-struct MainSpecParser;
 
 impl YamlParser {
     pub fn from_file(file: File) -> Result<Spec, TebError> {
@@ -79,15 +69,15 @@ impl YamlParser {
         let mut spec = Spec::default();
 
         if let Some(v) = m.remove(kws::MAIN) {
-            spec.main = MainSpecParser::from_value(v)?;
+            spec.main = MainParser::from_value(v)?;
         }
 
         if let Some(v) = m.remove(kws::MODULE) {
-            spec.module = ModuleSpecParser::from_value(v)?;
+            spec.module = ModuleParser::from_value(v)?;
         }
 
         if let Some(v) = m.remove(kws::ERRORS) {
-            let errors = YamlErrorsParser::from_value(v)?;
+            let errors = ErrorsParser::from_value(v)?;
             spec.module.categories.push(CategorySpec {
                 name: IMPLICIT_CATEGORY_NAME.into(),
                 errors,
@@ -102,7 +92,12 @@ impl YamlParser {
     }
 }
 
-impl MainSpecParser {
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct MainParser;
+
+impl MainParser {
     fn from_value(v: Value) -> Result<MainSpec, TebError> {
         match v {
             Value::Mapping(m) => Self::from_mapping(m),
@@ -138,7 +133,12 @@ impl MainSpecParser {
     }
 }
 
-impl ModuleSpecParser {
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct ModuleParser;
+
+impl ModuleParser {
     fn from_value(v: Value) -> Result<ModuleSpec, TebError> {
         match v {
             Value::Mapping(m) => Self::from_mapping(m),
@@ -201,7 +201,12 @@ impl ModuleSpecParser {
     }
 }
 
-impl YamlErrorsParser {
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct ErrorsParser;
+
+impl ErrorsParser {
     fn from_value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
         match v {
             Value::Sequence(s) => Self::from_sequence(s),
@@ -216,8 +221,8 @@ impl YamlErrorsParser {
         let mut errors = Vec::new();
         for v in s.into_iter() {
             match v {
-                Value::String(s) => errors.push(YamlErrorParser::from_string(s)?),
-                Value::Mapping(m) => errors.push(YamlErrorParser::from_mapping(m)?),
+                Value::String(s) => errors.push(ErrorParser::from_string(s)?),
+                Value::Mapping(m) => errors.push(ErrorParser::from_mapping(m)?),
                 ov => {
                     error!(
                         "ErrorObject in ErrorsList must be a String or a Mapping: deserialized {:?}",
@@ -232,7 +237,12 @@ impl YamlErrorsParser {
     }
 }
 
-impl YamlErrorParser {
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct ErrorParser;
+
+impl ErrorParser {
     fn from_string(s: String) -> Result<ErrorSpec, TebError> {
         check_name(&s)?;
         Ok(ErrorSpec {
@@ -329,6 +339,8 @@ impl YamlErrorParser {
         Ok(err_spec)
     }
 }
+
+// ----------------------------------------------------------------------------
 
 fn value_type_name(v: &Value) -> &'static str {
     match v {

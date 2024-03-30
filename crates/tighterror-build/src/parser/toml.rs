@@ -9,6 +9,8 @@ use crate::{
 use std::fs::File;
 use toml::Value;
 
+// ----------------------------------------------------------------------------
+
 #[derive(Debug)]
 pub struct TomlParser;
 
@@ -59,15 +61,15 @@ impl TomlParser {
         let mut spec = Spec::default();
 
         if let Some(v) = table.remove(kws::MAIN) {
-            spec.main = MainSpecParser::from_value(v)?;
+            spec.main = MainParser::from_value(v)?;
         }
 
         if let Some(v) = table.remove(kws::MODULE) {
-            spec.module = ModuleSpecParser::from_value(v)?;
+            spec.module = ModuleParser::from_value(v)?;
         }
 
         if let Some(v) = table.remove(kws::ERRORS) {
-            let errors = TomlErrorsParser::from_value(v)?;
+            let errors = ErrorsParser::from_value(v)?;
             spec.module.categories.push(CategorySpec {
                 name: IMPLICIT_CATEGORY_NAME.into(),
                 errors,
@@ -82,10 +84,12 @@ impl TomlParser {
     }
 }
 
-#[derive(Debug)]
-pub struct MainSpecParser;
+// ----------------------------------------------------------------------------
 
-impl MainSpecParser {
+#[derive(Debug)]
+pub struct MainParser;
+
+impl MainParser {
     fn from_value(v: Value) -> Result<MainSpec, TebError> {
         match v {
             Value::Table(t) => Self::from_table(t),
@@ -121,10 +125,12 @@ impl MainSpecParser {
     }
 }
 
-#[derive(Debug)]
-pub struct ModuleSpecParser;
+// ----------------------------------------------------------------------------
 
-impl ModuleSpecParser {
+#[derive(Debug)]
+pub struct ModuleParser;
+
+impl ModuleParser {
     fn from_value(v: Value) -> Result<ModuleSpec, TebError> {
         match v {
             Value::Table(t) => Self::from_table(t),
@@ -187,10 +193,12 @@ impl ModuleSpecParser {
     }
 }
 
-#[derive(Debug)]
-pub struct TomlErrorsParser;
+// ----------------------------------------------------------------------------
 
-impl TomlErrorsParser {
+#[derive(Debug)]
+pub struct ErrorsParser;
+
+impl ErrorsParser {
     fn from_value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
         match v {
             Value::Array(a) => Self::from_array(a),
@@ -209,8 +217,8 @@ impl TomlErrorsParser {
         let mut errors = Vec::new();
         for v in a.into_iter() {
             match v {
-                Value::String(s) => errors.push(TomlErrorParser::from_string(s)?),
-                Value::Table(t) => errors.push(TomlErrorParser::from_table(t)?),
+                Value::String(s) => errors.push(ErrorParser::from_string(s)?),
+                Value::Table(t) => errors.push(ErrorParser::from_table(t)?),
                 ov => {
                     log::error!(
                         "ErrorObject must be a String or a Table: deserialized {:?}",
@@ -225,10 +233,12 @@ impl TomlErrorsParser {
     }
 }
 
-#[derive(Debug)]
-pub struct TomlErrorParser;
+// ----------------------------------------------------------------------------
 
-impl TomlErrorParser {
+#[derive(Debug)]
+pub struct ErrorParser;
+
+impl ErrorParser {
     fn from_string(s: String) -> Result<ErrorSpec, TebError> {
         check_name(&s)?;
         Ok(ErrorSpec {
@@ -264,6 +274,8 @@ impl TomlErrorParser {
         Ok(err_spec)
     }
 }
+
+// ----------------------------------------------------------------------------
 
 fn value_type_name(value: &Value) -> &'static str {
     match value {
