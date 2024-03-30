@@ -35,7 +35,7 @@ meta:
 ---
 errors:
 ";
-    let res = YamlParser::from_str(s);
+    let res = YamlParser::parse_str(s);
     assert_eq!(res, BAD_YAML.into());
 }
 
@@ -53,7 +53,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 }
 
@@ -72,7 +72,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 }
 
@@ -89,7 +89,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 }
 
@@ -110,7 +110,7 @@ fn test_err_doc_from_display() {
             ..Default::default()
         };
         let spec = spec_from_err(err);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(res, spec);
     }
 
@@ -120,7 +120,7 @@ fn test_err_doc_from_display() {
             bad
         );
 
-        let res = YamlParser::from_str(&s);
+        let res = YamlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 }
@@ -140,7 +140,7 @@ fn test_err_display() {
             ..Default::default()
         };
         let spec = spec_from_err(err);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(res, spec);
     }
 
@@ -150,7 +150,7 @@ fn test_err_display() {
             bad
         );
 
-        let res = YamlParser::from_str(&s);
+        let res = YamlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 }
@@ -170,7 +170,7 @@ fn test_err_doc() {
             ..Default::default()
         };
         let spec = spec_from_err(err);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(res, spec);
     }
 
@@ -189,13 +189,13 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 
     for bad in ["null", "1"] {
         let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", bad);
 
-        let res = YamlParser::from_str(&s);
+        let res = YamlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 }
@@ -217,13 +217,13 @@ fn test_err_name() {
 
     for bad in BAD_NAMES {
         let s = format!("---\nerrors:\n  - name: {}", bad);
-        let res = YamlParser::from_str(&s);
+        let res = YamlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 
     for bad in BAD_NAMES {
         let s = format!("---\nerrors:\n  - {}", bad);
-        let res = YamlParser::from_str(&s);
+        let res = YamlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 }
@@ -248,7 +248,7 @@ errors:
         },
     };
     let spec = spec_from_err(err);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 }
 
@@ -301,7 +301,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_err_iter([err1, err2, err3, err4, err5]);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 }
 
@@ -313,7 +313,7 @@ fn test_top_kws() {
 my_errors:
     - BadError
 ";
-    assert_eq!(YamlParser::from_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(YamlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
 
     let s = "
 ---
@@ -321,7 +321,7 @@ module:
   doc_from_display: true
 
 ";
-    assert_eq!(YamlParser::from_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(YamlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
 }
 
 #[test]
@@ -340,7 +340,7 @@ fn test_module_doc_from_display() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -349,7 +349,7 @@ fn test_module_doc_from_display() {
             "---\nmodule:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -372,7 +372,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -388,7 +388,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -411,7 +411,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -427,7 +427,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -450,7 +450,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -466,7 +466,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -489,7 +489,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -505,7 +505,7 @@ errors:
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = YamlParser::from_str(s).unwrap();
+    let res = YamlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -523,7 +523,7 @@ fn test_module_result_from_err() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -532,7 +532,7 @@ fn test_module_result_from_err() {
             "---\nmodule:\n  result_from_err: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -550,7 +550,7 @@ fn test_module_result_from_err_kind() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -559,7 +559,7 @@ fn test_module_result_from_err_kind() {
             "---\nmodule:\n  result_from_err_kind: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -577,7 +577,7 @@ fn test_error_trait() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -586,7 +586,7 @@ fn test_error_trait() {
             "---\nmodule:\n  error_trait: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -601,13 +601,13 @@ fn test_no_std() {
             ..Default::default()
         };
         let spec = spec_from_main(main);
-        let res = YamlParser::from_str(&s).unwrap();
+        let res = YamlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
     for bad in BAD_BOOLEANS {
         let s = format!("---\nmain:\n  no_std: {}\n\nerrors:\n  - DummyErr", bad);
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -620,7 +620,7 @@ fn test_error_name() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = YamlParser::from_str(&format!(
+        let res = YamlParser::parse_str(&format!(
             "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
             good
         ))
@@ -633,7 +633,7 @@ fn test_error_name() {
             "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 
     for bad in [idents::ERROR_CATEGORY, idents::ERROR_KIND] {
@@ -641,7 +641,7 @@ fn test_error_name() {
             "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -654,7 +654,7 @@ fn test_error_kind_name() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = YamlParser::from_str(&format!(
+        let res = YamlParser::parse_str(&format!(
             "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             good
         ))
@@ -667,7 +667,7 @@ fn test_error_kind_name() {
             "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 
     for bad in [idents::ERROR, idents::ERROR_CATEGORY] {
@@ -675,7 +675,7 @@ fn test_error_kind_name() {
             "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -688,7 +688,7 @@ fn test_error_cat_name() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = YamlParser::from_str(&format!(
+        let res = YamlParser::parse_str(&format!(
             "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
             good
         ))
@@ -701,7 +701,7 @@ fn test_error_cat_name() {
             "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 
     for bad in [idents::ERROR, idents::ERROR_KIND] {
@@ -709,7 +709,7 @@ fn test_error_cat_name() {
             "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -718,8 +718,8 @@ fn test_error_list_unique_names() {
     log_init();
 
     let s = "---\nerrors:\n  - FirstError\n  - FirstError\n  - SecondError\n";
-    assert_eq!(YamlParser::from_str(s), BAD_SPEC.into());
+    assert_eq!(YamlParser::parse_str(s), BAD_SPEC.into());
 
     let s = "---\nerrors:\n  - FirstError\n  - SecondError\n";
-    assert!(YamlParser::from_str(s).is_ok());
+    assert!(YamlParser::parse_str(s).is_ok());
 }

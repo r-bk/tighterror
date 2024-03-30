@@ -16,9 +16,9 @@ use std::fs::File;
 pub struct YamlParser;
 
 impl YamlParser {
-    pub fn from_file(file: File) -> Result<Spec, TebError> {
+    pub fn parse_file(file: File) -> Result<Spec, TebError> {
         match serde_yaml::from_reader(file) {
-            Ok(v) => Self::from_value(v),
+            Ok(v) => Self::value(v),
             Err(e) => {
                 log::error!("failed to deserialize YAML: {e}");
                 BAD_YAML.into()
@@ -27,9 +27,9 @@ impl YamlParser {
     }
 
     #[cfg(test)]
-    pub fn from_str(s: &str) -> Result<Spec, TebError> {
+    pub fn parse_str(s: &str) -> Result<Spec, TebError> {
         match serde_yaml::from_str(s) {
-            Ok(v) => Self::from_value(v),
+            Ok(v) => Self::value(v),
             Err(e) => {
                 log::error!("failed to deserialize YAML: {e}");
                 BAD_YAML.into()
@@ -37,9 +37,9 @@ impl YamlParser {
         }
     }
 
-    pub fn from_value(value: Value) -> Result<Spec, TebError> {
+    fn value(value: Value) -> Result<Spec, TebError> {
         match value {
-            Value::Mapping(m) => Self::from_mapping(m),
+            Value::Mapping(m) => Self::mapping(m),
             v => {
                 error!(
                     "specification YAML document must be a Mapping: deserialized a {}",
@@ -50,7 +50,7 @@ impl YamlParser {
         }
     }
 
-    fn from_mapping(mut m: Mapping) -> Result<Spec, TebError> {
+    fn mapping(mut m: Mapping) -> Result<Spec, TebError> {
         for k in m.keys() {
             match k {
                 Value::String(s) => {
@@ -69,15 +69,15 @@ impl YamlParser {
         let mut spec = Spec::default();
 
         if let Some(v) = m.remove(kws::MAIN) {
-            spec.main = MainParser::from_value(v)?;
+            spec.main = MainParser::value(v)?;
         }
 
         if let Some(v) = m.remove(kws::MODULE) {
-            spec.module = ModuleParser::from_value(v)?;
+            spec.module = ModuleParser::value(v)?;
         }
 
         if let Some(v) = m.remove(kws::ERRORS) {
-            let errors = ErrorsParser::from_value(v)?;
+            let errors = ErrorsParser::value(v)?;
             spec.module.categories.push(CategorySpec {
                 name: IMPLICIT_CATEGORY_NAME.into(),
                 errors,
@@ -98,9 +98,9 @@ impl YamlParser {
 struct MainParser;
 
 impl MainParser {
-    fn from_value(v: Value) -> Result<MainSpec, TebError> {
+    fn value(v: Value) -> Result<MainSpec, TebError> {
         match v {
-            Value::Mapping(m) => Self::from_mapping(m),
+            Value::Mapping(m) => Self::mapping(m),
             ref ov => {
                 error!(
                     "MainObject must be a Mapping: deserialized a {}",
@@ -111,7 +111,7 @@ impl MainParser {
         }
     }
 
-    fn from_mapping(m: Mapping) -> Result<MainSpec, TebError> {
+    fn mapping(m: Mapping) -> Result<MainSpec, TebError> {
         let mut main_spec = MainSpec::default();
 
         for (k, v) in m.into_iter() {
@@ -139,9 +139,9 @@ impl MainParser {
 struct ModuleParser;
 
 impl ModuleParser {
-    fn from_value(v: Value) -> Result<ModuleSpec, TebError> {
+    fn value(v: Value) -> Result<ModuleSpec, TebError> {
         match v {
-            Value::Mapping(m) => Self::from_mapping(m),
+            Value::Mapping(m) => Self::mapping(m),
             ref ov => {
                 error!(
                     "ModuleObject must be a Mapping: deserialized a {}",
@@ -152,7 +152,7 @@ impl ModuleParser {
         }
     }
 
-    fn from_mapping(m: Mapping) -> Result<ModuleSpec, TebError> {
+    fn mapping(m: Mapping) -> Result<ModuleSpec, TebError> {
         let mut mod_spec = ModuleSpec::default();
 
         for (k, v) in m.into_iter() {
@@ -207,9 +207,9 @@ impl ModuleParser {
 struct ErrorsParser;
 
 impl ErrorsParser {
-    fn from_value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
+    fn value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
         match v {
-            Value::Sequence(s) => Self::from_sequence(s),
+            Value::Sequence(s) => Self::sequence(s),
             ref ov => {
                 error!("ErrorsList must be a Sequence: deserialized {:?}", ov);
                 BAD_SPEC.into()
@@ -217,12 +217,12 @@ impl ErrorsParser {
         }
     }
 
-    fn from_sequence(s: Sequence) -> Result<Vec<ErrorSpec>, TebError> {
+    fn sequence(s: Sequence) -> Result<Vec<ErrorSpec>, TebError> {
         let mut errors = Vec::new();
         for v in s.into_iter() {
             match v {
-                Value::String(s) => errors.push(ErrorParser::from_string(s)?),
-                Value::Mapping(m) => errors.push(ErrorParser::from_mapping(m)?),
+                Value::String(s) => errors.push(ErrorParser::string(s)?),
+                Value::Mapping(m) => errors.push(ErrorParser::mapping(m)?),
                 ov => {
                     error!(
                         "ErrorObject in ErrorsList must be a String or a Mapping: deserialized {:?}",
@@ -243,7 +243,7 @@ impl ErrorsParser {
 struct ErrorParser;
 
 impl ErrorParser {
-    fn from_string(s: String) -> Result<ErrorSpec, TebError> {
+    fn string(s: String) -> Result<ErrorSpec, TebError> {
         check_name(&s)?;
         Ok(ErrorSpec {
             name: s,
@@ -263,7 +263,7 @@ impl ErrorParser {
         false
     }
 
-    fn from_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
+    fn mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
         match m.len() {
             0 => {
                 error!(
@@ -272,12 +272,12 @@ impl ErrorParser {
                 );
                 BAD_SPEC.into()
             }
-            1 if Self::is_short_mapping(&m) => Self::from_short_mapping(m),
-            _ => Self::from_long_mapping(m),
+            1 if Self::is_short_mapping(&m) => Self::short_mapping(m),
+            _ => Self::long_mapping(m),
         }
     }
 
-    fn from_short_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
+    fn short_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
         assert_eq!(m.len(), 1);
         let (k, v) = m.into_iter().next().unwrap();
 
@@ -312,7 +312,7 @@ impl ErrorParser {
         })
     }
 
-    fn from_long_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
+    fn long_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
         let mut err_spec = ErrorSpec::default();
 
         for (k, v) in m.into_iter() {

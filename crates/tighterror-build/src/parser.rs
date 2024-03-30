@@ -32,9 +32,9 @@ mod kws;
 pub fn from_path(path: PathBuf) -> Result<Spec, TebError> {
     match path.extension() {
         #[cfg(feature = "yaml")]
-        Some(e) if e == "yaml" => YamlParser::from_file(open_spec_file(&path)?),
+        Some(e) if e == "yaml" => YamlParser::parse_file(open_spec_file(&path)?),
         #[cfg(feature = "toml")]
-        Some(e) if e == "toml" => TomlParser::from_file(open_spec_file(&path)?),
+        Some(e) if e == "toml" => TomlParser::parse_file(open_spec_file(&path)?),
         Some(e) => {
             log::error!(
                 "specification file extension {:?} isn't supported: {:?}",

@@ -32,7 +32,7 @@ errors = [\"SingleError\"]
         ..Default::default()
     };
     let spec = spec_from_err(err);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 }
 
@@ -58,7 +58,7 @@ display = \"The single error in the test.\"
     let spec = spec_from_err(err);
 
     for s in [s1, s2] {
-        let res = TomlParser::from_str(s).unwrap();
+        let res = TomlParser::parse_str(s).unwrap();
         assert_eq!(res, spec);
     }
 }
@@ -75,7 +75,7 @@ name = \"SingleError\"
         ..Default::default()
     };
     let spec = spec_from_err(err);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 }
 
@@ -96,7 +96,7 @@ fn test_err_doc_from_display() {
             ..Default::default()
         };
         let spec = spec_from_err(err);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(res, spec);
     }
 
@@ -106,7 +106,7 @@ fn test_err_doc_from_display() {
             bad
         );
 
-        let res = TomlParser::from_str(&s);
+        let res = TomlParser::parse_str(&s);
         assert!(res == BAD_TOML.into() || res == BAD_SPEC.into());
     }
 }
@@ -126,14 +126,14 @@ fn test_err_display() {
             ..Default::default()
         };
         let spec = spec_from_err(err);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(res, spec);
     }
 
     #[allow(clippy::single_element_loop)]
     for bad in ["1"] {
         let s = format!("[[errors]]\nname = \"TestError\"\ndisplay = {}", bad);
-        let res = TomlParser::from_str(&s);
+        let res = TomlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 }
@@ -153,7 +153,7 @@ fn test_err_doc() {
             ..Default::default()
         };
         let spec = spec_from_err(err);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(res, spec);
     }
 
@@ -172,13 +172,13 @@ Second line.
         ..Default::default()
     };
     let spec = spec_from_err(err);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(res, spec);
 
     #[allow(clippy::single_element_loop)]
     for bad in ["1"] {
         let s = format!("[[errors]]\nname = \"TestError\"\ndoc = {}", bad);
-        let res = TomlParser::from_str(&s);
+        let res = TomlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 }
@@ -199,13 +199,13 @@ fn test_err_name() {
 
     for bad in BAD_NAMES {
         let s = format!("[[errors]]\nname = {}", bad);
-        let res = TomlParser::from_str(&s);
+        let res = TomlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 
     for bad in BAD_NAMES {
         let s = format!("errors = [{}]", bad);
-        let res = TomlParser::from_str(&s);
+        let res = TomlParser::parse_str(&s);
         assert_eq!(res, BAD_SPEC.into());
     }
 }
@@ -238,7 +238,7 @@ errors = [
     let spec = spec_from_err(err);
 
     for s in [s1, s2] {
-        let res = TomlParser::from_str(s).unwrap();
+        let res = TomlParser::parse_str(s).unwrap();
         assert_eq!(res, spec);
     }
 }
@@ -312,7 +312,7 @@ doc_from_display = true
     };
     let spec = spec_from_err_iter([err1, err2, err3, err4, err5]);
     for s in [s1, s2] {
-        let res = TomlParser::from_str(s).unwrap();
+        let res = TomlParser::parse_str(s).unwrap();
         assert_eq!(res, spec);
     }
 }
@@ -323,14 +323,14 @@ fn test_top_kws() {
     let s = "
 my_errors = [\"BadError\"]
 ";
-    assert_eq!(TomlParser::from_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(TomlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
 
     let s = "
 [module]
 doc_from_display = true
 
 ";
-    assert_eq!(TomlParser::from_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(TomlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
 }
 
 #[test]
@@ -349,7 +349,7 @@ fn test_module_doc_from_display() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -358,7 +358,7 @@ fn test_module_doc_from_display() {
             "[module]\ndoc_from_display = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::from_str(&s).unwrap_err();
+        let err = TomlParser::parse_str(&s).unwrap_err();
         assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
@@ -382,7 +382,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -397,7 +397,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -420,7 +420,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -435,7 +435,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -458,7 +458,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -473,7 +473,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -496,7 +496,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 
     let s = "
@@ -511,7 +511,7 @@ name = \"DummyErr\"
         ..Default::default()
     };
     let spec = spec_from_module(module);
-    let res = TomlParser::from_str(s).unwrap();
+    let res = TomlParser::parse_str(s).unwrap();
     assert_eq!(spec, res);
 }
 
@@ -529,7 +529,7 @@ fn test_module_result_from_err() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -538,7 +538,7 @@ fn test_module_result_from_err() {
             "[module]\nresult_from_err = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::from_str(&s).unwrap_err();
+        let err = TomlParser::parse_str(&s).unwrap_err();
         assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
@@ -557,7 +557,7 @@ fn test_module_result_from_err_kind() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -566,7 +566,7 @@ fn test_module_result_from_err_kind() {
             "[module]\nresult_from_err_kind = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::from_str(&s).unwrap_err();
+        let err = TomlParser::parse_str(&s).unwrap_err();
         assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
@@ -585,7 +585,7 @@ fn test_error_trait() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -594,7 +594,7 @@ fn test_error_trait() {
             "[module]\nerror_trait = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::from_str(&s).unwrap_err();
+        let err = TomlParser::parse_str(&s).unwrap_err();
         assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
@@ -613,7 +613,7 @@ fn test_no_std() {
             ..Default::default()
         };
         let spec = spec_from_main(main);
-        let res = TomlParser::from_str(&s).unwrap();
+        let res = TomlParser::parse_str(&s).unwrap();
         assert_eq!(spec, res);
     }
 
@@ -622,7 +622,7 @@ fn test_no_std() {
             "[main]\nno_std = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::from_str(&s).unwrap_err();
+        let err = TomlParser::parse_str(&s).unwrap_err();
         assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
     }
 }
@@ -636,7 +636,7 @@ fn test_error_name() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = TomlParser::from_str(&format!(
+        let res = TomlParser::parse_str(&format!(
             "[module]\nerr_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             good
         ))
@@ -649,7 +649,7 @@ fn test_error_name() {
             "[module]\nerr_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
     }
 
     for bad in [idents::ERROR_CATEGORY, idents::ERROR_KIND] {
@@ -657,7 +657,7 @@ fn test_error_name() {
             "[module]\nerr_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -670,7 +670,7 @@ fn test_error_kind_name() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = TomlParser::from_str(&format!(
+        let res = TomlParser::parse_str(&format!(
             "[module]\nerr_kind_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             good
         ))
@@ -683,7 +683,7 @@ fn test_error_kind_name() {
             "[module]\nerr_kind_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
     }
 
     for bad in [idents::ERROR, idents::ERROR_CATEGORY] {
@@ -691,7 +691,7 @@ fn test_error_kind_name() {
             "[module]\nerr_kind_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -704,7 +704,7 @@ fn test_error_cat_name() {
             ..Default::default()
         };
         let spec = spec_from_module(module);
-        let res = TomlParser::from_str(&format!(
+        let res = TomlParser::parse_str(&format!(
             "[module]\nerr_cat_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             good
         ))
@@ -717,7 +717,7 @@ fn test_error_cat_name() {
             "[module]\nerr_cat_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
     }
 
     for bad in [idents::ERROR, idents::ERROR_KIND] {
@@ -725,7 +725,7 @@ fn test_error_cat_name() {
             "[module]\nerr_cat_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::from_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
     }
 }
 
@@ -734,8 +734,8 @@ fn test_error_list_unique_names() {
     log_init();
 
     let s = "errors = [\"FirstError\",  \"FirstError\", \"SecondError\"]";
-    assert_eq!(TomlParser::from_str(s), BAD_SPEC.into());
+    assert_eq!(TomlParser::parse_str(s), BAD_SPEC.into());
 
     let s = "errors = [\"FirstError\",  \"SecondError\"]";
-    assert!(TomlParser::from_str(s).is_ok());
+    assert!(TomlParser::parse_str(s).is_ok());
 }

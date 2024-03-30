@@ -15,7 +15,7 @@ use toml::Value;
 pub struct TomlParser;
 
 impl TomlParser {
-    pub fn from_file(mut file: File) -> Result<Spec, TebError> {
+    pub fn parse_file(mut file: File) -> Result<Spec, TebError> {
         use std::io::Read;
 
         let mut s = String::new();
@@ -24,12 +24,12 @@ impl TomlParser {
             return BAD_TOML.into();
         }
 
-        Self::from_str(&s)
+        Self::parse_str(&s)
     }
 
-    pub fn from_str(s: &str) -> Result<Spec, TebError> {
+    pub fn parse_str(s: &str) -> Result<Spec, TebError> {
         match toml::from_str(s) {
-            Ok(v) => Self::from_value(v),
+            Ok(v) => Self::value(v),
             Err(e) => {
                 log::error!("failed to deserialize TOML: {e}");
                 BAD_TOML.into()
@@ -37,9 +37,9 @@ impl TomlParser {
         }
     }
 
-    fn from_value(value: toml::Value) -> Result<Spec, TebError> {
+    fn value(value: toml::Value) -> Result<Spec, TebError> {
         match value {
-            Value::Table(t) => Self::from_table(t),
+            Value::Table(t) => Self::table(t),
             v => {
                 log::error!(
                     "specification document must be a Table: deserialized a {}",
@@ -50,7 +50,7 @@ impl TomlParser {
         }
     }
 
-    fn from_table(mut table: toml::Table) -> Result<Spec, TebError> {
+    fn table(mut table: toml::Table) -> Result<Spec, TebError> {
         for k in table.keys() {
             if !kws::is_root_kw(k) {
                 log::error!("invalid top-level keyword: {}", k);
@@ -61,15 +61,15 @@ impl TomlParser {
         let mut spec = Spec::default();
 
         if let Some(v) = table.remove(kws::MAIN) {
-            spec.main = MainParser::from_value(v)?;
+            spec.main = MainParser::value(v)?;
         }
 
         if let Some(v) = table.remove(kws::MODULE) {
-            spec.module = ModuleParser::from_value(v)?;
+            spec.module = ModuleParser::value(v)?;
         }
 
         if let Some(v) = table.remove(kws::ERRORS) {
-            let errors = ErrorsParser::from_value(v)?;
+            let errors = ErrorsParser::value(v)?;
             spec.module.categories.push(CategorySpec {
                 name: IMPLICIT_CATEGORY_NAME.into(),
                 errors,
@@ -90,9 +90,9 @@ impl TomlParser {
 pub struct MainParser;
 
 impl MainParser {
-    fn from_value(v: Value) -> Result<MainSpec, TebError> {
+    fn value(v: Value) -> Result<MainSpec, TebError> {
         match v {
-            Value::Table(t) => Self::from_table(t),
+            Value::Table(t) => Self::table(t),
             ref ov => {
                 log::error!(
                     "MainObject must be a Table: deserialized a {}",
@@ -103,7 +103,7 @@ impl MainParser {
         }
     }
 
-    fn from_table(t: toml::Table) -> Result<MainSpec, TebError> {
+    fn table(t: toml::Table) -> Result<MainSpec, TebError> {
         let mut main_spec = MainSpec::default();
 
         for (k, v) in t.into_iter() {
@@ -131,9 +131,9 @@ impl MainParser {
 pub struct ModuleParser;
 
 impl ModuleParser {
-    fn from_value(v: Value) -> Result<ModuleSpec, TebError> {
+    fn value(v: Value) -> Result<ModuleSpec, TebError> {
         match v {
-            Value::Table(t) => Self::from_table(t),
+            Value::Table(t) => Self::table(t),
             ref ov => {
                 log::error!(
                     "ModuleObject must be a Table: deserialized a {}",
@@ -144,7 +144,7 @@ impl ModuleParser {
         }
     }
 
-    fn from_table(t: toml::Table) -> Result<ModuleSpec, TebError> {
+    fn table(t: toml::Table) -> Result<ModuleSpec, TebError> {
         let mut mod_spec = ModuleSpec::default();
 
         for (k, v) in t.into_iter() {
@@ -199,9 +199,9 @@ impl ModuleParser {
 pub struct ErrorsParser;
 
 impl ErrorsParser {
-    fn from_value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
+    fn value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
         match v {
-            Value::Array(a) => Self::from_array(a),
+            Value::Array(a) => Self::array(a),
             ref ov => {
                 log::error!(
                     "`{}` must be an Array: deserialized a {}",
@@ -213,12 +213,12 @@ impl ErrorsParser {
         }
     }
 
-    fn from_array(a: toml::value::Array) -> Result<Vec<ErrorSpec>, TebError> {
+    fn array(a: toml::value::Array) -> Result<Vec<ErrorSpec>, TebError> {
         let mut errors = Vec::new();
         for v in a.into_iter() {
             match v {
-                Value::String(s) => errors.push(ErrorParser::from_string(s)?),
-                Value::Table(t) => errors.push(ErrorParser::from_table(t)?),
+                Value::String(s) => errors.push(ErrorParser::string(s)?),
+                Value::Table(t) => errors.push(ErrorParser::table(t)?),
                 ov => {
                     log::error!(
                         "ErrorObject must be a String or a Table: deserialized {:?}",
@@ -239,7 +239,7 @@ impl ErrorsParser {
 pub struct ErrorParser;
 
 impl ErrorParser {
-    fn from_string(s: String) -> Result<ErrorSpec, TebError> {
+    fn string(s: String) -> Result<ErrorSpec, TebError> {
         check_name(&s)?;
         Ok(ErrorSpec {
             name: s,
@@ -247,7 +247,7 @@ impl ErrorParser {
         })
     }
 
-    fn from_table(t: toml::Table) -> Result<ErrorSpec, TebError> {
+    fn table(t: toml::Table) -> Result<ErrorSpec, TebError> {
         let mut err_spec = ErrorSpec::default();
 
         for (k, v) in t.into_iter() {
