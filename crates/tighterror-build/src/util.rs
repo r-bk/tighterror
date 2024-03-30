@@ -1,7 +1,4 @@
-use crate::{
-    errors::{kinds::FAILED_TO_OPEN_SPEC_FILE, TebError},
-    spec::ErrorSpec,
-};
+use crate::errors::{kinds::FAILED_TO_OPEN_SPEC_FILE, TebError};
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
 pub fn open_spec_file(path: &PathBuf) -> Result<File, TebError> {
@@ -14,19 +11,19 @@ pub fn open_spec_file(path: &PathBuf) -> Result<File, TebError> {
     }
 }
 
-pub fn get_non_unique_error_names<'a, I>(iter: I) -> Vec<String>
+pub fn get_non_unique_names<'a, I>(iter: I) -> Vec<String>
 where
-    I: IntoIterator<Item = &'a ErrorSpec>,
+    I: IntoIterator<Item = &'a str>,
 {
     let mut ans = HashSet::new();
     let mut hs = HashSet::new();
 
-    for e in iter {
-        let name = e.name.to_lowercase();
-        if hs.contains(&name) {
-            ans.insert(e.name.clone());
+    for n in iter {
+        let lower = n.to_lowercase();
+        if hs.contains(&lower) {
+            ans.insert(n.to_owned());
         } else {
-            hs.insert(name);
+            hs.insert(lower);
         }
     }
 

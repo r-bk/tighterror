@@ -5,7 +5,7 @@ use crate::{
         TebError,
     },
     spec::{ErrorSpec, Spec},
-    util::{get_non_unique_error_names, open_spec_file},
+    util::{get_non_unique_names, open_spec_file},
 };
 use regex::Regex;
 use std::path::PathBuf;
@@ -126,7 +126,7 @@ fn check_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
 where
     I: IntoIterator<Item = &'a ErrorSpec>,
 {
-    let non_unique_errors = get_non_unique_error_names(iter);
+    let non_unique_errors = get_non_unique_names(iter.into_iter().map(|e| e.name.as_str()));
     for name in &non_unique_errors {
         log::error!("error names must be unique: {}", name);
     }
