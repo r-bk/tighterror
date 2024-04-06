@@ -52,13 +52,13 @@ impl<'a> RustGenerator<'a> {
         let variant_mask = 1u64
             .checked_shl(n_variant_bits as u32)
             .map(|v| v - 1)
-            .unwrap_or(u64::MAX);
+            .unwrap_or(u64::MAX)
+            .checked_shl(n_category_bits as u32)
+            .unwrap_or(0);
         let category_mask = 1u64
             .checked_shl(n_category_bits as u32)
             .map(|v| v - 1)
-            .unwrap_or(u64::MAX)
-            .checked_shl(n_variant_bits as u32)
-            .unwrap_or(0);
+            .unwrap_or(u64::MAX);
         let kind_mask = 1u64
             .checked_shl(n_kind_bits as u32)
             .map(|v| v - 1)
