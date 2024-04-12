@@ -1049,15 +1049,28 @@ fn category_error_kind_display(c: &CategorySpec) -> String {
     format!("{}_DISPLAY", c.ident_name())
 }
 
+fn _handle_multiline_doc(doc: &str) -> String {
+    let n_lines = doc.lines().count();
+    if n_lines <= 1 {
+        if doc.starts_with(' ') {
+            doc.to_owned()
+        } else {
+            format!(" {doc}")
+        }
+    } else {
+        let mut s = String::from("\n");
+        for line in doc.lines() {
+            s.push_str(&format!(" * {}\n", line));
+        }
+        s
+    }
+}
+
 fn _doc_tokens(doc: &str, outer: bool) -> TokenStream {
     if doc.is_empty() {
         quote! {}
     } else {
-        let doc = if doc.starts_with(' ') {
-            doc.to_owned()
-        } else {
-            format!(" {}", doc)
-        };
+        let doc = _handle_multiline_doc(doc);
         if outer {
             quote! {
                 #![doc = #doc]
