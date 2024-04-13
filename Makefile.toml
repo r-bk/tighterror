@@ -125,7 +125,7 @@ args = ["fmt", "--check"]
 dependencies = ["extra_tests_build", "extra_tests_compilation_build"]
 
 [tasks.et_test]
-dependencies = ["extra_tests_test", "extra_tests_compilation_test"]
+alias = "extra_tests_test"
 
 [tasks.et_clippy]
 dependencies = ["extra_tests_clippy", "extra_tests_compilation_clippy"]
