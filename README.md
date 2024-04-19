@@ -27,6 +27,21 @@ errors in a single Rust type.
      automatically
    - ergonomic error reporting
 
+## Features
+
+- [x] YAML specification
+- [x] TOML specification
+- [x] Single category
+  - [x] implicit category custom name
+- [ ] Multiple categories
+  - [ ] flat kinds
+- [ ] Multiple modules
+- [ ] Variant error types
+- [ ] Category error types
+- [ ] Flags
+- [ ] Location
+- [ ] Backtrace
+
 ## Introduction
 
 *tighterror* takes the declarative approach where a user project maintains its
