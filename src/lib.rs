@@ -286,6 +286,7 @@
 //! assigned to errors in the order of their appearance in the list.
 //! Therefore, insertion or deletion of a not-last object causes
 //! reassignment of *error variant* of all subsequent objects in the list.
+//! This may create a larger than expected diff in the generated code.
 //!
 //! ### YAML Error List
 //!
