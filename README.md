@@ -15,6 +15,8 @@ represents a group of errors in a single Rust type. This concept is taken
 one step further such that a *tighterror* can represent multiple groups of
 errors in a single Rust type.
 
+## Goals
+
 *tighterror* tries to achieve the following goals:
 
 1. Minimize the size of error types while keeping support for idiomatic error
