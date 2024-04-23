@@ -23,7 +23,7 @@ errors in a single Rust type.
    reporting.
 1. Minimize the runtime overhead on error path. No dynamic memory allocation
    (by default).
-1. Minimize the runtime overhead of handling a group of errors.
+1. Minimize the runtime overhead of matching a group of errors.
 1. Minimize the coding effort:
    - define errors in a markup language and generate Rust boilerplate code
      automatically

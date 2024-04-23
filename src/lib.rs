@@ -11,7 +11,7 @@
 //! 1. Minimal error type size, e.g., `u8` or ZST, while still supporting
 //!    idiomatic error reporting.
 //! 1. Minimal runtime overhead on error path. No dynamic memory allocation.
-//! 1. Minimal runtime overhead in handling a whole logical group of errors.
+//! 1. Minimal runtime overhead in matching a whole logical group of errors.
 //! 1. Minimal coding overhead:
 //!    - specify errors in markup language and generate all the boilerplate
 //!      Rust code automatically
