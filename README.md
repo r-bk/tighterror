@@ -33,10 +33,10 @@ errors in a single Rust type.
 
 - [x] YAML specification
 - [x] TOML specification
-- [ ] Categories
+- [x] Categories
   - [x] implicit
   - [x] single
-  - [ ] multiple
+  - [x] multiple
 - [ ] Modules
   - [x] implicit
   - [x] single
