@@ -20,6 +20,7 @@ exclude = [".git*", "Makefile.toml"]
 members = [
     "crates/tighterror-build",
     "crates/tighterror-build/tests/implicit_category",
+    "crates/tighterror-build/tests/multiple_categories",
     "crates/cargo-tighterror",
 ]
 

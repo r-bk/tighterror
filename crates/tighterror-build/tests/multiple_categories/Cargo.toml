@@ -1,0 +1,11 @@
+[package]
+name = "test_multiple_categories"
+edition = "2021"
+version = "0.0.0"
+
+[dependencies]
+tighterror = { path = "../../../.." }
+
+[build-dependencies]
+env_logger = "0.11.1"
+tighterror-build = { path = "../.." }

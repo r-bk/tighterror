@@ -1,0 +1,63 @@
+[module]
+doc_from_display = true
+err_doc = "A custom error struct doc."
+err_kind_doc = "A custom error doc."
+err_cat_doc = "A custom category doc."
+error_trait = true
+result_from_err = true
+result_from_err_kind = true
+err_name = "McError"
+err_kind_name = "McErrorKind"
+err_cat_name = "McErrorCategory"
+
+[[categories]]
+name = "Parsing"
+doc = "Parsing errors category."
+
+[[categories.errors]]
+name = "BadToken"
+display = "Decoded an invalid token."
+
+[[categories.errors]]
+name = "QueueFull"
+display = "Parsing queue is full."
+
+[[categories]]
+name = "Processing"
+doc = "Processing errors category."
+
+[[categories.errors]]
+name = "OutOfMemory"
+display = "Memory pool is empty."
+
+[[categories.errors]]
+name = "QueueFull"
+display = "Processing queue is full."
+
+[[categories]]
+name = "General"
+doc = "General errors category."
+
+[[categories.errors]]
+name = "BadArg"
+display = "Invalid argument received."
+doc = """
+An invalid argument was received.
+
+# Examples
+
+```rust
+# struct Error;
+# impl From<u32> for Error {
+#     fn from(v: u32) -> Self {
+#         Self{}
+#     }
+# }
+# const BAD_ARG: u32 = 0;
+let e: Error = BAD_ARG.into();
+```
+"""
+
+[[categories.errors]]
+name = "Timeout"
+display = "Operation timed out."
