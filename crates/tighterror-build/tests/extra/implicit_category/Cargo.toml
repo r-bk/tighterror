@@ -4,11 +4,11 @@ edition = "2021"
 version = "0.0.0"
 
 [dependencies]
-tighterror = { path = "../../../.." }
+tighterror = { path = "../../../../.." }
 
 [build-dependencies]
 env_logger = "0.11.1"
-tighterror-build = { path = "../.." }
+tighterror-build = { path = "../../.." }
 
 [dev-dependencies]
 anyhow = "1.0"

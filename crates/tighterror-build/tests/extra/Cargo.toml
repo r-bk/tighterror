@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "implicit_category",
     "implicit_category_toml",
     "minimal",
     "minimal_256_variants",

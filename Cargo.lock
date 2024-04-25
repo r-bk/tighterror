@@ -442,16 +442,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "test_implicit_category"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "env_logger 0.11.1",
- "tighterror",
- "tighterror-build",
-]
-
-[[package]]
 name = "test_multiple_categories"
 version = "0.0.0"
 dependencies = [

@@ -19,7 +19,6 @@ exclude = [".git*", "Makefile.toml"]
 [workspace]
 members = [
     "crates/tighterror-build",
-    "crates/tighterror-build/tests/implicit_category",
     "crates/tighterror-build/tests/multiple_categories",
     "crates/cargo-tighterror",
 ]

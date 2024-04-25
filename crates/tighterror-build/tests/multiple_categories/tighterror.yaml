@@ -16,6 +16,7 @@ categories:
     doc: Parsing errors category.
     errors:
       - BadToken: Decoded an invalid token.
+      - QueueFull: Parsing queue is full.
 
   - name: Processing
     doc: Processing errors category.
