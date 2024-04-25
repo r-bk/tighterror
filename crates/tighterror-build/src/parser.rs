@@ -1,7 +1,7 @@
 use crate::{
     coder::idents,
     errors::{
-        kinds::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
+        kinds::general::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
         TebError,
     },
     spec::Spec,
@@ -28,6 +28,12 @@ cfg_if::cfg_if! {
 }
 
 mod kws;
+
+#[derive(Debug)]
+pub enum ParseMode {
+    Single,
+    List,
+}
 
 pub fn from_path(path: PathBuf) -> Result<Spec, TebError> {
     match path.extension() {
@@ -143,6 +149,13 @@ where
     check_name_uniqueness("error", iter)
 }
 
+fn check_category_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    check_name_uniqueness("category", iter)
+}
+
 #[cfg(test)]
 mod testing {
     use crate::spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec};
@@ -227,5 +240,23 @@ mod testing {
         };
 
         Spec { main, module }
+    }
+
+    pub fn spec_from_category(mut cat: CategorySpec) -> Spec {
+        let err = ErrorSpec {
+            name: "DummyErr".into(),
+            ..Default::default()
+        };
+        cat.errors = vec![err];
+
+        let module = ModuleSpec {
+            categories: vec![cat],
+            ..Default::default()
+        };
+
+        Spec {
+            module,
+            ..Default::default()
+        }
     }
 }

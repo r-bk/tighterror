@@ -14,12 +14,12 @@ mod tests {
 
     #[test]
     fn test_result_from_err() {
-        let _res: Result<(), Error> = Error::from(kinds::BAD_FILE).into();
+        let _res: Result<(), Error> = Error::from(kinds::general::BAD_FILE).into();
     }
 
     #[test]
     fn test_result_from_err_kind() {
-        let _res: Result<(), Error> = kinds::BAD_FILE.into();
+        let _res: Result<(), Error> = kinds::general::BAD_FILE.into();
     }
 
     #[test]
@@ -27,13 +27,13 @@ mod tests {
         fn foo<T: std::error::Error>(e: T) -> String {
             format!("{e}")
         }
-        let e: Error = kinds::BAD_FILE.into();
+        let e: Error = kinds::general::BAD_FILE.into();
         assert_eq!(foo(e), "BAD_FILE");
     }
 
     #[test]
     fn test_into_anyhow() {
-        let e: anyhow::Error = Error::from(kinds::BAD_FILE).into();
+        let e: anyhow::Error = Error::from(kinds::general::BAD_FILE).into();
         assert_eq!(format!("{e}"), "BAD_FILE");
     }
 }

@@ -1,8 +1,11 @@
 use crate::{
     coder::idents,
-    errors::kinds::{BAD_SPEC, BAD_TOML},
+    errors::kinds::general::{BAD_SPEC, BAD_TOML},
     parser::{
-        testing::{log_init, spec_from_err, spec_from_err_iter, spec_from_main, spec_from_module},
+        testing::{
+            log_init, spec_from_category, spec_from_err, spec_from_err_iter, spec_from_main,
+            spec_from_module,
+        },
         toml::*,
     },
     spec::{ErrorSpec, OverridableErrorSpec},
@@ -738,4 +741,269 @@ fn test_error_list_unique_names() {
 
     let s = "errors = [\"FirstError\",  \"SecondError\"]";
     assert!(TomlParser::parse_str(s).is_ok());
+}
+
+#[test]
+fn test_category_name() {
+    log_init();
+
+    for good in ["TheCategory", IMPLICIT_CATEGORY_NAME] {
+        let category = CategorySpec {
+            name: good.to_owned(),
+            ..Default::default()
+        };
+
+        let spec = spec_from_category(category);
+        let res = TomlParser::parse_str(&format!(
+            "[category]\nname = \"{good}\"\n[[errors]]\nname = \"DummyErr\""
+        ))
+        .unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_IDENTS {
+        assert!(TomlParser::parse_str(&format!(
+            "[category]\nname = {bad}\n[[errors]]\nname = \"DummyErr\""
+        ))
+        .is_err_and(|e| e.kind() == BAD_SPEC));
+    }
+
+    for bad in [kws::MAIN, kws::ERRORS] {
+        assert!(TomlParser::parse_str(&format!(
+            "[category]\nname = \"{bad}\"\n[[errors]]\nname = \"DummyErr\""
+        ))
+        .is_err_and(|e| e.kind() == BAD_SPEC));
+    }
+}
+
+#[test]
+fn test_category_doc() {
+    let s = r#"
+[category]
+doc = """
+Category long doc string.
+
+Appears on multiple lines.
+"""
+
+[[errors]]
+name = "DummyErr"
+"#;
+    let spec = spec_from_category(CategorySpec {
+        name: IMPLICIT_CATEGORY_NAME.into(),
+        doc: Some("Category long doc string.\n\nAppears on multiple lines.\n".into()),
+        ..Default::default()
+    });
+    let res = TomlParser::parse_str(s).unwrap();
+    assert_eq!(spec, res);
+
+    let s = r#"
+[category]
+doc = ""
+
+[[errors]]
+name = "DummyErr"
+"#;
+    let spec = spec_from_category(CategorySpec {
+        name: IMPLICIT_CATEGORY_NAME.into(),
+        doc: Some("".into()),
+        ..Default::default()
+    });
+    let res = TomlParser::parse_str(s).unwrap();
+    assert_eq!(spec, res);
+}
+
+#[test]
+fn test_category_doc_from_display() {
+    log_init();
+
+    for good in GOOD_BOOLEANS {
+        let s = format!(
+            "[category]\ndoc_from_display = {}\n[[errors]]\nname = \"DummyErr\"",
+            good.0
+        );
+        let cat = CategorySpec {
+            name: IMPLICIT_CATEGORY_NAME.into(),
+            oes: OverridableErrorSpec {
+                doc_from_display: Some(good.1),
+            },
+            ..Default::default()
+        };
+        let spec = spec_from_category(cat);
+        let res = TomlParser::parse_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_BOOLEANS {
+        let s = format!(
+            "[category]\ndoc_from_display = {}\n[[errors]]\nname = \"DummyErr\"",
+            bad
+        );
+        assert!(
+            TomlParser::parse_str(&s).is_err_and(|e| e.kind() == BAD_SPEC || e.kind() == BAD_TOML)
+        );
+    }
+}
+
+#[test]
+fn test_category_errors_list_in_single_category() {
+    log_init();
+
+    let s = r#"
+errors = ["DummyErr"]
+
+[category]
+name = "Custom"
+doc = "Custom category."
+doc_from_display = false
+errors = ["DummyErr"]
+"#;
+
+    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_errors_and_categories_missing() {
+    log_init();
+
+    let s = r#"
+[category]
+name = "Custom"
+doc = "Custom category."
+doc_from_display = false
+"#;
+    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_errors_and_categories_mutual_exclusion() {
+    log_init();
+
+    let s = r#"
+[[categories]]
+name = "Custom"
+doc = "Custom category."
+doc_from_display = false
+errors = ["DummyErr"]
+
+[[errors]]
+name = "DummyErr2"
+"#;
+    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_errors_list_mandatory_in_categories() {
+    log_init();
+
+    let s = r#"
+[[categories]]
+name = "Custom"
+doc = "Custom category."
+doc_from_display = false
+"#;
+    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+
+    let s = r#"
+[[categories]]
+name = "Custom"
+doc = "Custom category."
+doc_from_display = false
+errors = []
+"#;
+    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_name_mandatory_in_categories_list() {
+    log_init();
+
+    let s = r#"
+[[categories]]
+doc = "Category without name."
+doc_from_display = true
+errors = ["DummyErr"]
+"#;
+    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_multiple_categories() {
+    log_init();
+
+    let s = r#"
+[[categories]]
+name = "Cat1"
+doc = "First category."
+doc_from_display = false
+errors = ["DummyErr"]
+
+[[categories]]
+name = "Cat2"
+doc_from_display = true
+errors = ["DummyErr2"]
+"#;
+
+    let cat1 = CategorySpec {
+        name: "Cat1".into(),
+        doc: Some("First category.".into()),
+        oes: OverridableErrorSpec {
+            doc_from_display: Some(false),
+        },
+        errors: vec![ErrorSpec {
+            name: "DummyErr".into(),
+            ..Default::default()
+        }],
+    };
+
+    let cat2 = CategorySpec {
+        name: "Cat2".into(),
+        oes: OverridableErrorSpec {
+            doc_from_display: Some(true),
+        },
+        errors: vec![ErrorSpec {
+            name: "DummyErr2".into(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let spec = Spec {
+        module: ModuleSpec {
+            categories: vec![cat1, cat2],
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let res = TomlParser::parse_str(s).unwrap();
+    assert_eq!(spec, res);
+}
+
+#[test]
+fn test_category_name_uniqueness() {
+    log_init();
+
+    let s = r#"
+[[categories]]
+name = "Cat1"
+doc = "First category."
+doc_from_display = false
+errors = ["DummyErr1"]
+
+[[categories]]
+name = "Cat1"
+doc_from_display = false
+errors = ["DummyErr2"]
+
+[[categories]]
+name = "Cat2"
+errors = ["DummyErr2"]
+
+[[categories]]
+name = "Cat2"
+errors = ["DummyErr3"]
+
+"#;
+    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
 }

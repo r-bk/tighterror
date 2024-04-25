@@ -1,13 +1,16 @@
 use crate::{
     errors::{
-        kinds::{BAD_SPEC, BAD_TOML},
+        kinds::general::{BAD_SPEC, BAD_TOML},
         TebError,
     },
-    parser::{check_error_name_uniqueness, check_module_ident, check_name, kws},
+    parser::{
+        check_category_name_uniqueness, check_error_name_uniqueness, check_module_ident,
+        check_name, kws, ParseMode,
+    },
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec, IMPLICIT_CATEGORY_NAME},
 };
 use std::fs::File;
-use toml::Value;
+use toml::{Table, Value};
 
 // ----------------------------------------------------------------------------
 
@@ -51,12 +54,7 @@ impl TomlParser {
     }
 
     fn table(mut table: toml::Table) -> Result<Spec, TebError> {
-        for k in table.keys() {
-            if !kws::is_root_kw(k) {
-                log::error!("invalid top-level keyword: {}", k);
-                return BAD_SPEC.into();
-            }
-        }
+        Self::check_toplevel_attributes(&table)?;
 
         let mut spec = Spec::default();
 
@@ -68,19 +66,58 @@ impl TomlParser {
             spec.module = ModuleParser::value(v)?;
         }
 
+        if let Some(v) = table.remove(kws::CATEGORY) {
+            let parser = CategoryParser(ParseMode::Single);
+            let cat_spec = parser.value(v)?;
+            spec.module.categories.push(cat_spec);
+        }
+
+        if let Some(v) = table.remove(kws::CATEGORIES) {
+            spec.module.categories = CategoriesParser::value(v)?;
+        }
+
         if let Some(v) = table.remove(kws::ERRORS) {
             let errors = ErrorsParser::value(v)?;
-            spec.module.categories.push(CategorySpec {
-                name: IMPLICIT_CATEGORY_NAME.into(),
-                errors,
-                ..Default::default()
-            });
-        } else {
-            log::error!("'{}' attribute is missing", kws::ERRORS);
-            return BAD_SPEC.into();
-        };
+            if let Some(cat) = spec.module.categories.first_mut() {
+                cat.errors = errors;
+            } else {
+                spec.module.categories.push(CategorySpec {
+                    name: IMPLICIT_CATEGORY_NAME.into(),
+                    errors,
+                    ..Default::default()
+                });
+            }
+        }
 
         Ok(spec)
+    }
+
+    fn check_toplevel_attributes(table: &toml::Table) -> Result<(), TebError> {
+        for k in table.keys() {
+            if !kws::is_root_kw(k) {
+                log::error!("invalid top-level keyword: {}", k);
+                return BAD_SPEC.into();
+            }
+        }
+
+        for (k1, k2) in [
+            (kws::ERRORS, kws::CATEGORIES),
+            (kws::CATEGORY, kws::CATEGORIES),
+        ] {
+            if table.contains_key(k1) && table.contains_key(k2) {
+                log::error!("top-level attributes '{k1}' and '{k2}' are mutually exclusive");
+                return BAD_SPEC.into();
+            }
+        }
+
+        for (k1, k2) in [(kws::ERRORS, kws::CATEGORIES)] {
+            if !(table.contains_key(k1) || table.contains_key(k2)) {
+                log::error!("one of '{k1}' or '{k2}' must be specified");
+                return BAD_SPEC.into();
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -272,6 +309,124 @@ impl ErrorParser {
         check_name(&err_spec.name)?;
 
         Ok(err_spec)
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct CategoryParser(ParseMode);
+
+impl CategoryParser {
+    fn value(&self, v: Value) -> Result<CategorySpec, TebError> {
+        match v {
+            Value::Table(t) => self.table(t),
+            ref ov => {
+                log::error!(
+                    "ModuleObject must be a Table: deserialized a {}",
+                    value_type_name(ov)
+                );
+                BAD_SPEC.into()
+            }
+        }
+    }
+
+    fn table(&self, mut t: Table) -> Result<CategorySpec, TebError> {
+        for k in t.keys() {
+            if !kws::is_cat_kw(k) {
+                log::error!("invalid CategoryObject attribute: {}", k);
+                return BAD_SPEC.into();
+            }
+        }
+
+        let mut cat_spec = CategorySpec::default();
+
+        if let Some(v) = t.remove(kws::NAME) {
+            let name = v2string(v, kws::NAME)?;
+            check_name(&name)?;
+            cat_spec.name = name;
+        }
+
+        if let Some(v) = t.remove(kws::DOC) {
+            cat_spec.doc = Some(v2string(v, kws::DOC)?);
+        }
+
+        if let Some(v) = t.remove(kws::DOC_FROM_DISPLAY) {
+            cat_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?);
+        }
+
+        if let Some(v) = t.remove(kws::ERRORS) {
+            if matches!(self.0, ParseMode::Single) {
+                log::error!(
+                    "ErrorsList is not allowed in top-level '{}' attribute",
+                    kws::CATEGORY
+                );
+                return BAD_SPEC.into();
+            }
+            cat_spec.errors = ErrorsParser::value(v)?;
+        }
+
+        match self.0 {
+            ParseMode::Single => {
+                if cat_spec.name.is_empty() {
+                    IMPLICIT_CATEGORY_NAME.clone_into(&mut cat_spec.name);
+                }
+            }
+            ParseMode::List => {
+                if cat_spec.name.is_empty() {
+                    log::error!("CategoryObject name is mandatory in CategoriesList");
+                    return BAD_SPEC.into();
+                }
+                if cat_spec.errors.is_empty() {
+                    log::error!("ErrorsList not found: category_name = {}", cat_spec.name);
+                    return BAD_SPEC.into();
+                }
+            }
+        }
+
+        Ok(cat_spec)
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct CategoriesParser;
+
+impl CategoriesParser {
+    fn value(v: Value) -> Result<Vec<CategorySpec>, TebError> {
+        match v {
+            Value::Array(a) => Self::array(a),
+            ref ov => {
+                log::error!(
+                    "CategoryList must be an Array: deserialized a {}",
+                    value_type_name(ov)
+                );
+                BAD_SPEC.into()
+            }
+        }
+    }
+
+    fn array(a: Vec<Value>) -> Result<Vec<CategorySpec>, TebError> {
+        let mut categories = Vec::new();
+        for v in a.into_iter() {
+            match v {
+                Value::Table(t) => {
+                    let parser = CategoryParser(ParseMode::List);
+                    let cat_spec = parser.table(t)?;
+                    categories.push(cat_spec);
+                }
+                ov => {
+                    log::error!(
+                        "CategoryObject in CategoriesList must be a Table: deserialized {:?}",
+                        ov
+                    );
+                    return BAD_SPEC.into();
+                }
+            }
+        }
+        check_category_name_uniqueness(categories.iter().map(|c| c.name.as_str()))?;
+        Ok(categories)
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::errors::{kinds::FAILED_TO_OPEN_SPEC_FILE, TebError};
+use crate::errors::{kinds::general::FAILED_TO_OPEN_SPEC_FILE, TebError};
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
 pub fn open_spec_file(path: &PathBuf) -> Result<File, TebError> {

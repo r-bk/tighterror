@@ -1,6 +1,8 @@
 use crate::{
     errors::{
-        kinds::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE, SPEC_FILE_NOT_FOUND},
+        kinds::general::{
+            FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE, SPEC_FILE_NOT_FOUND,
+        },
         TebError,
     },
     parser,

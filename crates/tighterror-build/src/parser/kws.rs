@@ -16,8 +16,11 @@ pub const ERR_KIND_NAME: &str = "err_kind_name";
 pub const ERR_CAT_NAME: &str = "err_cat_name";
 pub const NO_STD: &str = "no_std";
 pub const MODULE: &str = "module";
+pub const CATEGORY: &str = "category";
+pub const CATEGORIES: &str = "categories";
 
 pub const ERR_KWS: [&str; 4] = [NAME, DISPLAY, DOC, DOC_FROM_DISPLAY];
+pub const CAT_KWS: [&str; 4] = [NAME, DOC, DOC_FROM_DISPLAY, ERRORS];
 pub const MODULE_KWS: [&str; 11] = [
     DOC_FROM_DISPLAY,
     DOC,
@@ -32,8 +35,8 @@ pub const MODULE_KWS: [&str; 11] = [
     ERR_CAT_NAME,
 ];
 pub const MAIN_KWS: [&str; 2] = [OUTPUT, NO_STD];
-pub const ROOT_KWS: [&str; 3] = [MAIN, ERRORS, MODULE];
-pub const ALL_KWS: [&str; 18] = [
+pub const ROOT_KWS: [&str; 5] = [MAIN, ERRORS, MODULE, CATEGORY, CATEGORIES];
+pub const ALL_KWS: [&str; 20] = [
     ERR_CAT_DOC,
     DISPLAY,
     DOC,
@@ -52,6 +55,8 @@ pub const ALL_KWS: [&str; 18] = [
     ERR_CAT_NAME,
     NO_STD,
     MODULE,
+    CATEGORY,
+    CATEGORIES,
 ];
 
 #[inline]
@@ -81,4 +86,8 @@ pub fn is_mod_kw(s: &str) -> bool {
 
 pub fn is_main_kw(s: &str) -> bool {
     contains(&MAIN_KWS, s)
+}
+
+pub fn is_cat_kw(s: &str) -> bool {
+    contains(&CAT_KWS, s)
 }

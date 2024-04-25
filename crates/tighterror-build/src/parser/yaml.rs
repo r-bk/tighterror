@@ -1,9 +1,12 @@
 use crate::{
     errors::{
-        kinds::{BAD_SPEC, BAD_YAML},
+        kinds::general::{BAD_SPEC, BAD_YAML},
         TebError,
     },
-    parser::{check_error_name_uniqueness, check_module_ident, check_name, kws},
+    parser::{
+        check_category_name_uniqueness, check_error_name_uniqueness, check_module_ident,
+        check_name, kws, ParseMode,
+    },
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec, IMPLICIT_CATEGORY_NAME},
 };
 use log::error;
@@ -51,6 +54,45 @@ impl YamlParser {
     }
 
     fn mapping(mut m: Mapping) -> Result<Spec, TebError> {
+        Self::check_toplevel_attributes(&m)?;
+
+        let mut spec = Spec::default();
+
+        if let Some(v) = m.remove(kws::MAIN) {
+            spec.main = MainParser::value(v)?;
+        }
+
+        if let Some(v) = m.remove(kws::MODULE) {
+            spec.module = ModuleParser::value(v)?;
+        }
+
+        if let Some(v) = m.remove(kws::CATEGORY) {
+            let parser = CategoryParser(ParseMode::Single);
+            let cat_spec = parser.value(v)?;
+            spec.module.categories.push(cat_spec);
+        }
+
+        if let Some(v) = m.remove(kws::CATEGORIES) {
+            spec.module.categories = CategoriesParser::value(v)?;
+        }
+
+        if let Some(v) = m.remove(kws::ERRORS) {
+            let errors = ErrorsParser::value(v)?;
+            if let Some(cat) = spec.module.categories.first_mut() {
+                cat.errors = errors;
+            } else {
+                spec.module.categories.push(CategorySpec {
+                    name: IMPLICIT_CATEGORY_NAME.into(),
+                    errors,
+                    ..Default::default()
+                });
+            }
+        }
+
+        Ok(spec)
+    }
+
+    fn check_toplevel_attributes(m: &Mapping) -> Result<(), TebError> {
         for k in m.keys() {
             match k {
                 Value::String(s) => {
@@ -66,29 +108,24 @@ impl YamlParser {
             }
         }
 
-        let mut spec = Spec::default();
-
-        if let Some(v) = m.remove(kws::MAIN) {
-            spec.main = MainParser::value(v)?;
+        for (k1, k2) in [
+            (kws::ERRORS, kws::CATEGORIES),
+            (kws::CATEGORY, kws::CATEGORIES),
+        ] {
+            if m.contains_key(k1) && m.contains_key(k2) {
+                error!("top-level attributes '{k1}' and '{k2}' are mutually exclusive");
+                return BAD_SPEC.into();
+            }
         }
 
-        if let Some(v) = m.remove(kws::MODULE) {
-            spec.module = ModuleParser::value(v)?;
+        for (k1, k2) in [(kws::ERRORS, kws::CATEGORIES)] {
+            if !(m.contains_key(k1) || m.contains_key(k2)) {
+                error!("one of '{k1}' or '{k2}' must be specified");
+                return BAD_SPEC.into();
+            }
         }
 
-        if let Some(v) = m.remove(kws::ERRORS) {
-            let errors = ErrorsParser::value(v)?;
-            spec.module.categories.push(CategorySpec {
-                name: IMPLICIT_CATEGORY_NAME.into(),
-                errors,
-                ..Default::default()
-            });
-        } else {
-            error!("'{}' is not found", kws::ERRORS);
-            return BAD_SPEC.into();
-        };
-
-        Ok(spec)
+        Ok(())
     }
 }
 
@@ -337,6 +374,129 @@ impl ErrorParser {
         check_name(&err_spec.name)?;
 
         Ok(err_spec)
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct CategoryParser(ParseMode);
+
+impl CategoryParser {
+    fn value(&self, v: Value) -> Result<CategorySpec, TebError> {
+        match v {
+            Value::Mapping(m) => self.mapping(m),
+            ref ov => {
+                error!(
+                    "CategoryObject must be a Mapping: deserialized a {}",
+                    value_type_name(ov)
+                );
+                BAD_SPEC.into()
+            }
+        }
+    }
+
+    fn mapping(&self, mut m: Mapping) -> Result<CategorySpec, TebError> {
+        for k in m.keys() {
+            match k {
+                Value::String(s) => {
+                    if !kws::is_cat_kw(s) {
+                        error!("invalid CategoryObject attribute: {}", s);
+                        return BAD_SPEC.into();
+                    }
+                }
+                ov => {
+                    error!("a Mapping key must be a String: deserialized {:?}", ov);
+                    return BAD_SPEC.into();
+                }
+            }
+        }
+
+        let mut cat_spec = CategorySpec::default();
+
+        if let Some(v) = m.remove(kws::NAME) {
+            let name = v2string(v, kws::NAME)?;
+            check_name(&name)?;
+            cat_spec.name = name;
+        }
+
+        if let Some(v) = m.remove(kws::DOC) {
+            cat_spec.doc = Some(v2string(v, kws::DOC)?);
+        }
+
+        if let Some(v) = m.remove(kws::DOC_FROM_DISPLAY) {
+            cat_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?);
+        }
+
+        if let Some(v) = m.remove(kws::ERRORS) {
+            if matches!(self.0, ParseMode::Single) {
+                error!(
+                    "ErrorsList is not allowed in top-level '{}' attribute",
+                    kws::CATEGORY
+                );
+                return BAD_SPEC.into();
+            }
+            cat_spec.errors = ErrorsParser::value(v)?;
+        }
+
+        match self.0 {
+            ParseMode::Single => {
+                if cat_spec.name.is_empty() {
+                    IMPLICIT_CATEGORY_NAME.clone_into(&mut cat_spec.name);
+                }
+            }
+            ParseMode::List => {
+                if cat_spec.name.is_empty() {
+                    error!("CategoryObject name is mandatory in CategoriesList");
+                    return BAD_SPEC.into();
+                }
+                if cat_spec.errors.is_empty() {
+                    error!("ErrorsList not found: category_name = {}", cat_spec.name);
+                    return BAD_SPEC.into();
+                }
+            }
+        }
+
+        Ok(cat_spec)
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct CategoriesParser;
+
+impl CategoriesParser {
+    fn value(v: Value) -> Result<Vec<CategorySpec>, TebError> {
+        match v {
+            Value::Sequence(s) => Self::sequence(s),
+            ref ov => {
+                error!("CategoriesList must be a Sequence: deserialized {:?}", ov);
+                BAD_SPEC.into()
+            }
+        }
+    }
+
+    fn sequence(s: Sequence) -> Result<Vec<CategorySpec>, TebError> {
+        let mut categories = Vec::new();
+        for v in s.into_iter() {
+            match v {
+                Value::Mapping(m) => {
+                    let parser = CategoryParser(ParseMode::List);
+                    let cat_spec = parser.mapping(m)?;
+                    categories.push(cat_spec);
+                }
+                ov => {
+                    error!(
+                        "CategoryObject in CategoriesList must be a Mapping: deserialized {:?}",
+                        ov
+                    );
+                    return BAD_SPEC.into();
+                }
+            }
+        }
+        check_category_name_uniqueness(categories.iter().map(|c| c.name.as_str()))?;
+        Ok(categories)
     }
 }
 

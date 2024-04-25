@@ -1,11 +1,14 @@
 use crate::{
     coder::idents,
-    errors::kinds::BAD_YAML,
+    errors::kinds::general::BAD_YAML,
     parser::{
-        testing::{log_init, spec_from_err, spec_from_err_iter, spec_from_main, spec_from_module},
+        testing::{
+            log_init, spec_from_category, spec_from_err, spec_from_err_iter, spec_from_main,
+            spec_from_module,
+        },
         yaml::*,
     },
-    spec::{ErrorSpec, OverridableErrorSpec},
+    spec::{ErrorSpec, OverridableErrorSpec, IMPLICIT_CATEGORY_NAME},
 };
 
 const GOOD_BOOLEANS: [(&str, bool); 4] = [
@@ -722,4 +725,282 @@ fn test_error_list_unique_names() {
 
     let s = "---\nerrors:\n  - FirstError\n  - SecondError\n";
     assert!(YamlParser::parse_str(s).is_ok());
+}
+
+#[test]
+fn test_category_name() {
+    log_init();
+
+    for good in ["TheCategory", IMPLICIT_CATEGORY_NAME] {
+        let category = CategorySpec {
+            name: good.to_owned(),
+            ..Default::default()
+        };
+
+        let spec = spec_from_category(category);
+        let res = YamlParser::parse_str(&format!(
+            "---\ncategory:\n  name: {good}\nerrors:\n  - DummyErr\n"
+        ))
+        .unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_IDENTS {
+        assert!(YamlParser::parse_str(&format!(
+            "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
+        ))
+        .is_err_and(|e| e.kind() == BAD_SPEC));
+    }
+
+    for bad in [kws::MAIN, kws::ERRORS] {
+        assert!(YamlParser::parse_str(&format!(
+            "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
+        ))
+        .is_err_and(|e| e.kind() == BAD_SPEC));
+    }
+}
+
+#[test]
+fn test_category_doc() {
+    let s = "
+---
+category:
+  doc: |
+    Category long doc string.
+
+    Appears on multiple lines.
+
+errors:
+  - DummyErr
+";
+    let spec = spec_from_category(CategorySpec {
+        name: IMPLICIT_CATEGORY_NAME.into(),
+        doc: Some("Category long doc string.\n\nAppears on multiple lines.\n".into()),
+        ..Default::default()
+    });
+    let res = YamlParser::parse_str(s).unwrap();
+    assert_eq!(spec, res);
+
+    let s = "
+---
+category:
+   doc: \"\"
+errors:
+  - DummyErr
+";
+    let spec = spec_from_category(CategorySpec {
+        name: IMPLICIT_CATEGORY_NAME.into(),
+        doc: Some("".into()),
+        ..Default::default()
+    });
+    let res = YamlParser::parse_str(s).unwrap();
+    assert_eq!(spec, res);
+
+    for bad in ["1", "null"] {
+        assert!(YamlParser::parse_str(&format!(
+            "---\ncategory:\n  doc: {bad}\nerrors:\n  - DummyErr"
+        ))
+        .is_err_and(|e| e.kind() == BAD_SPEC));
+    }
+}
+
+#[test]
+fn test_category_doc_from_display() {
+    log_init();
+
+    for good in GOOD_BOOLEANS {
+        let s = format!(
+            "---\ncategory:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            good.0
+        );
+        let cat = CategorySpec {
+            name: IMPLICIT_CATEGORY_NAME.into(),
+            oes: OverridableErrorSpec {
+                doc_from_display: Some(good.1),
+            },
+            ..Default::default()
+        };
+        let spec = spec_from_category(cat);
+        let res = YamlParser::parse_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_BOOLEANS {
+        let s = format!(
+            "---\ncategory:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+    }
+}
+
+#[test]
+fn test_category_errors_list_in_single_category() {
+    log_init();
+
+    let s = "
+---
+category:
+  name: Custom
+  doc: Custom category.
+  doc_from_display: false
+  errors:
+    - DummyErr
+
+errors:
+  - DummyErr
+";
+
+    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_errors_and_categories_missing() {
+    log_init();
+
+    let s = "
+---
+category:
+  name: Custom
+  doc: Custom category.
+  doc_from_display: false
+";
+    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_errors_and_categories_mutual_exclusion() {
+    log_init();
+
+    let s = "
+---
+categories:
+  - name: Custom
+    doc: Custom category.
+    doc_from_display: false
+    errors:
+      - DummyErr
+errors:
+  - DummyErr2
+";
+    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_errors_list_mandatory_in_categories() {
+    log_init();
+
+    let s = "
+---
+categories:
+  - name: Custom
+    doc: Custom category.
+    doc_from_display: false
+";
+    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+
+    let s = "
+---
+categories:
+  - name: Custom
+    doc: Custom category.
+    doc_from_display: false
+    errors: []
+";
+    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_name_mandatory_in_categories_list() {
+    log_init();
+
+    let s = "
+---
+categories:
+  - doc: Category without name.
+    doc_from_display: true
+    errors:
+      - DummyErr
+";
+    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+}
+
+#[test]
+fn test_category_multiple_categories() {
+    log_init();
+
+    let s = "
+---
+categories:
+  - name: Cat1
+    doc: First category.
+    doc_from_display: false
+    errors:
+      - DummyErr
+  - name: Cat2
+    doc_from_display: true
+    errors:
+      - DummyErr2
+";
+
+    let cat1 = CategorySpec {
+        name: "Cat1".into(),
+        doc: Some("First category.".into()),
+        oes: OverridableErrorSpec {
+            doc_from_display: Some(false),
+        },
+        errors: vec![ErrorSpec {
+            name: "DummyErr".into(),
+            ..Default::default()
+        }],
+    };
+
+    let cat2 = CategorySpec {
+        name: "Cat2".into(),
+        oes: OverridableErrorSpec {
+            doc_from_display: Some(true),
+        },
+        errors: vec![ErrorSpec {
+            name: "DummyErr2".into(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let spec = Spec {
+        module: ModuleSpec {
+            categories: vec![cat1, cat2],
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let res = YamlParser::parse_str(s).unwrap();
+    assert_eq!(spec, res);
+}
+
+#[test]
+fn test_category_name_uniqueness() {
+    log_init();
+
+    let s = "
+---
+categories:
+  - name: Cat1
+    doc: First category.
+    doc_from_display: false
+    errors:
+      - DummyErr
+  - name: Cat1
+    doc_from_display: true
+    errors:
+      - DummyErr2
+  - name: Cat2
+    errors:
+      - DummyErr
+  - name: Cat2
+    errors:
+      - DummyErr
+";
+    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
 }

@@ -1,5 +1,8 @@
 use crate::spec::{ErrorSpec, OverridableErrorSpec};
-use convert_case::{Case::UpperSnake, Casing};
+use convert_case::{
+    Case::{Snake, UpperSnake},
+    Casing,
+};
 
 pub const IMPLICIT_CATEGORY_NAME: &str = "General";
 
@@ -15,5 +18,9 @@ pub struct CategorySpec {
 impl CategorySpec {
     pub fn ident_name(&self) -> String {
         self.name.to_case(UpperSnake)
+    }
+
+    pub fn kinds_module_name(&self) -> String {
+        self.name.to_case(Snake)
     }
 }

@@ -1,6 +1,6 @@
 extern crate test_compilation;
 
-use test_compilation::errors::{kinds::BAD_FILE, Error};
+use test_compilation::errors::{kinds::general::BAD_FILE, Error};
 
 fn main() {
     let _res: Result<(), Error> = BAD_FILE.into();

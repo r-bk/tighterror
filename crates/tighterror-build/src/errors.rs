@@ -1,8 +1,10 @@
 //! Crate errors.
 
-/** Error category type.
-
-See the [categories] module for category constants.*/
+/**
+ * Error category type.
+ *
+ * See the [categories] module for category constants.
+*/
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
@@ -39,9 +41,11 @@ impl core::fmt::Display for TebErrorCategory {
     }
 }
 
-/** Error kind type.
-
-See the [kinds] module for error kind constants.*/
+/**
+ * Error kind type.
+ *
+ * See the [kinds] module for error kind constants.
+*/
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
@@ -138,9 +142,11 @@ impl<T> core::convert::From<TebErrorKind> for Result<T, TebError> {
     }
 }
 
-/** Error type.
-
-See the [kinds] module for error kind constants.*/
+/**
+ * Error type.
+ *
+ * See the [kinds] module for error kind constants.
+*/
 
 #[derive(Debug)]
 #[repr(transparent)]
@@ -213,57 +219,61 @@ mod _cn {
 }
 
 mod _n {
-    pub const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
-    pub const FAILED_TO_OPEN_SPEC_FILE: &str = "FAILED_TO_OPEN_SPEC_FILE";
-    pub const BAD_SPEC: &str = "BAD_SPEC";
-    pub const BAD_YAML: &str = "BAD_YAML";
-    pub const BAD_TOML: &str = "BAD_TOML";
-    pub const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
-    pub const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
-    pub const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
-    pub const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
-    pub const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
-    pub static GENERAL_NAMES: [&str; 10] = [
-        SPEC_FILE_NOT_FOUND,
-        FAILED_TO_OPEN_SPEC_FILE,
-        BAD_SPEC,
-        BAD_YAML,
-        BAD_TOML,
-        BAD_SPEC_FILE_EXTENSION,
-        FAILED_TO_WRITE_OUTPUT_FILE,
-        FAILED_TO_READ_OUTPUT_FILE,
-        FAILED_TO_PARSE_TOKENS,
-        RUSTFMT_FAILED,
-    ];
+    mod general {
+        const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
+        const FAILED_TO_OPEN_SPEC_FILE: &str = "FAILED_TO_OPEN_SPEC_FILE";
+        const BAD_SPEC: &str = "BAD_SPEC";
+        const BAD_YAML: &str = "BAD_YAML";
+        const BAD_TOML: &str = "BAD_TOML";
+        const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
+        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
+        const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
+        const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
+        const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
+        pub static A: [&str; 10] = [
+            SPEC_FILE_NOT_FOUND,
+            FAILED_TO_OPEN_SPEC_FILE,
+            BAD_SPEC,
+            BAD_YAML,
+            BAD_TOML,
+            BAD_SPEC_FILE_EXTENSION,
+            FAILED_TO_WRITE_OUTPUT_FILE,
+            FAILED_TO_READ_OUTPUT_FILE,
+            FAILED_TO_PARSE_TOKENS,
+            RUSTFMT_FAILED,
+        ];
+    }
 
-    pub static A: [&[&str]; 1] = [&GENERAL_NAMES];
+    pub static A: [&[&str]; 1] = [&general::A];
 }
 
 mod _d {
-    pub const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
-    pub const FAILED_TO_OPEN_SPEC_FILE: &str = "Specification file couldn't be opened.";
-    pub const BAD_SPEC: &str = "Bad specification file format.";
-    pub const BAD_YAML: &str = "Bad YAML file format.";
-    pub const BAD_TOML: &str = "Bad TOML file format.";
-    pub const BAD_SPEC_FILE_EXTENSION: &str = "Bad specification file name extension.";
-    pub const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
-    pub const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
-    pub const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
-    pub const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
-    pub static GENERAL_DISPLAY: [&str; 10] = [
-        SPEC_FILE_NOT_FOUND,
-        FAILED_TO_OPEN_SPEC_FILE,
-        BAD_SPEC,
-        BAD_YAML,
-        BAD_TOML,
-        BAD_SPEC_FILE_EXTENSION,
-        FAILED_TO_WRITE_OUTPUT_FILE,
-        FAILED_TO_READ_OUTPUT_FILE,
-        FAILED_TO_PARSE_TOKENS,
-        RUSTFMT_FAILED,
-    ];
+    mod general {
+        const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
+        const FAILED_TO_OPEN_SPEC_FILE: &str = "Specification file couldn't be opened.";
+        const BAD_SPEC: &str = "Bad specification file format.";
+        const BAD_YAML: &str = "Bad YAML file format.";
+        const BAD_TOML: &str = "Bad TOML file format.";
+        const BAD_SPEC_FILE_EXTENSION: &str = "Bad specification file name extension.";
+        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
+        const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
+        const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
+        const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
+        pub static A: [&str; 10] = [
+            SPEC_FILE_NOT_FOUND,
+            FAILED_TO_OPEN_SPEC_FILE,
+            BAD_SPEC,
+            BAD_YAML,
+            BAD_TOML,
+            BAD_SPEC_FILE_EXTENSION,
+            FAILED_TO_WRITE_OUTPUT_FILE,
+            FAILED_TO_READ_OUTPUT_FILE,
+            FAILED_TO_PARSE_TOKENS,
+            RUSTFMT_FAILED,
+        ];
+    }
 
-    pub static A: [&[&str]; 1] = [&GENERAL_DISPLAY];
+    pub static A: [&[&str]; 1] = [&general::A];
 }
 
 mod _p {
@@ -290,33 +300,39 @@ pub mod kinds {
     use super::categories as c;
     use super::TebErrorKind as EK;
 
-    /// Specification file couldn't be found.
-    pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::GENERAL, 0);
+    /// General category error kind constants.
+    pub mod general {
+        use super::c;
+        use super::EK;
 
-    /// Specification file couldn't be opened.
-    pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::GENERAL, 1);
+        /// Specification file couldn't be found.
+        pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::GENERAL, 0);
 
-    /// Bad specification file format.
-    pub const BAD_SPEC: EK = EK::new(c::GENERAL, 2);
+        /// Specification file couldn't be opened.
+        pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::GENERAL, 1);
 
-    /// Bad YAML file format.
-    pub const BAD_YAML: EK = EK::new(c::GENERAL, 3);
+        /// Bad specification file format.
+        pub const BAD_SPEC: EK = EK::new(c::GENERAL, 2);
 
-    /// Bad TOML file format.
-    pub const BAD_TOML: EK = EK::new(c::GENERAL, 4);
+        /// Bad YAML file format.
+        pub const BAD_YAML: EK = EK::new(c::GENERAL, 3);
 
-    /// Bad specification file name extension.
-    pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::GENERAL, 5);
+        /// Bad TOML file format.
+        pub const BAD_TOML: EK = EK::new(c::GENERAL, 4);
 
-    /// Output file couldn't be written.
-    pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 6);
+        /// Bad specification file name extension.
+        pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::GENERAL, 5);
 
-    /// Output file couldn't be read.
-    pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 7);
+        /// Output file couldn't be written.
+        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 6);
 
-    /// Generated code tokens couldn't be parsed.
-    pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 8);
+        /// Output file couldn't be read.
+        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 7);
 
-    /// Rustfmt tool exited with an error.
-    pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 9);
+        /// Generated code tokens couldn't be parsed.
+        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 8);
+
+        /// Rustfmt tool exited with an error.
+        pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 9);
+    }
 }

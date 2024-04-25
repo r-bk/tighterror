@@ -1,7 +1,7 @@
 use crate::{
     coder::{formatter::pretty, idents, options::CodegenOptions},
-    errors::{kinds::BAD_SPEC, TebError},
-    spec::{CategorySpec, Spec},
+    errors::{kinds::general::BAD_SPEC, TebError},
+    spec::{CategorySpec, ErrorSpec, Spec},
 };
 use log::error;
 use proc_macro2::{Ident, Literal, TokenStream};
@@ -222,6 +222,20 @@ impl<'a> RustGenerator<'a> {
         format_ident!("{}", idents::CATEGORY_CONSTS_MOD)
     }
 
+    fn err_const_tokens(&self, c: &CategorySpec, e: &ErrorSpec, add_cat_mod: bool) -> TokenStream {
+        let err_ident = format_ident!("{}", e.ident_name());
+        let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+        if add_cat_mod {
+            quote! {
+                #cat_mod_ident::#err_ident
+            }
+        } else {
+            quote! {
+                #err_ident
+            }
+        }
+    }
+
     fn n_categories_literal(&self) -> Literal {
         Literal::usize_unsuffixed(self.n_categories)
     }
@@ -282,81 +296,93 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn private_error_names(&self) -> TokenStream {
-        let mut tokens = TokenStream::default();
-        for c in &self.spec.module.categories {
-            for e in &c.errors {
-                let ident = e.ident_name();
-                let const_ident = format_ident!("{}", ident);
-                tokens = quote! {
-                    #tokens
-                    pub const #const_ident: &str = #ident;
-                };
+        let cat_iter = self
+            .spec
+            .module
+            .categories
+            .iter()
+            .map(|c| self.private_category_error_names(c));
+        let cat_arr_iter = self.spec.module.categories.iter().map(|c| {
+            let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+            quote! { &#cat_mod_ident::A }
+        });
+        let n_categories = Literal::usize_unsuffixed(self.spec.module.categories.len());
+        quote! {
+            #(#cat_iter)*
+            pub static A: [&[&str]; #n_categories] = [
+                #(#cat_arr_iter),*
+            ];
+        }
+    }
+
+    fn private_category_error_names(&self, c: &CategorySpec) -> TokenStream {
+        let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+        let const_iter = c.errors.iter().map(|e| {
+            let ident = e.ident_name();
+            let const_ident = format_ident!("{}", ident);
+            quote! {
+                const #const_ident: &str = #ident
+            }
+        });
+        let arr_iter = c.errors.iter().map(|e| {
+            let const_ident = format_ident!("{}", e.ident_name());
+            quote! { #const_ident }
+        });
+        let n_errors = Literal::usize_unsuffixed(c.errors.len());
+        quote! {
+            mod #cat_mod_ident {
+                #(#const_iter);* ;
+
+                pub static A: [&str; #n_errors] = [
+                    #(#arr_iter),*
+                ];
             }
         }
-
-        for c in &self.spec.module.categories {
-            let ident = format_ident!("{}", category_errors_constant_name(c));
-            let n_errors = Literal::usize_unsuffixed(c.errors.len());
-            let error_consts_iter = c.errors.iter().map(|e| format_ident!("{}", e.ident_name()));
-            tokens = quote! {
-                #tokens
-                pub static #ident: [&str; #n_errors] = [
-                    #(#error_consts_iter),*
-                ];
-            };
-        }
-
-        let n_categories = Literal::usize_unsuffixed(self.spec.module.categories.len());
-        let category_errors_contant_ident_iter = self.spec.module.categories.iter().map(|c| {
-            let ident = format_ident!("{}", category_errors_constant_name(c));
-            quote! { &#ident }
-        });
-        tokens = quote! {
-            #tokens
-            pub static A: [&[&str]; #n_categories] = [
-                #(#category_errors_contant_ident_iter),*
-            ];
-        };
-        tokens
     }
 
     fn private_error_display(&self) -> TokenStream {
-        let mut tokens = TokenStream::default();
-        for c in &self.spec.module.categories {
-            for e in &c.errors {
-                let ident = format_ident!("{}", e.ident_name());
-                let display = self.spec.error_display(c, e);
-                tokens = quote! {
-                    #tokens
-                    pub const #ident: &str = #display;
-                };
+        let cat_iter = self
+            .spec
+            .module
+            .categories
+            .iter()
+            .map(|c| self.private_category_error_display(c));
+        let cat_arr_iter = self.spec.module.categories.iter().map(|c| {
+            let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+            quote! { &#cat_mod_ident::A }
+        });
+        let n_categories = Literal::usize_unsuffixed(self.spec.module.categories.len());
+        quote! {
+            #(#cat_iter)*
+            pub static A: [&[&str]; #n_categories] = [
+                #(#cat_arr_iter),*
+            ];
+        }
+    }
+
+    fn private_category_error_display(&self, c: &CategorySpec) -> TokenStream {
+        let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+        let const_iter = c.errors.iter().map(|e| {
+            let const_ident = format_ident!("{}", e.ident_name());
+            let display = self.spec.error_display(c, e);
+            quote! {
+                const #const_ident: &str = #display
+            }
+        });
+        let arr_iter = c.errors.iter().map(|e| {
+            let const_ident = format_ident!("{}", e.ident_name());
+            quote! { #const_ident }
+        });
+        let n_errors = Literal::usize_unsuffixed(c.errors.len());
+        quote! {
+            mod #cat_mod_ident {
+                #(#const_iter);* ;
+
+                pub static A: [&str; #n_errors] = [
+                    #(#arr_iter),*
+                ];
             }
         }
-
-        for c in &self.spec.module.categories {
-            let ident = format_ident!("{}", category_error_kind_display(c));
-            let n_errors = Literal::usize_unsuffixed(c.errors.len());
-            let error_ident_iter = c.errors.iter().map(|e| format_ident!("{}", e.ident_name()));
-            tokens = quote! {
-                #tokens
-                pub static #ident: [&str; #n_errors] = [
-                    #(#error_ident_iter),*
-                ];
-            };
-        }
-
-        let n_categories = Literal::usize_unsuffixed(self.spec.module.categories.len());
-        let category_error_kind_display_ident_iter = self.spec.module.categories.iter().map(|c| {
-            let ident = format_ident!("{}", category_error_kind_display(c));
-            quote! { &#ident }
-        });
-        tokens = quote! {
-            #tokens
-            pub static A: [&[&str]; #n_categories] = [
-                #(#category_error_kind_display_ident_iter),*
-            ];
-        };
-        tokens
     }
 
     fn error_kind_tokens(&self) -> TokenStream {
@@ -569,18 +595,19 @@ impl<'a> RustGenerator<'a> {
         let err_kind_name = self.err_kind_name_ident();
         let mut tokens = TokenStream::default();
         for c in &self.spec.module.categories {
-            for (i, e) in c.errors.iter().enumerate() {
-                let cat_ident = format_ident!("{}", c.ident_name());
-                let err_value = self.usize_to_repr_type_literal(i).unwrap();
-                let err_ident = format_ident!("{}", e.ident_name());
-                let err_doc = doc_tokens(self.spec.err_kind_const_doc(c, e));
-                tokens = quote! {
-                    #tokens
+            let cat_tokens = self.error_kind_category_constants_tokens(c);
+            let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+            let cat_mod_doc = doc_tokens(&format!("{} category error kind constants.", c.name));
+            tokens = quote! {
+                #tokens
 
-                    #err_doc
-                    pub const #err_ident: EK = EK::new(c::#cat_ident, #err_value);
-                };
-            }
+                #cat_mod_doc
+                pub mod #cat_mod_ident {
+                    use super::c;
+                    use super::EK;
+                    #cat_tokens
+                }
+            };
         }
 
         quote! {
@@ -591,6 +618,23 @@ impl<'a> RustGenerator<'a> {
                 #tokens
             }
         }
+    }
+
+    fn error_kind_category_constants_tokens(&self, c: &CategorySpec) -> TokenStream {
+        let mut tokens = TokenStream::default();
+        for (i, e) in c.errors.iter().enumerate() {
+            let cat_ident = format_ident!("{}", c.ident_name());
+            let err_value = self.usize_to_repr_type_literal(i).unwrap();
+            let err_ident = format_ident!("{}", e.ident_name());
+            let err_doc = doc_tokens(self.spec.err_kind_const_doc(c, e));
+            tokens = quote! {
+                #tokens
+
+                #err_doc
+                pub const #err_ident: EK = EK::new(c::#cat_ident, #err_value);
+            };
+        }
+        tokens
     }
 
     fn category_tokens(&self) -> TokenStream {
@@ -849,7 +893,8 @@ impl<'a> RustGenerator<'a> {
         let iter = self.spec.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
-                let ident = format_ident!("{}", ident_name);
+                const ADD_CAT_MOD: bool = true;
+                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
                 quote! {
                     assert_eq!(#ident.name(), #ident_name);
                     assert_eq!(tighterror::TightErrorKind::name(&#ident), #ident_name);
@@ -876,7 +921,8 @@ impl<'a> RustGenerator<'a> {
         let iter = self.spec.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
-                let ident = format_ident!("{}", ident_name);
+                const ADD_CAT_MOD: bool = true;
+                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
                 quote! {
                     assert_eq!(format!("{}", #ident), #ident_name);
                 }
@@ -894,17 +940,25 @@ impl<'a> RustGenerator<'a> {
         }
     }
 
-    fn ut_err_kind_arr(&self) -> TokenStream {
+    fn ut_err_kind_arr_impl(&self, add_cat_mod: bool) -> TokenStream {
         let iter = self.spec.module.categories.iter().map(|c| {
-            let eiter = c.errors.iter().map(|e| format_ident!("{}", e.ident_name()));
+            let iter = c
+                .errors
+                .iter()
+                .map(|e| self.err_const_tokens(c, e, add_cat_mod));
             quote! {
-                #(#eiter),*
+                #(#iter),*
             }
         });
 
         quote! {
             [#(#iter),*]
         }
+    }
+
+    fn ut_err_kind_arr(&self) -> TokenStream {
+        const ADD_CAT_MOD: bool = true;
+        self.ut_err_kind_arr_impl(ADD_CAT_MOD)
     }
 
     fn ut_err_kind_uniqueness(&self) -> TokenStream {
@@ -967,7 +1021,8 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                let ident = format_ident!("{}", e.ident_name());
+                const ADD_CAT_MOD: bool = true;
+                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
                 let cat_ident = format_ident!("{}", c.ident_name());
                 quote! {
                     assert_eq!(#ident.category(), #categories_mod::#cat_ident);
@@ -991,7 +1046,8 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                let ident = format_ident!("{}", e.ident_name());
+                const ADD_CAT_MOD: bool = true;
+                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
                 quote! {
                     assert_eq!(#err_kind_name::from_value(#ident.value()).unwrap(), #ident);
                 }
@@ -1017,7 +1073,8 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                let eident = format_ident!("{}", e.ident_name());
+                const ADD_CAT_MOD: bool = true;
+                let eident = self.err_const_tokens(c, e, ADD_CAT_MOD);
                 let display = if let Some(ref d) = e.display {
                     d.clone()
                 } else {
@@ -1039,14 +1096,6 @@ impl<'a> RustGenerator<'a> {
             }
         }
     }
-}
-
-fn category_errors_constant_name(c: &CategorySpec) -> String {
-    format!("{}_NAMES", c.ident_name())
-}
-
-fn category_error_kind_display(c: &CategorySpec) -> String {
-    format!("{}_DISPLAY", c.ident_name())
 }
 
 fn _handle_multiline_doc(doc: &str) -> String {
