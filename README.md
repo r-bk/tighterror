@@ -37,11 +37,11 @@ errors in a single Rust type.
   - [x] implicit
   - [x] single
   - [x] multiple
+  - [ ] flat kinds
 - [ ] Modules
   - [x] implicit
   - [x] single
   - [ ] multiple
-  - [ ] flat kinds
 - [ ] Variant error types
 - [ ] Category error types
 - [ ] Flags
