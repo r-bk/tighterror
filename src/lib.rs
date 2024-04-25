@@ -25,7 +25,8 @@
 //!     * [Filename](#filename)
 //!     * [Error Object](#error-object)
 //!     * [Error List](#error-list)
-//!     * [Categories](#categories)
+//!     * [Category Object](#category-object)
+//!     * [Category List](#category-list)
 //!     * [Module Object](#module-object)
 //!     * [Main Object](#main-object)
 //! 1. [tighterror-build](#tighterror-build)
@@ -241,6 +242,8 @@
 //!   The `display` attribute must be explicitly set for this to take effect.<br>
 //!
 //!   This attribute can be set on a higher level in
+//!   [category specification](#category-doc-from-display) to affect all
+//!   errors in the category, or in
 //!   [module specification](#module-doc-from-display)
 //!   to affect all errors in the module.
 //!   Values defined on lower levels win.<br>
@@ -277,6 +280,15 @@
 //!
 //! *Error list* is an ordered list of [*error objects*](#error-object)
 //! with unique names. It is identified by the `errors` keyword.
+//!
+//! The `errors` keyword may appear as a standalone top-level attribute or as
+//! an attribute of a [*category object*](#category-object).
+//! When specified at the top-level the specification file defines only a single
+//! category and the list defines all the errors of the specification.
+//! When specified at *category object* level the specification file can define
+//! more than one category, and the list defines errors belonging to the
+//! category in which it is specified. The top-level and per-category notations
+//! are mutually exclusive.
 //!
 //! To allow more compact specification of errors *tighterror* supports
 //! shorthand notations where part of *error object* attributes are
@@ -370,14 +382,188 @@
 //! errors = ["MissingAttribute", "Timeout"]
 //! ```
 //!
-//! ## Categories
+//! ## Category Object
 //!
-//! When no custom categories are defined *tighterror* creates an implicit
-//! `General` category. The number of *category* bits is 0.
+//! A *category object* is comprised from the following attributes:
 //!
-//! Support for custom categories is in development.
-//! Therefore, currently the `errors` keyword is mandatory as a top-level item
-//! in a specification file.
+//! ```yaml
+//! name: <string> (required*)
+//! doc: <string>
+//! doc_from_display: <bool>
+//! errors: <ErrorList> (required*)
+//! ```
+//!
+//! * `name` - string
+//!
+//!   Defines the name of the category.<br>
+//!
+//!   The value must be a valid Rust struct name specified in UpperCamelCase.
+//!   This string becomes a *category* constant after transition to
+//!   UPPER_SNAKE_CASE.
+//!
+//!   The name is a mandatory attribute when *category object* is defined
+//!   as an item in a [*category list*](#category-list).
+//!   Otherwise it is optional with the default value `General`.<br><br>
+//!
+//! * `doc` - string (optional)
+//!
+//!   Defines the category's document string.<br>
+//!
+//!   This becomes the doc comment of the category constant.<br><br>
+//!
+//! * `doc_from_display` - bool (optional)<a name="category-doc-from-display"></a>
+//!
+//!   Sets a default value for the [`doc_from_display`](#err-obj-doc-from-display)
+//!   *error object* attribute. This affects errors belonging to this category
+//!   only. The value is used for all errors that do not define it
+//!   explicitly as part of *error object* specification.
+//!
+//!   Usage of this attribute allows addition of a doc comment in *name-display*
+//!   error list notation, which otherwise isn't possible.<br><br>
+//!
+//! * `errors` - ErrorList
+//!
+//!   Defines the list of errors belonging to this category.<br>
+//!
+//!   This is a mandatory attribute when *category object* is defined
+//!   as an item in a [*category list*](#category-list). Conversely, when
+//!   a *category object* is defined as a standalone top-level attribute
+//!   (see below) this attribute is forbidden, and the error list must be
+//!   defined as a top-level attribute.
+//!
+//!   See the [*error list*](#error-list) section for more information.<br><br>
+//!
+//! A *category object* can appear as a standalone top-level attribute
+//! `category` or as an item in a [*category list*](#category-list).
+//! Definition at the top-level allows specification of a single category.
+//! Definition as an item in a *category list* allows specification
+//! of multiple categories.
+//!
+//! When a *category object* is specified at the top-level its `errors`
+//! attribute is forbidden, it must be defined at the top-level instead.
+//! Therefore, the whole *category object* at the top-level is
+//! optional because all other attributes have default values.
+//!
+//! When no *category object* is defined *tighterror* creates an implicit
+//! `General` category.
+//!
+//! When there is only a single category the number of *category* bits is zero.
+//!
+//! See [*category list*](#category-list) documentation for more information.
+//!
+//! ### Category Object Examples
+//!
+//! A specification with a single implicit category `General`. Note, the error
+//! constants have no documentation in this scenario.
+//!
+//! ```yaml
+//! ---
+//! errors:
+//!   - MissingAttribute: An object attribute is missing.
+//!   - Timeout: Operation timed out.
+//! ```
+//!
+//! A specification with a single category with a custom name. Note, the
+//! error constants receive a doc string that is equal to the display string.
+//!
+//! ```yaml
+//! ---
+//! category:
+//!   name: MyErrorCategory
+//!   doc_from_display: true
+//!
+//! errors:
+//!   - MissingAttribute: An object attribute is missing.
+//!   - Timeout: Operation timed out.
+//! ```
+//!
+//! A TOML specification with a single category with a custom name and
+//! documentation equal to display string.
+//!
+//! ```toml
+//! [category]
+//! name = "MyErrorCategory"
+//! doc_from_display = true
+//!
+//! [[errors]]
+//! name = "MissingAttribute"
+//! display = "An object attribute is missing."
+//!
+//! [[errors]]
+//! name = "Timeout"
+//! display = "Operation timed out"
+//! ```
+//!
+//! ## Category List
+//!
+//! *Category list* is an ordered list of [*category objects*](#category-object)
+//! with unique names. It is identified by the `categories` keyword.
+//!
+//! The `categories` keyword may appear as a standalone top-level attribute of a
+//! specification file. It allows definition of one or more categories, each
+//! with its own set of errors.
+//!
+//! Note that when a *category object* is defined as an item in a
+//! *category list* the `name` and `errors` attributes are mandatory.
+//!
+//! Also note that `category` and `categories` keywords are mutually exclusive,
+//! as well as top-level `errors` and `categories` keywords. `category` and
+//! top-level `errors` keywords are used only for a single-category
+//! specification.
+//!
+//! The order of elements in a list matters because category constant identifier
+//! is assigned in the order of their appearance in the list. Therefore,
+//! insertion or deletion of a non-last category causes reassignment of
+//! category identifiers of all subsequent objects in the list. This may create
+//! a larger than expected diff in the generated code.
+//!
+//! ### Category List Examples
+//!
+//! A two-category YAML example.
+//!
+//! ```yaml
+//! ---
+//! categories:
+//!   - name: Parsing
+//!     doc_from_display: true
+//!     errors:
+//!       - MissingAttribute: An object attribute is missing.
+//!       - InvalidAttribute: An object contains an invalid attribute.
+//!
+//!   - name: CodeGeneration
+//!     doc_from_display: true
+//!     errors:
+//!       - InvalidName: An object has an invalid name.
+//!       - InvalidPath: A file path is invalid.
+//! ```
+//!
+//! An equivalent two-category TOML example.
+//!
+//! ```toml
+//! [[categories]]
+//! name = "Parsing"
+//! doc_from_display = true
+//!
+//! [[categories.errors]]
+//! name = "MissingAttribute"
+//! display = "An object attribute is missing."
+//!
+//! [[categories.errors]]
+//! name = "InvalidAttribute"
+//! display = "An object contains an invalid attribute."
+//!
+//! [[categories]]
+//! name = "CodeGeneration"
+//! doc_from_display = true
+//!
+//! [[categories.errors]]
+//! name = "InvalidName"
+//! display = "An object has an invalid name."
+//!
+//! [[categories.errors]]
+//! name = "InvalidPath"
+//! display = "A file path is invalid."
+//! ```
 //!
 //! ## Module Object
 //!
