@@ -14,7 +14,7 @@ keywords = [
 ]
 categories = ["rust-patterns", "no-std", "no-std::no-alloc"]
 repository = "https://github.com/r-bk/tighterror"
-exclude = [".git*", "Makefile.toml"]
+exclude = [".git*", ".vscode/*", "Makefile.toml"]
 
 [workspace]
 members = [
