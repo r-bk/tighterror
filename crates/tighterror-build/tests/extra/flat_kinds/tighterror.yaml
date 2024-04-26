@@ -1,0 +1,16 @@
+---
+module:
+  flat_kinds: true
+  doc_from_display: true
+
+categories:
+  - name: General
+    doc: General errors category.
+    errors:
+      - Timeout: Operation timed out.
+      - QueueFull: Queue is full.
+
+  - name: Io
+    doc: I/O errors category.
+    errors:
+      - ConnectionRefused: Outgoing network connection was refused.

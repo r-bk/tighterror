@@ -1,0 +1,24 @@
+
+[module]
+flat_kinds = true
+doc_from_display = true
+
+[[categories]]
+name = "General"
+doc = "General errors category."
+
+[[categories.errors]]
+name = "Timeout"
+display = "Operation timed out."
+
+[[categories.errors]]
+name = "QueueFull"
+display = "Queue is full."
+
+[[categories]]
+name = "Io"
+doc = "I/O errors category."
+
+[[categories.errors]]
+name = "ConnectionRefused"
+display = "Outgoing network connection was refused."

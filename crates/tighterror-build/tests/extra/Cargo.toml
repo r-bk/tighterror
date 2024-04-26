@@ -2,6 +2,8 @@
 members = [
     "implicit_category",
     "implicit_category_toml",
+    "flat_kinds",
+    "flat_kinds_toml",
     "minimal",
     "minimal_256_variants",
     "minimal_no_std",
