@@ -596,18 +596,25 @@ impl<'a> RustGenerator<'a> {
         let mut tokens = TokenStream::default();
         for c in &self.spec.module.categories {
             let cat_tokens = self.error_kind_category_constants_tokens(c);
-            let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
-            let cat_mod_doc = doc_tokens(&format!("{} category error kind constants.", c.name));
-            tokens = quote! {
-                #tokens
-
-                #cat_mod_doc
-                pub mod #cat_mod_ident {
-                    use super::c;
-                    use super::EK;
+            if self.spec.flat_kinds() {
+                tokens = quote! {
+                    #tokens
                     #cat_tokens
-                }
-            };
+                };
+            } else {
+                let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+                let cat_mod_doc = doc_tokens(&format!("{} category error kind constants.", c.name));
+                tokens = quote! {
+                    #tokens
+
+                    #cat_mod_doc
+                    pub mod #cat_mod_ident {
+                        use super::c;
+                        use super::EK;
+                        #cat_tokens
+                    }
+                };
+            }
         }
 
         quote! {
@@ -893,8 +900,8 @@ impl<'a> RustGenerator<'a> {
         let iter = self.spec.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
-                const ADD_CAT_MOD: bool = true;
-                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
+                let add_cat_mod = !self.spec.flat_kinds();
+                let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
                     assert_eq!(#ident.name(), #ident_name);
                     assert_eq!(tighterror::TightErrorKind::name(&#ident), #ident_name);
@@ -921,8 +928,8 @@ impl<'a> RustGenerator<'a> {
         let iter = self.spec.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
-                const ADD_CAT_MOD: bool = true;
-                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
+                let add_cat_mod = !self.spec.flat_kinds();
+                let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
                     assert_eq!(format!("{}", #ident), #ident_name);
                 }
@@ -957,8 +964,8 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_arr(&self) -> TokenStream {
-        const ADD_CAT_MOD: bool = true;
-        self.ut_err_kind_arr_impl(ADD_CAT_MOD)
+        let add_cat_mod = !self.spec.flat_kinds();
+        self.ut_err_kind_arr_impl(add_cat_mod)
     }
 
     fn ut_err_kind_uniqueness(&self) -> TokenStream {
@@ -1021,8 +1028,8 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                const ADD_CAT_MOD: bool = true;
-                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
+                let add_cat_mod = !self.spec.flat_kinds();
+                let ident = self.err_const_tokens(c, e, add_cat_mod);
                 let cat_ident = format_ident!("{}", c.ident_name());
                 quote! {
                     assert_eq!(#ident.category(), #categories_mod::#cat_ident);
@@ -1046,8 +1053,8 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                const ADD_CAT_MOD: bool = true;
-                let ident = self.err_const_tokens(c, e, ADD_CAT_MOD);
+                let add_cat_mod = !self.spec.flat_kinds();
+                let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
                     assert_eq!(#err_kind_name::from_value(#ident.value()).unwrap(), #ident);
                 }
@@ -1073,8 +1080,8 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                const ADD_CAT_MOD: bool = true;
-                let eident = self.err_const_tokens(c, e, ADD_CAT_MOD);
+                let add_cat_mod = !self.spec.flat_kinds();
+                let eident = self.err_const_tokens(c, e, add_cat_mod);
                 let display = if let Some(ref d) = e.display {
                     d.clone()
                 } else {

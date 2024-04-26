@@ -156,6 +156,13 @@ where
     check_name_uniqueness("category", iter)
 }
 
+fn check_module_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    check_name_uniqueness("<flat_kinds> module error", iter)
+}
+
 #[cfg(test)]
 mod testing {
     use crate::spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec};

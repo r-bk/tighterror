@@ -18,10 +18,11 @@ pub const NO_STD: &str = "no_std";
 pub const MODULE: &str = "module";
 pub const CATEGORY: &str = "category";
 pub const CATEGORIES: &str = "categories";
+pub const FLAT_KINDS: &str = "flat_kinds";
 
 pub const ERR_KWS: [&str; 4] = [NAME, DISPLAY, DOC, DOC_FROM_DISPLAY];
 pub const CAT_KWS: [&str; 4] = [NAME, DOC, DOC_FROM_DISPLAY, ERRORS];
-pub const MODULE_KWS: [&str; 11] = [
+pub const MODULE_KWS: [&str; 12] = [
     DOC_FROM_DISPLAY,
     DOC,
     ERR_CAT_DOC,
@@ -33,10 +34,11 @@ pub const MODULE_KWS: [&str; 11] = [
     ERR_NAME,
     ERR_KIND_NAME,
     ERR_CAT_NAME,
+    FLAT_KINDS,
 ];
 pub const MAIN_KWS: [&str; 2] = [OUTPUT, NO_STD];
 pub const ROOT_KWS: [&str; 5] = [MAIN, ERRORS, MODULE, CATEGORY, CATEGORIES];
-pub const ALL_KWS: [&str; 20] = [
+pub const ALL_KWS: [&str; 21] = [
     ERR_CAT_DOC,
     DISPLAY,
     DOC,
@@ -57,6 +59,7 @@ pub const ALL_KWS: [&str; 20] = [
     MODULE,
     CATEGORY,
     CATEGORIES,
+    FLAT_KINDS,
 ];
 
 #[inline]

@@ -594,6 +594,72 @@ fn test_error_trait() {
 }
 
 #[test]
+fn test_module_flat_kinds() {
+    log_init();
+
+    for good in GOOD_BOOLEANS {
+        let s = format!(
+            "---\nmodule:\n  flat_kinds: {}\n\nerrors:\n  - DummyErr",
+            good.0
+        );
+        let module = ModuleSpec {
+            flat_kinds: Some(good.1),
+            ..Default::default()
+        };
+        let spec = spec_from_module(module);
+        let res = YamlParser::parse_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_BOOLEANS {
+        let s = format!(
+            "---\nmodule:\n  flat_kinds: {}\n\nerrors:\n  - DummyErr",
+            bad
+        );
+        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+    }
+}
+
+#[test]
+fn test_module_flat_kinds_error_name_uniqueness() {
+    log_init();
+
+    let s = "
+---
+module:
+  flat_kinds: true
+
+categories:
+  - name: Cat1
+    errors:
+      - Err1: first error
+
+  - name: Cat2
+    errors:
+      - Err1: another first error
+";
+
+    assert_eq!(YamlParser::parse_str(s), BAD_SPEC.into());
+
+    let s = "
+---
+module:
+  flat_kinds: true
+
+categories:
+  - name: Cat1
+    errors:
+      - Err1: first error
+
+  - name: Cat2
+    errors:
+      - Err2: another first error
+";
+
+    assert!(YamlParser::parse_str(s).is_ok());
+}
+
+#[test]
 fn test_no_std() {
     log_init();
 

@@ -603,6 +603,81 @@ fn test_error_trait() {
 }
 
 #[test]
+fn test_module_flat_kinds() {
+    log_init();
+
+    for good in GOOD_BOOLEANS {
+        let s = format!(
+            "[module]\nflat_kinds = {}\n[[errors]]\nname = \"DummyErr\"",
+            good.0
+        );
+        let module = ModuleSpec {
+            flat_kinds: Some(good.1),
+            ..Default::default()
+        };
+        let spec = spec_from_module(module);
+        let res = TomlParser::parse_str(&s).unwrap();
+        assert_eq!(spec, res);
+    }
+
+    for bad in BAD_BOOLEANS {
+        let s = format!(
+            "[module]\nflat_kinds = {}\n[[errors]]\nname = \"DummyErr\"",
+            bad
+        );
+        let err = TomlParser::parse_str(&s).unwrap_err();
+        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+    }
+}
+
+#[test]
+fn test_module_flat_kinds_error_name_uniqueness() {
+    log_init();
+
+    let s = r#"
+[module]
+flat_kinds = true
+
+[[categories]]
+name = "Cat1"
+
+[[categories.errors]]
+name = "Err1"
+display = "first error"
+
+[[categories]]
+name = "Cat2"
+
+[[categories.errors]]
+name = "Err1"
+display = "another first error"
+"#;
+
+    assert_eq!(TomlParser::parse_str(s), BAD_SPEC.into());
+
+    let s = r#"
+[module]
+flat_kinds = true
+
+[[categories]]
+name = "Cat1"
+
+[[categories.errors]]
+name = "Err1"
+display = "first error"
+
+[[categories]]
+name = "Cat2"
+
+[[categories.errors]]
+name = "Err2"
+display = "second error"
+"#;
+
+    assert!(TomlParser::parse_str(s).is_ok());
+}
+
+#[test]
 fn test_no_std() {
     log_init();
 

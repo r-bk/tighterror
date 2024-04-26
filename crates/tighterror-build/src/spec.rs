@@ -26,6 +26,7 @@ pub const DEFAULT_ERR_KIND_INTO_RESULT: bool = true;
 pub const DEFAULT_ERROR_TRAIT: bool = true;
 pub const DEFAULT_UPDATE_MODE: bool = false;
 pub const DEFAULT_NO_STD: bool = false;
+pub const DEFAULT_FLAT_KINDS: bool = false;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
@@ -161,5 +162,9 @@ impl Spec {
 
     pub fn no_std(&self) -> bool {
         self.main.no_std.unwrap_or(DEFAULT_NO_STD)
+    }
+
+    pub fn flat_kinds(&self) -> bool {
+        self.module.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS)
     }
 }

@@ -4,10 +4,13 @@ use crate::{
         TebError,
     },
     parser::{
-        check_category_name_uniqueness, check_error_name_uniqueness, check_module_ident,
-        check_name, kws, ParseMode,
+        check_category_name_uniqueness, check_error_name_uniqueness,
+        check_module_error_name_uniqueness, check_module_ident, check_name, kws, ParseMode,
     },
-    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec, IMPLICIT_CATEGORY_NAME},
+    spec::{
+        CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec, DEFAULT_FLAT_KINDS,
+        IMPLICIT_CATEGORY_NAME,
+    },
 };
 use log::error;
 use serde_yaml::{Mapping, Sequence, Value};
@@ -87,6 +90,10 @@ impl YamlParser {
                     ..Default::default()
                 });
             }
+        }
+
+        if spec.module.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS) {
+            check_module_error_name_uniqueness(spec.module.errors_iter().map(|e| e.name.as_str()))?;
         }
 
         Ok(spec)
@@ -230,6 +237,7 @@ impl ModuleParser {
                     check_module_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
                     mod_spec.err_cat_name = Some(err_cat_name);
                 }
+                kws::FLAT_KINDS => mod_spec.flat_kinds = Some(v2bool(v, kws::FLAT_KINDS)?),
                 _ => panic!("internal error: unhandled ModuleObject attribute: {}", key),
             }
         }

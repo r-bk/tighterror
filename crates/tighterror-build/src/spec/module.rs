@@ -23,6 +23,10 @@ pub struct ModuleSpec {
     /// A custom name for the ErrorCategory struct
     pub err_cat_name: Option<String>,
     pub oes: OverridableErrorSpec,
+    /// Place the error kind consts under `mod kinds`
+    /// and not under `mod kinds::<category_mod>`.
+    /// Requires all error names to be unique per module.
+    pub flat_kinds: Option<bool>,
     /// Module categories
     pub categories: Vec<CategorySpec>,
 }
