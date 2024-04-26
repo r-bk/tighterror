@@ -587,6 +587,7 @@
 //!   err_kind_name: <string>
 //!   err_name: <string>
 //!   error_trait: <bool>
+//!   flat_kinds: <bool>
 //!   result_from_err: <bool>
 //!   result_from_err_kind: <bool>
 //! ```
@@ -700,6 +701,52 @@
 //!   struct.<br>
 //!   This attribute is ignored when `no_std` is enabled.<br>
 //!   Default: `true`<br><br>
+//!
+//! * `flat_kinds` - bool (optional)
+//!
+//!   Puts the error kind constants directly under the `kinds` sub-module
+//!   instead of under `kinds::<category-module-name>` sub-sub-module.
+//!
+//!   By default error kind constants are placed in a category-specific
+//!   sub-module. For example:
+//!
+//!   ```yaml
+//!   categories:
+//!     - name: Foo
+//!       errors:
+//!         - Err
+//!     - name: Baz
+//!       errors:
+//!         - Err
+//!   ```
+//!   The error kind constants' paths are `kinds::foo::ERR` and
+//!   `kinds::baz::ERR`. The category-specific sub-modules `foo` and
+//!   `baz` are required because by default error names are required to be
+//!   unique on category level only.
+//!
+//!   There are cases when error names are unique per module. In these
+//!   cases having the category-specific module in the constants' paths
+//!   has no practical function and just makes the paths longer.
+//!
+//!   The `flat_kinds` attribute forces *tighterror* to put the constants
+//!   directly under the `kinds` sub-module, e.g., `kinds::ERR`.
+//!   Enabling this option requires the error names to be unique
+//!   on module level (and not only on category level).
+//!
+//!   ```yaml
+//!   module:
+//!     flat_kinds: true
+//!
+//!   categories:
+//!     - name: Foo
+//!       errors:
+//!         - Err
+//!     - name: Baz
+//!       errors:
+//!         - AnotherErr
+//!   ```
+//!
+//!   Default: `false`<br><br>
 //!
 //! * `result_from_err` - bool (optional)
 //!
