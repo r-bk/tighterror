@@ -37,7 +37,7 @@ errors in a single Rust type.
   - [x] implicit
   - [x] single
   - [x] multiple
-  - [ ] flat kinds
+  - [x] flat kinds
 - [ ] Modules
   - [x] implicit
   - [x] single
