@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.14], [b-0.0.14], [c-0.0.14] - 2024-04-26
+
+A relatively big release with support for multiple categories.
+
+### Added
+
+- add support for multiple categories
+
+  Now it is possible to define multiple custom categories using the new
+  `categories` keyword. For example, the following YAML specification defines
+  two error categories `Parsing` and `Network`, each with its own set of errors.
+  Note that error names are unique only within a category, i.e., they may repeat
+  in different categories.
+
+  ```yaml
+  ---
+  categories:
+    - name: Parsing
+      errors:
+        - BadToken
+        - BadOperator
+        - Timeout
+
+    - name: Network
+      errors:
+        - Timeout
+        - ConnectionRefused
+  ```
+
+- add a new module-level attribute `flat_kinds`
+
+  By default error names are required to be unique on category level only and
+  may repeat in different categories. This forces *tighterror* to place the
+  constants within a category-specific sub-module so that repeating error names
+  in different categories do not collide. This makes the constant's paths longer
+  due to the addition of category-specific module.
+
+  In specifications where error names are unique on module-level, e.g., when
+  there is a single category only, the category-specific module in constants'
+  paths have no practical function and only make the paths longer.
+
+  When `flat_kinds` is enabled error kind constants are placed directly under
+  the `kinds` submodule, e.g. `kinds::ERR`. Error names must be unique on
+  module-level.
+
+### Changed
+
+- **(breaking)** error kind constants are now placed within a category-specific
+  sub-module. In the following example the error constant path was previously
+  `kinds::ERR` and now it is `kinds::general::ERR` (the name of the implicit
+  category is `General`):
+
+  ```yaml
+  ---
+  errors:
+    - Err
+  ```
+
+  To preserve the old behavior use the new module-level attribute `flat_kinds`:
+
+  ```yaml
+  ---
+  module:
+    flat_kinds: true
+  errors:
+    - Err
+  ```
+
 ## [0.0.13], [b-0.0.13], [c-0.0.13] - 2024-03-23
 
 A breaking change to prepare for multiple *tighterror* modules in a single
@@ -224,3 +292,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.13]: https://github.com/r-bk/tighterror/releases/tag/v0.0.13
 [b-0.0.13]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.13
 [c-0.0.13]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.13
+[0.0.14]: https://github.com/r-bk/tighterror/releases/tag/v0.0.14
+[b-0.0.14]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.14
+[c-0.0.14]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.14
