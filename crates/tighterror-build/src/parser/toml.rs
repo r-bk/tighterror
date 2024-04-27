@@ -8,7 +8,7 @@ use crate::{
         check_module_error_name_uniqueness, check_module_ident, check_name, kws, ParseMode,
     },
     spec::{
-        CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec, DEFAULT_FLAT_KINDS,
+        definitions::DEFAULT_FLAT_KINDS, CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec,
         IMPLICIT_CATEGORY_NAME,
     },
 };

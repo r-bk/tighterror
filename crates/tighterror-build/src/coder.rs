@@ -6,7 +6,7 @@ use crate::{
         TebError,
     },
     parser,
-    spec::{DEFAULT_UPDATE_MODE, STDOUT_DST},
+    spec::definitions::{DEFAULT_UPDATE_MODE, STDOUT_DST},
 };
 use log::error;
 use std::{
