@@ -692,7 +692,7 @@
 //!
 //!   This becomes the name of the struct that implements the [TightError]
 //!   trait.<br>
-//!   The value must be a value Rust struct name.<br>
+//!   The value must be a valid Rust struct name.<br>
 //!   Default: `Error`<br><br>
 //!
 //! * `error_trait` - bool (optional)
