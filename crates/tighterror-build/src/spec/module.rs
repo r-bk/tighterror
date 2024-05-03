@@ -67,12 +67,12 @@ impl ModuleSpec {
     }
 
     pub fn cat_const_doc<'a>(&'a self, c: &'a CategorySpec) -> &'a str {
-        // TODO: refactor to call c.doc.as_deref only once
-        if self.categories.len() == 1 {
-            c.doc.as_deref().unwrap_or(DEFAULT_GENERAL_CAT_DOC)
+        let implicit_value = if self.categories.len() == 1 {
+            DEFAULT_GENERAL_CAT_DOC
         } else {
-            c.doc.as_deref().unwrap_or_default()
-        }
+            ""
+        };
+        c.doc.as_deref().unwrap_or(implicit_value)
     }
 
     pub fn err_kind_const_doc<'a>(&self, c: &'a CategorySpec, e: &'a ErrorSpec) -> &'a str {
