@@ -5,9 +5,9 @@ main:
 module:
   doc_from_display: true
   doc: Crate errors.
-  err_name: TebError
-  err_kind_name: TebErrorKind
-  err_cat_name: TebErrorCategory
+  err_name: TbError
+  err_kind_name: TbErrorKind
+  err_cat_name: TbErrorCategory
 
 errors:
   - SpecFileNotFound: Specification file couldn't be found.

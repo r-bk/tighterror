@@ -3,7 +3,7 @@ use crate::{
         kinds::general::{
             FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE, SPEC_FILE_NOT_FOUND,
         },
-        TebError,
+        TbError,
     },
     parser,
     spec::definitions::{DEFAULT_UPDATE_MODE, STDOUT_DST},
@@ -25,7 +25,7 @@ pub use options::*;
 const TMP_FILE_PFX: &str = "tighterror.";
 const TMP_FILE_SFX: &str = ".rs";
 
-fn spec_file_path(opts: &CodegenOptions) -> Result<&str, TebError> {
+fn spec_file_path(opts: &CodegenOptions) -> Result<&str, TbError> {
     if let Some(ref p) = opts.spec {
         return Ok(p.as_str());
     }
@@ -55,8 +55,8 @@ fn spec_file_path(opts: &CodegenOptions) -> Result<&str, TebError> {
 /// a full example.
 ///
 /// ```no_run
-/// # use tighterror_build::{CodegenOptions, errors::TebError, codegen};
-/// # pub fn foo() -> Result<(), TebError> {
+/// # use tighterror_build::{CodegenOptions, errors::TbError, codegen};
+/// # pub fn foo() -> Result<(), TbError> {
 /// let mut opts = CodegenOptions::new();
 /// opts.spec("tighterror.yaml".to_owned());
 /// codegen(&opts)?;
@@ -64,7 +64,7 @@ fn spec_file_path(opts: &CodegenOptions) -> Result<&str, TebError> {
 /// # }
 /// # foo().unwrap();
 /// ```
-pub fn codegen(opts: &CodegenOptions) -> Result<(), TebError> {
+pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
     let path = spec_file_path(opts)?;
     let spec = parser::from_path(path.into())?;
     let code = generator::spec_to_rust(opts, &spec)?;
@@ -88,7 +88,7 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TebError> {
     }
 }
 
-fn write_code<P>(code: String, path: P) -> Result<(), TebError>
+fn write_code<P>(code: String, path: P) -> Result<(), TbError>
 where
     P: AsRef<Path> + AsRef<OsStr> + std::fmt::Debug,
 {
@@ -108,7 +108,7 @@ where
     write_and_format(code, path, file)
 }
 
-fn write_and_format<P>(code: String, path: P, mut file: File) -> Result<(), TebError>
+fn write_and_format<P>(code: String, path: P, mut file: File) -> Result<(), TbError>
 where
     P: AsRef<OsStr> + std::fmt::Debug,
 {
@@ -122,7 +122,7 @@ where
     Ok(())
 }
 
-fn read_code<P>(path: P) -> Result<String, TebError>
+fn read_code<P>(path: P) -> Result<String, TbError>
 where
     P: AsRef<Path> + std::fmt::Debug,
 {
@@ -137,13 +137,13 @@ where
     let mut data = String::with_capacity(4096);
     file.read_to_string(&mut data).map_err(|e| {
         error!("failed to read the output file {:?}: {e}", path);
-        TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
+        TbError::from(FAILED_TO_WRITE_OUTPUT_FILE)
     })?;
 
     Ok(data)
 }
 
-fn update_code(code: String, path: &str) -> Result<(), TebError> {
+fn update_code(code: String, path: &str) -> Result<(), TbError> {
     let path = Path::new(path);
     if !path.exists() {
         return write_code(code, path);
@@ -162,12 +162,12 @@ fn update_code(code: String, path: &str) -> Result<(), TebError> {
         .tempfile_in(dir)
         .map_err(|e| {
             error!("failed to create a temporary file [dir={:?}]: {e}", dir);
-            TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
+            TbError::from(FAILED_TO_WRITE_OUTPUT_FILE)
         })?;
 
     let (tmp_file, tmp_path) = tmp_file.keep().map_err(|e| {
         error!("failed to keep the temporary file: {e}");
-        TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
+        TbError::from(FAILED_TO_WRITE_OUTPUT_FILE)
     })?;
 
     write_and_format(code, &tmp_path, tmp_file)?;
@@ -180,12 +180,12 @@ fn update_code(code: String, path: &str) -> Result<(), TebError> {
                 "failed to rename updated file {:?} to output file path {:?}: {e}",
                 tmp_path, path
             );
-            TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
+            TbError::from(FAILED_TO_WRITE_OUTPUT_FILE)
         })
     } else {
         std::fs::remove_file(&tmp_path).map_err(|e| {
             error!("failed to unlink temporary file {:?}: {e}", tmp_path);
-            TebError::from(FAILED_TO_WRITE_OUTPUT_FILE)
+            TbError::from(FAILED_TO_WRITE_OUTPUT_FILE)
         })
     }
 }

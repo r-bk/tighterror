@@ -1,7 +1,7 @@
-use crate::errors::{kinds::general::FAILED_TO_OPEN_SPEC_FILE, TebError};
+use crate::errors::{kinds::general::FAILED_TO_OPEN_SPEC_FILE, TbError};
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
-pub fn open_spec_file(path: &PathBuf) -> Result<File, TebError> {
+pub fn open_spec_file(path: &PathBuf) -> Result<File, TbError> {
     match File::options().read(true).open(path) {
         Ok(f) => Ok(f),
         Err(e) => {

@@ -1,7 +1,7 @@
 use crate::{
     errors::{
         kinds::general::{BAD_SPEC, BAD_TOML},
-        TebError,
+        TbError,
     },
     parser::{
         check_category_name_uniqueness, check_error_name_uniqueness,
@@ -21,7 +21,7 @@ use toml::{Table, Value};
 pub struct TomlParser;
 
 impl TomlParser {
-    pub fn parse_file(mut file: File) -> Result<Spec, TebError> {
+    pub fn parse_file(mut file: File) -> Result<Spec, TbError> {
         use std::io::Read;
 
         let mut s = String::new();
@@ -33,7 +33,7 @@ impl TomlParser {
         Self::parse_str(&s)
     }
 
-    pub fn parse_str(s: &str) -> Result<Spec, TebError> {
+    pub fn parse_str(s: &str) -> Result<Spec, TbError> {
         match toml::from_str(s) {
             Ok(v) => Self::value(v),
             Err(e) => {
@@ -43,7 +43,7 @@ impl TomlParser {
         }
     }
 
-    fn value(value: toml::Value) -> Result<Spec, TebError> {
+    fn value(value: toml::Value) -> Result<Spec, TbError> {
         match value {
             Value::Table(t) => Self::table(t),
             v => {
@@ -56,7 +56,7 @@ impl TomlParser {
         }
     }
 
-    fn table(mut table: toml::Table) -> Result<Spec, TebError> {
+    fn table(mut table: toml::Table) -> Result<Spec, TbError> {
         Self::check_toplevel_attributes(&table)?;
 
         let mut spec = Spec::default();
@@ -99,7 +99,7 @@ impl TomlParser {
         Ok(spec)
     }
 
-    fn check_toplevel_attributes(table: &toml::Table) -> Result<(), TebError> {
+    fn check_toplevel_attributes(table: &toml::Table) -> Result<(), TbError> {
         for k in table.keys() {
             if !kws::is_root_kw(k) {
                 log::error!("invalid top-level keyword: {}", k);
@@ -134,7 +134,7 @@ impl TomlParser {
 pub struct MainParser;
 
 impl MainParser {
-    fn value(v: Value) -> Result<MainSpec, TebError> {
+    fn value(v: Value) -> Result<MainSpec, TbError> {
         match v {
             Value::Table(t) => Self::table(t),
             ref ov => {
@@ -147,7 +147,7 @@ impl MainParser {
         }
     }
 
-    fn table(t: toml::Table) -> Result<MainSpec, TebError> {
+    fn table(t: toml::Table) -> Result<MainSpec, TbError> {
         let mut main_spec = MainSpec::default();
 
         for (k, v) in t.into_iter() {
@@ -175,7 +175,7 @@ impl MainParser {
 pub struct ModuleParser;
 
 impl ModuleParser {
-    fn value(v: Value) -> Result<ModuleSpec, TebError> {
+    fn value(v: Value) -> Result<ModuleSpec, TbError> {
         match v {
             Value::Table(t) => Self::table(t),
             ref ov => {
@@ -188,7 +188,7 @@ impl ModuleParser {
         }
     }
 
-    fn table(t: toml::Table) -> Result<ModuleSpec, TebError> {
+    fn table(t: toml::Table) -> Result<ModuleSpec, TbError> {
         let mut mod_spec = ModuleSpec::default();
 
         for (k, v) in t.into_iter() {
@@ -244,7 +244,7 @@ impl ModuleParser {
 pub struct ErrorsParser;
 
 impl ErrorsParser {
-    fn value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
+    fn value(v: Value) -> Result<Vec<ErrorSpec>, TbError> {
         match v {
             Value::Array(a) => Self::array(a),
             ref ov => {
@@ -258,7 +258,7 @@ impl ErrorsParser {
         }
     }
 
-    fn array(a: toml::value::Array) -> Result<Vec<ErrorSpec>, TebError> {
+    fn array(a: toml::value::Array) -> Result<Vec<ErrorSpec>, TbError> {
         let mut errors = Vec::new();
         for v in a.into_iter() {
             match v {
@@ -284,7 +284,7 @@ impl ErrorsParser {
 pub struct ErrorParser;
 
 impl ErrorParser {
-    fn string(s: String) -> Result<ErrorSpec, TebError> {
+    fn string(s: String) -> Result<ErrorSpec, TbError> {
         check_name(&s)?;
         Ok(ErrorSpec {
             name: s,
@@ -292,7 +292,7 @@ impl ErrorParser {
         })
     }
 
-    fn table(t: toml::Table) -> Result<ErrorSpec, TebError> {
+    fn table(t: toml::Table) -> Result<ErrorSpec, TbError> {
         let mut err_spec = ErrorSpec::default();
 
         for (k, v) in t.into_iter() {
@@ -326,7 +326,7 @@ impl ErrorParser {
 struct CategoryParser(ParseMode);
 
 impl CategoryParser {
-    fn value(&self, v: Value) -> Result<CategorySpec, TebError> {
+    fn value(&self, v: Value) -> Result<CategorySpec, TbError> {
         match v {
             Value::Table(t) => self.table(t),
             ref ov => {
@@ -339,7 +339,7 @@ impl CategoryParser {
         }
     }
 
-    fn table(&self, mut t: Table) -> Result<CategorySpec, TebError> {
+    fn table(&self, mut t: Table) -> Result<CategorySpec, TbError> {
         for k in t.keys() {
             if !kws::is_cat_kw(k) {
                 log::error!("invalid CategoryObject attribute: {}", k);
@@ -402,7 +402,7 @@ impl CategoryParser {
 struct CategoriesParser;
 
 impl CategoriesParser {
-    fn value(v: Value) -> Result<Vec<CategorySpec>, TebError> {
+    fn value(v: Value) -> Result<Vec<CategorySpec>, TbError> {
         match v {
             Value::Array(a) => Self::array(a),
             ref ov => {
@@ -415,7 +415,7 @@ impl CategoriesParser {
         }
     }
 
-    fn array(a: Vec<Value>) -> Result<Vec<CategorySpec>, TebError> {
+    fn array(a: Vec<Value>) -> Result<Vec<CategorySpec>, TbError> {
         let mut categories = Vec::new();
         for v in a.into_iter() {
             match v {
@@ -452,7 +452,7 @@ fn value_type_name(value: &Value) -> &'static str {
     }
 }
 
-fn check_key(k: &str) -> Result<&str, TebError> {
+fn check_key(k: &str) -> Result<&str, TbError> {
     if !kws::is_any_kw(k) {
         log::error!("invalid Table key: {}", k);
         BAD_SPEC.into()
@@ -461,7 +461,7 @@ fn check_key(k: &str) -> Result<&str, TebError> {
     }
 }
 
-fn v2string(v: Value, kw: &str) -> Result<String, TebError> {
+fn v2string(v: Value, kw: &str) -> Result<String, TbError> {
     match v {
         Value::String(s) => Ok(s),
         ov => {
@@ -471,7 +471,7 @@ fn v2string(v: Value, kw: &str) -> Result<String, TebError> {
     }
 }
 
-fn v2bool(v: Value, kw: &str) -> Result<bool, TebError> {
+fn v2bool(v: Value, kw: &str) -> Result<bool, TbError> {
     match v {
         Value::Boolean(b) => Ok(b),
         ov => {

@@ -1,4 +1,4 @@
-use crate::errors::TebError;
+use crate::errors::TbError;
 
 /// Options for the code generator.
 ///
@@ -6,8 +6,8 @@ use crate::errors::TebError;
 ///
 /// # Examples
 /// ```no_run
-/// # use tighterror_build::{CodegenOptions, errors::TebError};
-/// # pub fn foo() -> Result<(), TebError> {
+/// # use tighterror_build::{CodegenOptions, errors::TbError};
+/// # pub fn foo() -> Result<(), TbError> {
 /// CodegenOptions::new()
 ///     .spec("tighterror.yaml".to_owned())
 ///     .output("src/errors.rs".to_owned())
@@ -124,7 +124,7 @@ impl CodegenOptions {
     /// See the struct documentation for a full example.
     ///
     /// [main function]: crate::codegen
-    pub fn codegen(&self) -> Result<(), TebError> {
+    pub fn codegen(&self) -> Result<(), TbError> {
         super::codegen(self)
     }
 }

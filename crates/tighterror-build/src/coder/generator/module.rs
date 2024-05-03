@@ -4,7 +4,7 @@ use crate::{
         error_displays_mod_ident, error_names_mod_ident, outer_doc_tokens, private_mod_ident,
         tests_mod_ident, ReprType,
     },
-    errors::{kinds::general::BAD_SPEC, TebError},
+    errors::{kinds::general::BAD_SPEC, TbError},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec},
     CodegenOptions,
 };
@@ -40,7 +40,7 @@ impl<'a> ModuleGenerator<'a> {
         opts: &'a CodegenOptions,
         main: &'a MainSpec,
         module: &'a ModuleSpec,
-    ) -> Result<ModuleGenerator<'a>, TebError> {
+    ) -> Result<ModuleGenerator<'a>, TbError> {
         let n_categories = module.categories.len();
         let n_category_bits = Self::calc_n_category_bits(n_categories)?;
         let n_variant_bits = Self::calc_n_variant_bits(module)?;
@@ -85,7 +85,7 @@ impl<'a> ModuleGenerator<'a> {
         })
     }
 
-    fn calc_n_category_bits(n_categories: usize) -> Result<usize, TebError> {
+    fn calc_n_category_bits(n_categories: usize) -> Result<usize, TbError> {
         match n_categories {
             0 => {
                 log::error!("at least one category must be defined");
@@ -96,7 +96,7 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
-    fn calc_n_bits(n: usize, name: &str) -> Result<usize, TebError> {
+    fn calc_n_bits(n: usize, name: &str) -> Result<usize, TbError> {
         if let Some(po2) = n.checked_next_power_of_two() {
             Ok(usize::try_from(po2.trailing_zeros()).unwrap())
         } else {
@@ -105,7 +105,7 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
-    fn calc_n_variant_bits(module: &ModuleSpec) -> Result<usize, TebError> {
+    fn calc_n_variant_bits(module: &ModuleSpec) -> Result<usize, TbError> {
         let n = match module.n_errors_in_largest_category() {
             Some(n) => n,
             None => {
@@ -124,7 +124,7 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
-    fn calc_repr_type(n_bits: usize) -> Result<ReprType, TebError> {
+    fn calc_repr_type(n_bits: usize) -> Result<ReprType, TbError> {
         match n_bits {
             1..=8 => Ok(ReprType::U8),
             9..=16 => Ok(ReprType::U16),
@@ -137,7 +137,7 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
-    pub fn rust(&self) -> Result<TokenStream, TebError> {
+    pub fn rust(&self) -> Result<TokenStream, TbError> {
         let doc = outer_doc_tokens(self.module.doc());
         let private_modules = self.private_modules_tokens();
         let category_tokens = self.category_tokens();

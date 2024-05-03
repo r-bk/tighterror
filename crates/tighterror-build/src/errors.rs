@@ -8,9 +8,9 @@
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct TebErrorCategory(_p::R);
+pub struct TbErrorCategory(_p::R);
 
-impl TebErrorCategory {
+impl TbErrorCategory {
     #[inline]
     const fn new(v: _p::R) -> Self {
         debug_assert!(v == _p::CAT_MAX);
@@ -24,7 +24,7 @@ impl TebErrorCategory {
     }
 }
 
-impl tighterror::TightErrorCategory for TebErrorCategory {
+impl tighterror::TightErrorCategory for TbErrorCategory {
     type R = _p::R;
     const BITS: usize = _p::CAT_BITS;
 
@@ -34,7 +34,7 @@ impl tighterror::TightErrorCategory for TebErrorCategory {
     }
 }
 
-impl core::fmt::Display for TebErrorCategory {
+impl core::fmt::Display for TbErrorCategory {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.pad(self.name())
@@ -49,10 +49,10 @@ impl core::fmt::Display for TebErrorCategory {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct TebErrorKind(_p::R);
+pub struct TbErrorKind(_p::R);
 
-impl TebErrorKind {
-    const fn new(cat: TebErrorCategory, variant: _p::R) -> Self {
+impl TbErrorKind {
+    const fn new(cat: TbErrorCategory, variant: _p::R) -> Self {
         Self(variant << _p::CAT_BITS | cat.0)
     }
 
@@ -68,8 +68,8 @@ impl TebErrorKind {
 
     /// Returns the error category.
     #[inline]
-    pub fn category(&self) -> TebErrorCategory {
-        TebErrorCategory::new(self.category_value())
+    pub fn category(&self) -> TbErrorCategory {
+        TbErrorCategory::new(self.category_value())
     }
 
     /// Returns the error kind name.
@@ -95,16 +95,16 @@ impl TebErrorKind {
         let cat = value & _p::CAT_MASK;
         let variant = value >> _p::CAT_BITS;
         if cat == _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
-            Some(Self::new(TebErrorCategory::new(cat), variant))
+            Some(Self::new(TbErrorCategory::new(cat), variant))
         } else {
             None
         }
     }
 }
 
-impl tighterror::TightErrorKind for TebErrorKind {
+impl tighterror::TightErrorKind for TbErrorKind {
     type R = _p::R;
-    type Category = TebErrorCategory;
+    type Category = TbErrorCategory;
     const BITS: usize = _p::KIND_BITS;
 
     #[inline]
@@ -128,16 +128,16 @@ impl tighterror::TightErrorKind for TebErrorKind {
     }
 }
 
-impl core::fmt::Display for TebErrorKind {
+impl core::fmt::Display for TbErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.pad(self.name())
     }
 }
 
-impl<T> core::convert::From<TebErrorKind> for Result<T, TebError> {
+impl<T> core::convert::From<TbErrorKind> for Result<T, TbError> {
     #[inline]
-    fn from(v: TebErrorKind) -> Self {
+    fn from(v: TbErrorKind) -> Self {
         Err(v.into())
     }
 }
@@ -150,12 +150,12 @@ impl<T> core::convert::From<TebErrorKind> for Result<T, TebError> {
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct TebError(TebErrorKind);
+pub struct TbError(TbErrorKind);
 
-impl TebError {
+impl TbError {
     /// Returns the error kind.
     #[inline]
-    pub fn kind(&self) -> TebErrorKind {
+    pub fn kind(&self) -> TbErrorKind {
         self.0
     }
 
@@ -166,10 +166,10 @@ impl TebError {
     }
 }
 
-impl tighterror::TightError for TebError {
+impl tighterror::TightError for TbError {
     type R = _p::R;
-    type Category = TebErrorCategory;
-    type Kind = TebErrorKind;
+    type Category = TbErrorCategory;
+    type Kind = TbErrorKind;
 
     #[inline]
     fn kind(&self) -> Self::Kind {
@@ -182,36 +182,36 @@ impl tighterror::TightError for TebError {
     }
 }
 
-impl core::convert::From<TebErrorKind> for TebError {
+impl core::convert::From<TbErrorKind> for TbError {
     #[inline]
-    fn from(kind: TebErrorKind) -> Self {
+    fn from(kind: TbErrorKind) -> Self {
         Self(kind)
     }
 }
 
-impl core::fmt::Display for TebError {
+impl core::fmt::Display for TbError {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.pad(self.kind().display())
     }
 }
 
-impl core::cmp::PartialEq for TebError {
+impl core::cmp::PartialEq for TbError {
     /// Checks equality based on the error kind only.
     #[inline]
-    fn eq(&self, other: &TebError) -> bool {
+    fn eq(&self, other: &TbError) -> bool {
         self.0 == other.0
     }
 }
 
-impl<T> core::convert::From<TebError> for core::result::Result<T, TebError> {
+impl<T> core::convert::From<TbError> for core::result::Result<T, TbError> {
     #[inline]
-    fn from(err: TebError) -> Self {
+    fn from(err: TbError) -> Self {
         Err(err)
     }
 }
 
-impl std::error::Error for TebError {}
+impl std::error::Error for TbError {}
 
 mod _cn {
     pub const GENERAL: &str = "GENERAL";
@@ -289,7 +289,7 @@ mod _p {
 
 /// Error category constants.
 pub mod categories {
-    use super::TebErrorCategory as C;
+    use super::TbErrorCategory as C;
 
     /// General error category.
     pub const GENERAL: C = C::new(0);
@@ -298,7 +298,7 @@ pub mod categories {
 /// Error kind constants.
 pub mod kinds {
     use super::categories as c;
-    use super::TebErrorKind as EK;
+    use super::TbErrorKind as EK;
 
     /// General category error kind constants.
     pub mod general {

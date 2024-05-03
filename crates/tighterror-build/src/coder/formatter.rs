@@ -1,13 +1,13 @@
 use crate::errors::{
     kinds::general::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED},
-    TebError,
+    TbError,
 };
 use log::{error, warn};
 use proc_macro2::TokenStream;
 use regex::RegexSet;
 use std::{ffi::OsStr, process::Command};
 
-pub fn pretty(tokens: TokenStream) -> Result<String, TebError> {
+pub fn pretty(tokens: TokenStream) -> Result<String, TbError> {
     let tokens_str = tokens.to_string();
     let file = match syn::parse2(tokens) {
         Ok(f) => f,
@@ -65,7 +65,7 @@ fn add_newlines(file: String) -> String {
     ans
 }
 
-pub fn rustfmt(path: impl AsRef<OsStr>) -> Result<(), TebError> {
+pub fn rustfmt(path: impl AsRef<OsStr>) -> Result<(), TbError> {
     let result = Command::new("rustfmt")
         .args(["--edition", "2021"])
         .arg(path)

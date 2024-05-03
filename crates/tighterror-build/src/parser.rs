@@ -2,7 +2,7 @@ use crate::{
     coder::idents,
     errors::{
         kinds::general::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
-        TebError,
+        TbError,
     },
     spec::Spec,
     util::{get_non_unique_names, open_spec_file},
@@ -35,7 +35,7 @@ pub enum ParseMode {
     List,
 }
 
-pub fn from_path(path: PathBuf) -> Result<Spec, TebError> {
+pub fn from_path(path: PathBuf) -> Result<Spec, TbError> {
     match path.extension() {
         #[cfg(feature = "yaml")]
         Some(e) if e == "yaml" => YamlParser::parse_file(open_spec_file(&path)?),
@@ -59,7 +59,7 @@ pub fn from_path(path: PathBuf) -> Result<Spec, TebError> {
     }
 }
 
-fn check_ident_chars(ident: &str, name: &str) -> Result<(), TebError> {
+fn check_ident_chars(ident: &str, name: &str) -> Result<(), TbError> {
     let rg = Regex::new(r"^[A-Za-z0-9_]+$").unwrap();
     if !rg.is_match(ident) {
         log::error!(
@@ -73,7 +73,7 @@ fn check_ident_chars(ident: &str, name: &str) -> Result<(), TebError> {
     }
 }
 
-fn check_ident(ident: &str, name: &str) -> Result<(), TebError> {
+fn check_ident(ident: &str, name: &str) -> Result<(), TbError> {
     use convert_case::{Case, Casing};
 
     if ident.is_empty() {
@@ -94,7 +94,7 @@ fn check_ident(ident: &str, name: &str) -> Result<(), TebError> {
     Ok(())
 }
 
-fn check_module_ident(ident: &str, kw: &str) -> Result<(), TebError> {
+fn check_module_ident(ident: &str, kw: &str) -> Result<(), TbError> {
     crate::parser::check_ident(ident, kw)?;
     if kw == kws::ERR_NAME && ident == idents::ERROR {
         return Ok(());
@@ -113,7 +113,7 @@ fn check_module_ident(ident: &str, kw: &str) -> Result<(), TebError> {
     }
 }
 
-fn check_name(name: &str) -> Result<(), TebError> {
+fn check_name(name: &str) -> Result<(), TbError> {
     check_ident(name, kws::NAME)?;
     if kws::is_any_kw(name) {
         // double check, in case any logic above changes
@@ -128,7 +128,7 @@ fn check_name(name: &str) -> Result<(), TebError> {
     }
 }
 
-fn check_name_uniqueness<'a, I>(item_name: &str, iter: I) -> Result<(), TebError>
+fn check_name_uniqueness<'a, I>(item_name: &str, iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {
@@ -142,21 +142,21 @@ where
         .ok_or_else(|| BAD_SPEC.into())
 }
 
-fn check_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+fn check_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("error", iter)
 }
 
-fn check_category_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+fn check_category_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("category", iter)
 }
 
-fn check_module_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TebError>
+fn check_module_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {

@@ -1,6 +1,6 @@
 use crate::{
     coder::{formatter::pretty, idents, options::CodegenOptions},
-    errors::TebError,
+    errors::TbError,
     spec::Spec,
 };
 use proc_macro2::{Ident, TokenStream};
@@ -28,7 +28,7 @@ impl<'a> RustGenerator<'a> {
         Self { opts, spec }
     }
 
-    fn rust(&self) -> Result<String, TebError> {
+    fn rust(&self) -> Result<String, TbError> {
         let mg = ModuleGenerator::new(self.opts, &self.spec.main, &self.spec.module)?;
         let tokens = mg.rust()?;
         pretty(tokens)
@@ -131,6 +131,6 @@ fn categories_mod_ident() -> Ident {
     format_ident!("{}", idents::CATEGORY_CONSTS_MOD)
 }
 
-pub fn spec_to_rust(opts: &CodegenOptions, spec: &Spec) -> Result<String, TebError> {
+pub fn spec_to_rust(opts: &CodegenOptions, spec: &Spec) -> Result<String, TbError> {
     RustGenerator::new(opts, spec).rust()
 }

@@ -1,7 +1,7 @@
 use crate::{
     errors::{
         kinds::general::{BAD_SPEC, BAD_YAML},
-        TebError,
+        TbError,
     },
     parser::{
         check_category_name_uniqueness, check_error_name_uniqueness,
@@ -22,7 +22,7 @@ use std::fs::File;
 pub struct YamlParser;
 
 impl YamlParser {
-    pub fn parse_file(file: File) -> Result<Spec, TebError> {
+    pub fn parse_file(file: File) -> Result<Spec, TbError> {
         match serde_yaml::from_reader(file) {
             Ok(v) => Self::value(v),
             Err(e) => {
@@ -33,7 +33,7 @@ impl YamlParser {
     }
 
     #[cfg(test)]
-    pub fn parse_str(s: &str) -> Result<Spec, TebError> {
+    pub fn parse_str(s: &str) -> Result<Spec, TbError> {
         match serde_yaml::from_str(s) {
             Ok(v) => Self::value(v),
             Err(e) => {
@@ -43,7 +43,7 @@ impl YamlParser {
         }
     }
 
-    fn value(value: Value) -> Result<Spec, TebError> {
+    fn value(value: Value) -> Result<Spec, TbError> {
         match value {
             Value::Mapping(m) => Self::mapping(m),
             v => {
@@ -56,7 +56,7 @@ impl YamlParser {
         }
     }
 
-    fn mapping(mut m: Mapping) -> Result<Spec, TebError> {
+    fn mapping(mut m: Mapping) -> Result<Spec, TbError> {
         Self::check_toplevel_attributes(&m)?;
 
         let mut spec = Spec::default();
@@ -99,7 +99,7 @@ impl YamlParser {
         Ok(spec)
     }
 
-    fn check_toplevel_attributes(m: &Mapping) -> Result<(), TebError> {
+    fn check_toplevel_attributes(m: &Mapping) -> Result<(), TbError> {
         for k in m.keys() {
             match k {
                 Value::String(s) => {
@@ -142,7 +142,7 @@ impl YamlParser {
 struct MainParser;
 
 impl MainParser {
-    fn value(v: Value) -> Result<MainSpec, TebError> {
+    fn value(v: Value) -> Result<MainSpec, TbError> {
         match v {
             Value::Mapping(m) => Self::mapping(m),
             ref ov => {
@@ -155,7 +155,7 @@ impl MainParser {
         }
     }
 
-    fn mapping(m: Mapping) -> Result<MainSpec, TebError> {
+    fn mapping(m: Mapping) -> Result<MainSpec, TbError> {
         let mut main_spec = MainSpec::default();
 
         for (k, v) in m.into_iter() {
@@ -183,7 +183,7 @@ impl MainParser {
 struct ModuleParser;
 
 impl ModuleParser {
-    fn value(v: Value) -> Result<ModuleSpec, TebError> {
+    fn value(v: Value) -> Result<ModuleSpec, TbError> {
         match v {
             Value::Mapping(m) => Self::mapping(m),
             ref ov => {
@@ -196,7 +196,7 @@ impl ModuleParser {
         }
     }
 
-    fn mapping(m: Mapping) -> Result<ModuleSpec, TebError> {
+    fn mapping(m: Mapping) -> Result<ModuleSpec, TbError> {
         let mut mod_spec = ModuleSpec::default();
 
         for (k, v) in m.into_iter() {
@@ -252,7 +252,7 @@ impl ModuleParser {
 struct ErrorsParser;
 
 impl ErrorsParser {
-    fn value(v: Value) -> Result<Vec<ErrorSpec>, TebError> {
+    fn value(v: Value) -> Result<Vec<ErrorSpec>, TbError> {
         match v {
             Value::Sequence(s) => Self::sequence(s),
             ref ov => {
@@ -262,7 +262,7 @@ impl ErrorsParser {
         }
     }
 
-    fn sequence(s: Sequence) -> Result<Vec<ErrorSpec>, TebError> {
+    fn sequence(s: Sequence) -> Result<Vec<ErrorSpec>, TbError> {
         let mut errors = Vec::new();
         for v in s.into_iter() {
             match v {
@@ -288,7 +288,7 @@ impl ErrorsParser {
 struct ErrorParser;
 
 impl ErrorParser {
-    fn string(s: String) -> Result<ErrorSpec, TebError> {
+    fn string(s: String) -> Result<ErrorSpec, TbError> {
         check_name(&s)?;
         Ok(ErrorSpec {
             name: s,
@@ -308,7 +308,7 @@ impl ErrorParser {
         false
     }
 
-    fn mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
+    fn mapping(m: Mapping) -> Result<ErrorSpec, TbError> {
         match m.len() {
             0 => {
                 error!(
@@ -322,7 +322,7 @@ impl ErrorParser {
         }
     }
 
-    fn short_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
+    fn short_mapping(m: Mapping) -> Result<ErrorSpec, TbError> {
         assert_eq!(m.len(), 1);
         let (k, v) = m.into_iter().next().unwrap();
 
@@ -357,7 +357,7 @@ impl ErrorParser {
         })
     }
 
-    fn long_mapping(m: Mapping) -> Result<ErrorSpec, TebError> {
+    fn long_mapping(m: Mapping) -> Result<ErrorSpec, TbError> {
         let mut err_spec = ErrorSpec::default();
 
         for (k, v) in m.into_iter() {
@@ -391,7 +391,7 @@ impl ErrorParser {
 struct CategoryParser(ParseMode);
 
 impl CategoryParser {
-    fn value(&self, v: Value) -> Result<CategorySpec, TebError> {
+    fn value(&self, v: Value) -> Result<CategorySpec, TbError> {
         match v {
             Value::Mapping(m) => self.mapping(m),
             ref ov => {
@@ -404,7 +404,7 @@ impl CategoryParser {
         }
     }
 
-    fn mapping(&self, mut m: Mapping) -> Result<CategorySpec, TebError> {
+    fn mapping(&self, mut m: Mapping) -> Result<CategorySpec, TbError> {
         for k in m.keys() {
             match k {
                 Value::String(s) => {
@@ -475,7 +475,7 @@ impl CategoryParser {
 struct CategoriesParser;
 
 impl CategoriesParser {
-    fn value(v: Value) -> Result<Vec<CategorySpec>, TebError> {
+    fn value(v: Value) -> Result<Vec<CategorySpec>, TbError> {
         match v {
             Value::Sequence(s) => Self::sequence(s),
             ref ov => {
@@ -485,7 +485,7 @@ impl CategoriesParser {
         }
     }
 
-    fn sequence(s: Sequence) -> Result<Vec<CategorySpec>, TebError> {
+    fn sequence(s: Sequence) -> Result<Vec<CategorySpec>, TbError> {
         let mut categories = Vec::new();
         for v in s.into_iter() {
             match v {
@@ -522,7 +522,7 @@ fn value_type_name(v: &Value) -> &'static str {
     }
 }
 
-fn v2key(v: Value) -> Result<String, TebError> {
+fn v2key(v: Value) -> Result<String, TbError> {
     let key = match v {
         Value::String(s) => s,
         ov => {
@@ -539,7 +539,7 @@ fn v2key(v: Value) -> Result<String, TebError> {
     }
 }
 
-fn v2string(v: Value, kw: &str) -> Result<String, TebError> {
+fn v2string(v: Value, kw: &str) -> Result<String, TbError> {
     match v {
         Value::String(s) => Ok(s),
         ov => {
@@ -549,7 +549,7 @@ fn v2string(v: Value, kw: &str) -> Result<String, TebError> {
     }
 }
 
-fn v2bool(v: Value, kw: &str) -> Result<bool, TebError> {
+fn v2bool(v: Value, kw: &str) -> Result<bool, TbError> {
     match v {
         Value::Bool(b) => Ok(b),
         ov => {
