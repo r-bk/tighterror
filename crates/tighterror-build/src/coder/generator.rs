@@ -134,7 +134,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn rust(&self) -> Result<String, TebError> {
-        let doc = outer_doc_tokens(self.spec.module.mod_doc());
+        let doc = outer_doc_tokens(self.spec.module.doc());
         let private_modules = self.private_modules_tokens();
         let category_tokens = self.category_tokens();
         let error_kind_tokens = self.error_kind_tokens();

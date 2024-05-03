@@ -107,8 +107,7 @@ impl ModuleSpec {
             .unwrap_or(DEFAULT_ERROR_KIND_STRUCT_DOC)
     }
 
-    // TODO: rename to doc
-    pub fn mod_doc(&self) -> &str {
+    pub fn doc(&self) -> &str {
         self.doc.as_deref().unwrap_or(DEFAULT_MODULE_DOC)
     }
 
