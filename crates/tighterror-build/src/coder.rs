@@ -69,7 +69,7 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TebError> {
     let spec = parser::from_path(path.into())?;
     let code = generator::spec_to_rust(opts, &spec)?;
 
-    match spec.output(opts.output.as_deref()) {
+    match spec.main.output(opts.output.as_deref()) {
         p if p == STDOUT_DST => {
             if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
                 error!("failed to write to stdout: {e}");

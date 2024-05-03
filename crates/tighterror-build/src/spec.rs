@@ -24,10 +24,6 @@ pub struct Spec {
 }
 
 impl Spec {
-    pub fn output<'a>(&'a self, path: Option<&'a str>) -> &'a str {
-        path.or(self.main.output.as_deref()).unwrap_or(STDOUT_DST)
-    }
-
     pub fn test(&self, test: Option<bool>) -> bool {
         test.unwrap_or(DEFAULT_TEST)
     }
@@ -136,10 +132,6 @@ impl Spec {
             .err_cat_name
             .as_deref()
             .unwrap_or(idents::ERROR_CATEGORY)
-    }
-
-    pub fn no_std(&self) -> bool {
-        self.main.no_std.unwrap_or(DEFAULT_NO_STD)
     }
 
     pub fn flat_kinds(&self) -> bool {

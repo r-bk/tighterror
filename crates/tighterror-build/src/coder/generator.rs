@@ -824,7 +824,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_category_display(&self) -> TokenStream {
-        if self.spec.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let categories_mod = self.categories_mod_ident();
@@ -845,7 +845,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_category_uniqueness(&self) -> TokenStream {
-        if self.spec.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_cat_name = self.err_cat_name_ident();
@@ -921,7 +921,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_display(&self) -> TokenStream {
-        if self.spec.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_kinds_mod = self.err_kinds_mod_ident();
@@ -969,7 +969,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_uniqueness(&self) -> TokenStream {
-        if self.spec.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
@@ -996,7 +996,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_value_uniqueness(&self) -> TokenStream {
-        if self.spec.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
@@ -1073,7 +1073,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_display(&self) -> TokenStream {
-        if self.spec.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_name = self.err_name_ident();
