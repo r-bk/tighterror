@@ -106,7 +106,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn calc_n_variant_bits(spec: &Spec) -> Result<usize, TebError> {
-        let n = match spec.n_errors_in_largest_category() {
+        let n = match spec.module.n_errors_in_largest_category() {
             Some(n) => n,
             None => {
                 error!("at least one category must be defined");
@@ -134,7 +134,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn rust(&self) -> Result<String, TebError> {
-        let doc = outer_doc_tokens(self.spec.mod_doc());
+        let doc = outer_doc_tokens(self.spec.module.mod_doc());
         let private_modules = self.private_modules_tokens();
         let category_tokens = self.category_tokens();
         let error_kind_tokens = self.error_kind_tokens();
@@ -199,15 +199,15 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn err_name_ident(&self) -> Ident {
-        format_ident!("{}", self.spec.err_name())
+        format_ident!("{}", self.spec.module.err_name())
     }
 
     fn err_cat_name_ident(&self) -> Ident {
-        format_ident!("{}", self.spec.err_cat_name())
+        format_ident!("{}", self.spec.module.err_cat_name())
     }
 
     fn err_kind_name_ident(&self) -> Ident {
-        format_ident!("{}", self.spec.err_kind_name())
+        format_ident!("{}", self.spec.module.err_kind_name())
     }
 
     fn tests_mod_ident(&self) -> Ident {
@@ -247,7 +247,7 @@ impl<'a> RustGenerator<'a> {
         let n_categories = Literal::usize_unsuffixed(self.spec.module.categories.len());
         let category_mask = self.u64_to_repr_type_literal(self.category_mask).unwrap();
         let category_max = self
-            .usize_to_repr_type_literal(self.spec.category_max())
+            .usize_to_repr_type_literal(self.spec.module.category_max())
             .unwrap();
         let variant_max = |c: &CategorySpec| {
             let n_errors = c.errors.len();
@@ -364,7 +364,7 @@ impl<'a> RustGenerator<'a> {
         let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
         let const_iter = c.errors.iter().map(|e| {
             let const_ident = format_ident!("{}", e.ident_name());
-            let display = self.spec.error_display(c, e);
+            let display = self.spec.module.error_display(c, e);
             quote! {
                 const #const_ident: &str = #display
             }
@@ -392,9 +392,9 @@ impl<'a> RustGenerator<'a> {
         let private_mod = Self::private_mod_ident();
         let error_names_mod = Self::error_names_mod_ident();
         let error_displays_mod = Self::error_displays_mod_ident();
-        let err_kind_doc = doc_tokens(self.spec.err_kind_doc());
+        let err_kind_doc = doc_tokens(self.spec.module.err_kind_doc());
         let category_max_comparison = self.category_max_comparison();
-        let result_from_err_kind = if self.spec.result_from_err_kind() {
+        let result_from_err_kind = if self.spec.module.result_from_err_kind() {
             quote! {
                 impl<T> core::convert::From<#err_kind_name> for Result<T, #err_name> {
                     #[inline]
@@ -506,9 +506,9 @@ impl<'a> RustGenerator<'a> {
         let err_name = self.err_name_ident();
         let err_kind_name = self.err_kind_name_ident();
         let err_cat_name = self.err_cat_name_ident();
-        let err_doc = doc_tokens(self.spec.err_doc());
+        let err_doc = doc_tokens(self.spec.module.err_doc());
         let private_mod = Self::private_mod_ident();
-        let result_from_err = if self.spec.result_from_err() {
+        let result_from_err = if self.spec.module.result_from_err() {
             quote! {
                 impl<T> core::convert::From<#err_name> for core::result::Result<T, #err_name> {
                     #[inline]
@@ -520,7 +520,7 @@ impl<'a> RustGenerator<'a> {
         } else {
             TokenStream::default()
         };
-        let error_trait = if self.spec.error_trait() {
+        let error_trait = if self.spec.module.error_trait(self.spec.main.no_std) {
             quote! {
                 impl std::error::Error for #err_name {}
             }
@@ -596,7 +596,7 @@ impl<'a> RustGenerator<'a> {
         let mut tokens = TokenStream::default();
         for c in &self.spec.module.categories {
             let cat_tokens = self.error_kind_category_constants_tokens(c);
-            if self.spec.flat_kinds() {
+            if self.spec.module.flat_kinds() {
                 tokens = quote! {
                     #tokens
                     #cat_tokens
@@ -633,7 +633,7 @@ impl<'a> RustGenerator<'a> {
             let cat_ident = format_ident!("{}", c.ident_name());
             let err_value = self.usize_to_repr_type_literal(i).unwrap();
             let err_ident = format_ident!("{}", e.ident_name());
-            let err_doc = doc_tokens(self.spec.err_kind_const_doc(c, e));
+            let err_doc = doc_tokens(self.spec.module.err_kind_const_doc(c, e));
             tokens = quote! {
                 #tokens
 
@@ -646,7 +646,7 @@ impl<'a> RustGenerator<'a> {
 
     fn category_tokens(&self) -> TokenStream {
         let err_cat_name = self.err_cat_name_ident();
-        let err_cat_doc = doc_tokens(self.spec.err_cat_doc());
+        let err_cat_doc = doc_tokens(self.spec.module.err_cat_doc());
         let category_max_comparison = self.category_max_comparison();
         let category_names_mod = Self::category_names_mod_ident();
         let private_mod = Self::private_mod_ident();
@@ -695,7 +695,7 @@ impl<'a> RustGenerator<'a> {
         for (i, c) in self.spec.module.categories.iter().enumerate() {
             let cat_value = self.usize_to_repr_type_literal(i).unwrap();
             let cat_name_upper_snake = format_ident!("{}", c.ident_name());
-            let const_doc = doc_tokens(self.spec.cat_const_doc(c));
+            let const_doc = doc_tokens(self.spec.module.cat_const_doc(c));
             let single = quote! {
                 #const_doc
                 pub const #cat_name_upper_snake: C = C::new(#cat_value);
@@ -755,13 +755,13 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn category_max_comparison(&self) -> TokenStream {
-        let category_max = self.spec.category_max();
+        let category_max = self.spec.module.category_max();
         TokenStream::from_str(if category_max == 0 { "==" } else { "<=" }).unwrap()
     }
 
     fn test_tokens(&self) -> TokenStream {
         let tests_mod = self.tests_mod_ident();
-        let do_test = self.spec.test(self.opts.test);
+        let do_test = self.spec.module.test(self.opts.test);
         if do_test {
             let test_tokens = self.test_tokens_impl();
             quote! {
@@ -900,7 +900,7 @@ impl<'a> RustGenerator<'a> {
         let iter = self.spec.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
-                let add_cat_mod = !self.spec.flat_kinds();
+                let add_cat_mod = !self.spec.module.flat_kinds();
                 let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
                     assert_eq!(#ident.name(), #ident_name);
@@ -928,7 +928,7 @@ impl<'a> RustGenerator<'a> {
         let iter = self.spec.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let ident_name = e.ident_name();
-                let add_cat_mod = !self.spec.flat_kinds();
+                let add_cat_mod = !self.spec.module.flat_kinds();
                 let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
                     assert_eq!(format!("{}", #ident), #ident_name);
@@ -964,7 +964,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn ut_err_kind_arr(&self) -> TokenStream {
-        let add_cat_mod = !self.spec.flat_kinds();
+        let add_cat_mod = !self.spec.module.flat_kinds();
         self.ut_err_kind_arr_impl(add_cat_mod)
     }
 
@@ -1028,7 +1028,7 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                let add_cat_mod = !self.spec.flat_kinds();
+                let add_cat_mod = !self.spec.module.flat_kinds();
                 let ident = self.err_const_tokens(c, e, add_cat_mod);
                 let cat_ident = format_ident!("{}", c.ident_name());
                 quote! {
@@ -1053,7 +1053,7 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                let add_cat_mod = !self.spec.flat_kinds();
+                let add_cat_mod = !self.spec.module.flat_kinds();
                 let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
                     assert_eq!(#err_kind_name::from_value(#ident.value()).unwrap(), #ident);
@@ -1080,7 +1080,7 @@ impl<'a> RustGenerator<'a> {
         let err_kinds_mod = self.err_kinds_mod_ident();
         let iter = self.spec.module.categories.iter().map(|c| {
             let eiter = c.errors.iter().map(|e| {
-                let add_cat_mod = !self.spec.flat_kinds();
+                let add_cat_mod = !self.spec.module.flat_kinds();
                 let eident = self.err_const_tokens(c, e, add_cat_mod);
                 let display = if let Some(ref d) = e.display {
                     d.clone()

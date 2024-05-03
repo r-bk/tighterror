@@ -1,4 +1,12 @@
-use super::{CategorySpec, ErrorSpec, OverridableErrorSpec};
+use super::{
+    definitions::{
+        DEFAULT_CATEGORY_STRUCT_DOC, DEFAULT_DOC_FROM_DISPLAY, DEFAULT_ERROR_KIND_CONST_DOC,
+        DEFAULT_ERROR_KIND_STRUCT_DOC, DEFAULT_ERROR_STRUCT_DOC, DEFAULT_ERROR_TRAIT,
+        DEFAULT_ERR_INTO_RESULT, DEFAULT_ERR_KIND_INTO_RESULT, DEFAULT_FLAT_KINDS,
+        DEFAULT_GENERAL_CAT_DOC, DEFAULT_MODULE_DOC, DEFAULT_TEST,
+    },
+    idents, CategorySpec, ErrorSpec, OverridableErrorSpec,
+};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ModuleSpec {
@@ -38,6 +46,110 @@ impl ModuleSpec {
             categories: self.categories.iter(),
             errors: [].iter(),
         }
+    }
+
+    pub fn test(&self, test: Option<bool>) -> bool {
+        test.unwrap_or(DEFAULT_TEST)
+    }
+
+    pub fn n_errors_in_largest_category(&self) -> Option<usize> {
+        self.categories.iter().map(|c| c.errors.len()).max()
+    }
+
+    pub fn err_doc(&self) -> &str {
+        self.err_doc.as_deref().unwrap_or(DEFAULT_ERROR_STRUCT_DOC)
+    }
+
+    pub fn err_cat_doc(&self) -> &str {
+        self.err_cat_doc
+            .as_deref()
+            .unwrap_or(DEFAULT_CATEGORY_STRUCT_DOC)
+    }
+
+    pub fn cat_const_doc<'a>(&'a self, c: &'a CategorySpec) -> &'a str {
+        // TODO: refactor to call c.doc.as_deref only once
+        if self.categories.len() == 1 {
+            c.doc.as_deref().unwrap_or(DEFAULT_GENERAL_CAT_DOC)
+        } else {
+            c.doc.as_deref().unwrap_or_default()
+        }
+    }
+
+    pub fn err_kind_const_doc<'a>(&self, c: &'a CategorySpec, e: &'a ErrorSpec) -> &'a str {
+        if let Some(doc) = e.doc.as_deref() {
+            return doc;
+        }
+
+        let dfd = e
+            .oes
+            .doc_from_display
+            .or(c.oes.doc_from_display)
+            .or(self.oes.doc_from_display)
+            .unwrap_or(DEFAULT_DOC_FROM_DISPLAY);
+
+        if dfd {
+            e.display.as_deref().unwrap_or(DEFAULT_ERROR_KIND_CONST_DOC)
+        } else {
+            DEFAULT_ERROR_KIND_CONST_DOC
+        }
+    }
+
+    // TODO: rename to err_display
+    pub fn error_display(&self, _c: &CategorySpec, e: &ErrorSpec) -> String {
+        if let Some(dsp) = e.display.as_ref() {
+            return dsp.clone();
+        }
+        e.ident_name()
+    }
+
+    pub fn err_kind_doc(&self) -> &str {
+        self.err_kind_doc
+            .as_deref()
+            .unwrap_or(DEFAULT_ERROR_KIND_STRUCT_DOC)
+    }
+
+    // TODO: rename to doc
+    pub fn mod_doc(&self) -> &str {
+        self.doc.as_deref().unwrap_or(DEFAULT_MODULE_DOC)
+    }
+
+    pub fn category_max(&self) -> usize {
+        debug_assert!(!self.categories.is_empty());
+        self.categories.len() - 1
+    }
+
+    pub fn result_from_err(&self) -> bool {
+        self.result_from_err.unwrap_or(DEFAULT_ERR_INTO_RESULT)
+    }
+
+    pub fn result_from_err_kind(&self) -> bool {
+        self.result_from_err_kind
+            .unwrap_or(DEFAULT_ERR_KIND_INTO_RESULT)
+    }
+
+    pub fn error_trait(&self, no_std: Option<bool>) -> bool {
+        no_std
+            .map(|v| !v)
+            .or(self.error_trait)
+            .unwrap_or(DEFAULT_ERROR_TRAIT)
+    }
+
+    pub fn err_name(&self) -> &str {
+        self.err_name.as_deref().unwrap_or(idents::ERROR)
+    }
+
+    pub fn err_kind_name(&self) -> &str {
+        self.err_kind_name.as_deref().unwrap_or(idents::ERROR_KIND)
+    }
+
+    pub fn err_cat_name(&self) -> &str {
+        self.err_cat_name
+            .as_deref()
+            .unwrap_or(idents::ERROR_CATEGORY)
+    }
+
+    pub fn flat_kinds(&self) -> bool {
+        self.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS)
     }
 }
 
