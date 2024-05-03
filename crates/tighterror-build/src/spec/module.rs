@@ -94,8 +94,7 @@ impl ModuleSpec {
         }
     }
 
-    // TODO: rename to err_display
-    pub fn error_display(&self, _c: &CategorySpec, e: &ErrorSpec) -> String {
+    pub fn err_kind_display(&self, _c: &CategorySpec, e: &ErrorSpec) -> String {
         if let Some(dsp) = e.display.as_ref() {
             return dsp.clone();
         }

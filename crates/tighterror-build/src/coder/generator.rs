@@ -364,7 +364,7 @@ impl<'a> RustGenerator<'a> {
         let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
         let const_iter = c.errors.iter().map(|e| {
             let const_ident = format_ident!("{}", e.ident_name());
-            let display = self.spec.module.error_display(c, e);
+            let display = self.spec.module.err_kind_display(c, e);
             quote! {
                 const #const_ident: &str = #display
             }
