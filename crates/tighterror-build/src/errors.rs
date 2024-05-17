@@ -13,7 +13,7 @@ pub struct TbErrorCategory(_p::R);
 impl TbErrorCategory {
     #[inline]
     const fn new(v: _p::R) -> Self {
-        debug_assert!(v == _p::CAT_MAX);
+        debug_assert!(v <= _p::CAT_MAX);
         Self(v)
     }
 
@@ -94,7 +94,7 @@ impl TbErrorKind {
     pub fn from_value(value: _p::R) -> Option<Self> {
         let cat = value & _p::CAT_MASK;
         let variant = value >> _p::CAT_BITS;
-        if cat == _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
+        if cat <= _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
             Some(Self::new(TbErrorCategory::new(cat), variant))
         } else {
             None
@@ -215,7 +215,8 @@ impl std::error::Error for TbError {}
 
 mod _cn {
     pub const GENERAL: &str = "GENERAL";
-    pub static A: [&str; 1] = [GENERAL];
+    pub const PARSER: &str = "PARSER";
+    pub static A: [&str; 2] = [GENERAL, PARSER];
 }
 
 mod _n {
@@ -223,20 +224,14 @@ mod _n {
         const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
         const FAILED_TO_OPEN_SPEC_FILE: &str = "FAILED_TO_OPEN_SPEC_FILE";
         const BAD_SPEC: &str = "BAD_SPEC";
-        const BAD_YAML: &str = "BAD_YAML";
-        const BAD_TOML: &str = "BAD_TOML";
-        const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
         const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
         const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
         const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
         const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
-        pub static A: [&str; 10] = [
+        pub static A: [&str; 7] = [
             SPEC_FILE_NOT_FOUND,
             FAILED_TO_OPEN_SPEC_FILE,
             BAD_SPEC,
-            BAD_YAML,
-            BAD_TOML,
-            BAD_SPEC_FILE_EXTENSION,
             FAILED_TO_WRITE_OUTPUT_FILE,
             FAILED_TO_READ_OUTPUT_FILE,
             FAILED_TO_PARSE_TOKENS,
@@ -244,7 +239,44 @@ mod _n {
         ];
     }
 
-    pub static A: [&[&str]; 1] = [&general::A];
+    mod parser {
+        const BAD_IDENTIFIER_CHARACTERS: &str = "BAD_IDENTIFIER_CHARACTERS";
+        const BAD_IDENTIFIER_CASE: &str = "BAD_IDENTIFIER_CASE";
+        const BAD_KEYWORD_TYPE: &str = "BAD_KEYWORD_TYPE";
+        const BAD_MODULE_IDENTIFIER: &str = "BAD_MODULE_IDENTIFIER";
+        const BAD_NAME: &str = "BAD_NAME";
+        const BAD_OBJECT_ATTRIBUTE: &str = "BAD_OBJECT_ATTRIBUTE";
+        const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
+        const BAD_TOML: &str = "BAD_TOML";
+        const BAD_TOP_LEVEL_KEYWORD: &str = "BAD_TOP_LEVEL_KEYWORD";
+        const BAD_VALUE_TYPE: &str = "BAD_VALUE_TYPE";
+        const BAD_YAML: &str = "BAD_YAML";
+        const EMPTY_IDENTIFIER: &str = "EMPTY_IDENTIFIER";
+        const EMPTY_LIST: &str = "EMPTY_LIST";
+        const MISSING_ATTRIBUTE: &str = "MISSING_ATTRIBUTE";
+        const MUTUALLY_EXCLUSIVE_KEYWORDS: &str = "MUTUALLY_EXCLUSIVE_KEYWORDS";
+        const NON_UNIQUE_NAME: &str = "NON_UNIQUE_NAME";
+        pub static A: [&str; 16] = [
+            BAD_IDENTIFIER_CHARACTERS,
+            BAD_IDENTIFIER_CASE,
+            BAD_KEYWORD_TYPE,
+            BAD_MODULE_IDENTIFIER,
+            BAD_NAME,
+            BAD_OBJECT_ATTRIBUTE,
+            BAD_SPEC_FILE_EXTENSION,
+            BAD_TOML,
+            BAD_TOP_LEVEL_KEYWORD,
+            BAD_VALUE_TYPE,
+            BAD_YAML,
+            EMPTY_IDENTIFIER,
+            EMPTY_LIST,
+            MISSING_ATTRIBUTE,
+            MUTUALLY_EXCLUSIVE_KEYWORDS,
+            NON_UNIQUE_NAME,
+        ];
+    }
+
+    pub static A: [&[&str]; 2] = [&general::A, &parser::A];
 }
 
 mod _d {
@@ -252,20 +284,14 @@ mod _d {
         const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
         const FAILED_TO_OPEN_SPEC_FILE: &str = "Specification file couldn't be opened.";
         const BAD_SPEC: &str = "Bad specification file format.";
-        const BAD_YAML: &str = "Bad YAML file format.";
-        const BAD_TOML: &str = "Bad TOML file format.";
-        const BAD_SPEC_FILE_EXTENSION: &str = "Bad specification file name extension.";
         const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
         const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
         const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
         const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
-        pub static A: [&str; 10] = [
+        pub static A: [&str; 7] = [
             SPEC_FILE_NOT_FOUND,
             FAILED_TO_OPEN_SPEC_FILE,
             BAD_SPEC,
-            BAD_YAML,
-            BAD_TOML,
-            BAD_SPEC_FILE_EXTENSION,
             FAILED_TO_WRITE_OUTPUT_FILE,
             FAILED_TO_READ_OUTPUT_FILE,
             FAILED_TO_PARSE_TOKENS,
@@ -273,16 +299,55 @@ mod _d {
         ];
     }
 
-    pub static A: [&[&str]; 1] = [&general::A];
+    mod parser {
+        const BAD_IDENTIFIER_CHARACTERS: &str = "Identifier contains unsupported characters.";
+        const BAD_IDENTIFIER_CASE: &str = "Identifier is specified in an unsupported case.";
+        const BAD_KEYWORD_TYPE: &str = "Specification keyword is not a String.";
+        const BAD_MODULE_IDENTIFIER: &str = "Identifier is not valid on module-level.";
+        const BAD_NAME: &str = "Invalid name.";
+        const BAD_OBJECT_ATTRIBUTE: &str = "An object attribute is invalid.";
+        const BAD_SPEC_FILE_EXTENSION: &str =
+            "Specification filename extension is not supported or is missing.";
+        const BAD_TOML: &str = "TOML deserialization has failed.";
+        const BAD_TOP_LEVEL_KEYWORD: &str = "Specification contains an invalid top-level keyword.";
+        const BAD_VALUE_TYPE: &str = "Specification value type is invalid.";
+        const BAD_YAML: &str = "YAML deserialization has failed.";
+        const EMPTY_IDENTIFIER: &str = "An identifier cannot be an empty string.";
+        const EMPTY_LIST: &str = "Empty list of objects is not allowed.";
+        const MISSING_ATTRIBUTE: &str = "Specification lacks a mandatory attribute.";
+        const MUTUALLY_EXCLUSIVE_KEYWORDS: &str =
+            "Specification contains mutually exclusive keywords.";
+        const NON_UNIQUE_NAME: &str = "A name is not unique.";
+        pub static A: [&str; 16] = [
+            BAD_IDENTIFIER_CHARACTERS,
+            BAD_IDENTIFIER_CASE,
+            BAD_KEYWORD_TYPE,
+            BAD_MODULE_IDENTIFIER,
+            BAD_NAME,
+            BAD_OBJECT_ATTRIBUTE,
+            BAD_SPEC_FILE_EXTENSION,
+            BAD_TOML,
+            BAD_TOP_LEVEL_KEYWORD,
+            BAD_VALUE_TYPE,
+            BAD_YAML,
+            EMPTY_IDENTIFIER,
+            EMPTY_LIST,
+            MISSING_ATTRIBUTE,
+            MUTUALLY_EXCLUSIVE_KEYWORDS,
+            NON_UNIQUE_NAME,
+        ];
+    }
+
+    pub static A: [&[&str]; 2] = [&general::A, &parser::A];
 }
 
 mod _p {
     pub type R = u8;
-    pub const KIND_BITS: usize = 4;
-    pub const CAT_BITS: usize = 0;
-    pub const CAT_MASK: R = 0;
-    pub const CAT_MAX: R = 0;
-    pub static VAR_MAXES: [R; 1] = [9];
+    pub const KIND_BITS: usize = 5;
+    pub const CAT_BITS: usize = 1;
+    pub const CAT_MASK: R = 1;
+    pub const CAT_MAX: R = 1;
+    pub static VAR_MAXES: [R; 2] = [6, 15];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
 }
@@ -291,8 +356,11 @@ mod _p {
 pub mod categories {
     use super::TbErrorCategory as C;
 
-    /// General error category.
+    /// General errors category.
     pub const GENERAL: C = C::new(0);
+
+    /// Parser errors category.
+    pub const PARSER: C = C::new(1);
 }
 
 /// Error kind constants.
@@ -314,25 +382,70 @@ pub mod kinds {
         /// Bad specification file format.
         pub const BAD_SPEC: EK = EK::new(c::GENERAL, 2);
 
-        /// Bad YAML file format.
-        pub const BAD_YAML: EK = EK::new(c::GENERAL, 3);
-
-        /// Bad TOML file format.
-        pub const BAD_TOML: EK = EK::new(c::GENERAL, 4);
-
-        /// Bad specification file name extension.
-        pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::GENERAL, 5);
-
         /// Output file couldn't be written.
-        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 6);
+        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 3);
 
         /// Output file couldn't be read.
-        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 7);
+        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 4);
 
         /// Generated code tokens couldn't be parsed.
-        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 8);
+        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 5);
 
         /// Rustfmt tool exited with an error.
-        pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 9);
+        pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 6);
+    }
+
+    /// Parser category error kind constants.
+    pub mod parser {
+        use super::c;
+        use super::EK;
+
+        /// Identifier contains unsupported characters.
+        pub const BAD_IDENTIFIER_CHARACTERS: EK = EK::new(c::PARSER, 0);
+
+        /// Identifier is specified in an unsupported case.
+        pub const BAD_IDENTIFIER_CASE: EK = EK::new(c::PARSER, 1);
+
+        /// Specification keyword is not a String.
+        pub const BAD_KEYWORD_TYPE: EK = EK::new(c::PARSER, 2);
+
+        /// Identifier is not valid on module-level.
+        pub const BAD_MODULE_IDENTIFIER: EK = EK::new(c::PARSER, 3);
+
+        /// Invalid name.
+        pub const BAD_NAME: EK = EK::new(c::PARSER, 4);
+
+        /// An object attribute is invalid.
+        pub const BAD_OBJECT_ATTRIBUTE: EK = EK::new(c::PARSER, 5);
+
+        /// Specification filename extension is not supported or is missing.
+        pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::PARSER, 6);
+
+        /// TOML deserialization has failed.
+        pub const BAD_TOML: EK = EK::new(c::PARSER, 7);
+
+        /// Specification contains an invalid top-level keyword.
+        pub const BAD_TOP_LEVEL_KEYWORD: EK = EK::new(c::PARSER, 8);
+
+        /// Specification value type is invalid.
+        pub const BAD_VALUE_TYPE: EK = EK::new(c::PARSER, 9);
+
+        /// YAML deserialization has failed.
+        pub const BAD_YAML: EK = EK::new(c::PARSER, 10);
+
+        /// An identifier cannot be an empty string.
+        pub const EMPTY_IDENTIFIER: EK = EK::new(c::PARSER, 11);
+
+        /// Empty list of objects is not allowed.
+        pub const EMPTY_LIST: EK = EK::new(c::PARSER, 12);
+
+        /// Specification lacks a mandatory attribute.
+        pub const MISSING_ATTRIBUTE: EK = EK::new(c::PARSER, 13);
+
+        /// Specification contains mutually exclusive keywords.
+        pub const MUTUALLY_EXCLUSIVE_KEYWORDS: EK = EK::new(c::PARSER, 14);
+
+        /// A name is not unique.
+        pub const NON_UNIQUE_NAME: EK = EK::new(c::PARSER, 15);
     }
 }

@@ -1,6 +1,6 @@
 use crate::{
     coder::idents,
-    errors::kinds::general::{BAD_SPEC, BAD_TOML},
+    errors::{kinds::parser::*, TbErrorKind},
     parser::{
         testing::{
             log_init, spec_from_category, spec_from_err, spec_from_err_iter, spec_from_main,
@@ -12,15 +12,24 @@ use crate::{
 };
 
 const GOOD_BOOLEANS: [(&str, bool); 2] = [("true", true), ("false", false)];
-const BAD_BOOLEANS: [&str; 8] = ["yes", "tr ue", "1", "on", "null", "True", "False", "no"];
-const BAD_IDENTS: [&str; 7] = [
-    "\"notUpperCamelCase\"",
-    "\"With Spaces\"",
-    "\"\"",
-    "\"  \"",
-    "\" PaddedWithSpaces  \"",
-    "\"Disallowed-Character-\"",
-    "\"null\"",
+const BAD_BOOLEANS: [(&str, TbErrorKind); 8] = [
+    ("yes", BAD_TOML),
+    ("tr ue", BAD_TOML),
+    ("1", BAD_VALUE_TYPE),
+    ("on", BAD_TOML),
+    ("null", BAD_TOML),
+    ("True", BAD_TOML),
+    ("False", BAD_TOML),
+    ("no", BAD_TOML),
+];
+const BAD_IDENTS: [(&str, TbErrorKind); 7] = [
+    ("\"notUpperCamelCase\"", BAD_IDENTIFIER_CASE),
+    ("\"With Spaces\"", BAD_IDENTIFIER_CHARACTERS),
+    ("\"\"", EMPTY_IDENTIFIER),
+    ("\"  \"", BAD_IDENTIFIER_CHARACTERS),
+    ("\" PaddedWithSpaces  \"", BAD_IDENTIFIER_CHARACTERS),
+    ("\"Disallowed-Character-\"", BAD_IDENTIFIER_CHARACTERS),
+    ("\"null\"", BAD_IDENTIFIER_CASE),
 ];
 
 #[test]
@@ -103,14 +112,13 @@ fn test_err_doc_from_display() {
         assert_eq!(res, spec);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[[errors]]\nname = \"TestError\"\ndoc_from_display = {}",
             bad
         );
 
-        let res = TomlParser::parse_str(&s);
-        assert!(res == BAD_TOML.into() || res == BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -136,8 +144,10 @@ fn test_err_display() {
     #[allow(clippy::single_element_loop)]
     for bad in ["1"] {
         let s = format!("[[errors]]\nname = \"TestError\"\ndisplay = {}", bad);
-        let res = TomlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(
+            TomlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -181,8 +191,10 @@ Second line.
     #[allow(clippy::single_element_loop)]
     for bad in ["1"] {
         let s = format!("[[errors]]\nname = \"TestError\"\ndoc = {}", bad);
-        let res = TomlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(
+            TomlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -190,26 +202,27 @@ Second line.
 fn test_err_name() {
     log_init();
 
-    const BAD_NAMES: &[&str] = &[
-        "\"\"",
-        "\"  \"",
-        "\"camelCase\"",
-        "1",
-        "\"With Spaces\"",
-        "\"With-Dashes\"",
-        "\"CAPITAL_LETTERS\"",
+    const BAD_NAMES: &[(&str, TbErrorKind)] = &[
+        ("\"\"", EMPTY_IDENTIFIER),
+        ("\"  \"", BAD_IDENTIFIER_CHARACTERS),
+        ("\"camelCase\"", BAD_IDENTIFIER_CASE),
+        ("1", BAD_VALUE_TYPE),
+        ("\"With Spaces\"", BAD_IDENTIFIER_CHARACTERS),
+        ("\"With-Dashes\"", BAD_IDENTIFIER_CHARACTERS),
+        ("\"CAPITAL_LETTERS\"", BAD_IDENTIFIER_CASE),
+        ("\"BadChars+\"", BAD_IDENTIFIER_CHARACTERS),
     ];
 
-    for bad in BAD_NAMES {
+    for (bad, kind) in BAD_NAMES {
         let s = format!("[[errors]]\nname = {}", bad);
         let res = TomlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(res.unwrap_err().kind(), *kind);
     }
 
-    for bad in BAD_NAMES {
+    for (bad, kind) in BAD_NAMES {
         let s = format!("errors = [{}]", bad);
         let res = TomlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(res.unwrap_err().kind(), *kind);
     }
 }
 
@@ -326,14 +339,20 @@ fn test_top_kws() {
     let s = "
 my_errors = [\"BadError\"]
 ";
-    assert_eq!(TomlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        BAD_TOP_LEVEL_KEYWORD
+    );
 
     let s = "
 [module]
 doc_from_display = true
 
 ";
-    assert_eq!(TomlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -356,13 +375,12 @@ fn test_module_doc_from_display() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[module]\ndoc_from_display = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::parse_str(&s).unwrap_err();
-        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -536,13 +554,12 @@ fn test_module_result_from_err() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[module]\nresult_from_err = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::parse_str(&s).unwrap_err();
-        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -564,13 +581,12 @@ fn test_module_result_from_err_kind() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[module]\nresult_from_err_kind = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::parse_str(&s).unwrap_err();
-        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -592,13 +608,12 @@ fn test_error_trait() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[module]\nerror_trait = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::parse_str(&s).unwrap_err();
-        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -620,13 +635,12 @@ fn test_module_flat_kinds() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[module]\nflat_kinds = {}\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::parse_str(&s).unwrap_err();
-        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -653,7 +667,7 @@ name = "Err1"
 display = "another first error"
 "#;
 
-    assert_eq!(TomlParser::parse_str(s), BAD_SPEC.into());
+    assert_eq!(TomlParser::parse_str(s), NON_UNIQUE_NAME.into());
 
     let s = r#"
 [module]
@@ -695,13 +709,12 @@ fn test_no_std() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[main]\nno_std = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        let err = TomlParser::parse_str(&s).unwrap_err();
-        assert!(matches!(err.kind(), BAD_SPEC | BAD_TOML));
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -722,12 +735,12 @@ fn test_error_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
+    for (bad, kind) in BAD_IDENTS {
         let s = format!(
             "[module]\nerr_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 
     for bad in [idents::ERROR_CATEGORY, idents::ERROR_KIND] {
@@ -735,7 +748,7 @@ fn test_error_name() {
             "[module]\nerr_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
     }
 }
 
@@ -756,12 +769,12 @@ fn test_error_kind_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
+    for (bad, kind) in BAD_IDENTS {
         let s = format!(
             "[module]\nerr_kind_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 
     for bad in [idents::ERROR, idents::ERROR_CATEGORY] {
@@ -769,7 +782,7 @@ fn test_error_kind_name() {
             "[module]\nerr_kind_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
     }
 }
 
@@ -790,12 +803,12 @@ fn test_error_cat_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
+    for (bad, kind) in BAD_IDENTS {
         let s = format!(
             "[module]\nerr_cat_name = {}\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 
     for bad in [idents::ERROR, idents::ERROR_KIND] {
@@ -803,7 +816,7 @@ fn test_error_cat_name() {
             "[module]\nerr_cat_name = \"{}\"\n\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert_eq!(TomlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(TomlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
     }
 }
 
@@ -812,7 +825,7 @@ fn test_error_list_unique_names() {
     log_init();
 
     let s = "errors = [\"FirstError\",  \"FirstError\", \"SecondError\"]";
-    assert_eq!(TomlParser::parse_str(s), BAD_SPEC.into());
+    assert_eq!(TomlParser::parse_str(s), NON_UNIQUE_NAME.into());
 
     let s = "errors = [\"FirstError\",  \"SecondError\"]";
     assert!(TomlParser::parse_str(s).is_ok());
@@ -836,18 +849,26 @@ fn test_category_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
-        assert!(TomlParser::parse_str(&format!(
-            "[category]\nname = {bad}\n[[errors]]\nname = \"DummyErr\""
-        ))
-        .is_err_and(|e| e.kind() == BAD_SPEC));
+    for (bad, kind) in BAD_IDENTS {
+        assert_eq!(
+            TomlParser::parse_str(&format!(
+                "[category]\nname = {bad}\n[[errors]]\nname = \"DummyErr\""
+            ))
+            .unwrap_err()
+            .kind(),
+            kind
+        );
     }
 
     for bad in [kws::MAIN, kws::ERRORS] {
-        assert!(TomlParser::parse_str(&format!(
-            "[category]\nname = \"{bad}\"\n[[errors]]\nname = \"DummyErr\""
-        ))
-        .is_err_and(|e| e.kind() == BAD_SPEC));
+        assert_eq!(
+            TomlParser::parse_str(&format!(
+                "[category]\nname = \"{bad}\"\n[[errors]]\nname = \"DummyErr\""
+            ))
+            .unwrap_err()
+            .kind(),
+            BAD_IDENTIFIER_CASE
+        );
     }
 }
 
@@ -909,14 +930,12 @@ fn test_category_doc_from_display() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_BOOLEANS {
+    for (bad, kind) in BAD_BOOLEANS {
         let s = format!(
             "[category]\ndoc_from_display = {}\n[[errors]]\nname = \"DummyErr\"",
             bad
         );
-        assert!(
-            TomlParser::parse_str(&s).is_err_and(|e| e.kind() == BAD_SPEC || e.kind() == BAD_TOML)
-        );
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 }
 
@@ -934,7 +953,10 @@ doc_from_display = false
 errors = ["DummyErr"]
 "#;
 
-    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        BAD_OBJECT_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -947,7 +969,10 @@ name = "Custom"
 doc = "Custom category."
 doc_from_display = false
 "#;
-    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -964,7 +989,21 @@ errors = ["DummyErr"]
 [[errors]]
 name = "DummyErr2"
 "#;
-    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        MUTUALLY_EXCLUSIVE_KEYWORDS
+    );
+}
+
+#[test]
+fn test_categories_list_cannot_be_empty() {
+    log_init();
+
+    let s = r#"
+categories = []
+"#;
+
+    assert_eq!(TomlParser::parse_str(s).unwrap_err().kind(), EMPTY_LIST);
 }
 
 #[test]
@@ -977,7 +1016,10 @@ name = "Custom"
 doc = "Custom category."
 doc_from_display = false
 "#;
-    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 
     let s = r#"
 [[categories]]
@@ -986,7 +1028,7 @@ doc = "Custom category."
 doc_from_display = false
 errors = []
 "#;
-    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(TomlParser::parse_str(s).unwrap_err().kind(), EMPTY_LIST);
 }
 
 #[test]
@@ -999,7 +1041,10 @@ doc = "Category without name."
 doc_from_display = true
 errors = ["DummyErr"]
 "#;
-    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -1080,5 +1125,8 @@ name = "Cat2"
 errors = ["DummyErr3"]
 
 "#;
-    assert!(TomlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        NON_UNIQUE_NAME
+    );
 }

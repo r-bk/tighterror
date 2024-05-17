@@ -1,9 +1,6 @@
 use crate::{
     coder::idents,
-    errors::{
-        kinds::general::{BAD_SPEC, BAD_SPEC_FILE_EXTENSION},
-        TbError,
-    },
+    errors::{kinds::parser::*, TbError},
     spec::Spec,
     util::{get_non_unique_names, open_spec_file},
 };
@@ -63,11 +60,11 @@ fn check_ident_chars(ident: &str, name: &str) -> Result<(), TbError> {
     let rg = Regex::new(r"^[A-Za-z0-9_]+$").unwrap();
     if !rg.is_match(ident) {
         log::error!(
-            "`{}` contains invalid characters. Only [A-Za-z0-9_] are allowed: {}",
+            "`{}` contains unsupported characters. Only [A-Za-z0-9_] are allowed: {}",
             name,
             ident
         );
-        BAD_SPEC.into()
+        BAD_IDENTIFIER_CHARACTERS.into()
     } else {
         Ok(())
     }
@@ -78,18 +75,20 @@ fn check_ident(ident: &str, name: &str) -> Result<(), TbError> {
 
     if ident.is_empty() {
         log::error!("`{}` cannot be an empty string", name);
-        return BAD_SPEC.into();
-    } else if !ident.is_case(Case::UpperCamel) {
+        return EMPTY_IDENTIFIER.into();
+    }
+
+    check_ident_chars(ident, name)?;
+
+    if !ident.is_case(Case::UpperCamel) {
         log::error!(
             "`{}` must be specified in UpperCamel case: {} -> {}",
             name,
             ident,
             ident.to_case(Case::UpperCamel)
         );
-        return BAD_SPEC.into();
+        return BAD_IDENTIFIER_CASE.into();
     }
-
-    check_ident_chars(ident, name)?;
 
     Ok(())
 }
@@ -107,7 +106,7 @@ fn check_module_ident(ident: &str, kw: &str) -> Result<(), TbError> {
     }
     if idents::is_top_level_ident(ident) {
         log::error!("`{}` cannot be a reserved identifier: {}", kw, ident);
-        BAD_SPEC.into()
+        BAD_MODULE_IDENTIFIER.into()
     } else {
         Ok(())
     }
@@ -122,7 +121,7 @@ fn check_name(name: &str) -> Result<(), TbError> {
             kws::NAME,
             name
         );
-        BAD_SPEC.into()
+        BAD_NAME.into()
     } else {
         Ok(())
     }
@@ -139,7 +138,7 @@ where
     non_unique_names
         .is_empty()
         .then_some(())
-        .ok_or_else(|| BAD_SPEC.into())
+        .ok_or_else(|| NON_UNIQUE_NAME.into())
 }
 
 fn check_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>

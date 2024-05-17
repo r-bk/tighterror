@@ -1,8 +1,5 @@
 use crate::{
-    errors::{
-        kinds::general::{BAD_SPEC, BAD_YAML},
-        TbError,
-    },
+    errors::{kinds::parser::*, TbError},
     parser::{
         check_category_name_uniqueness, check_error_name_uniqueness,
         check_module_error_name_uniqueness, check_module_ident, check_name, kws, ParseMode,
@@ -51,7 +48,7 @@ impl YamlParser {
                     "specification YAML document must be a Mapping: deserialized a {}",
                     value_type_name(&v)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -105,12 +102,12 @@ impl YamlParser {
                 Value::String(s) => {
                     if !kws::is_root_kw(s) {
                         error!("invalid top-level keyword: {}", s);
-                        return BAD_SPEC.into();
+                        return BAD_TOP_LEVEL_KEYWORD.into();
                     }
                 }
                 ov => {
                     error!("a Mapping key must be a String: deserialized {:?}", ov);
-                    return BAD_SPEC.into();
+                    return BAD_KEYWORD_TYPE.into();
                 }
             }
         }
@@ -121,14 +118,14 @@ impl YamlParser {
         ] {
             if m.contains_key(k1) && m.contains_key(k2) {
                 error!("top-level attributes '{k1}' and '{k2}' are mutually exclusive");
-                return BAD_SPEC.into();
+                return MUTUALLY_EXCLUSIVE_KEYWORDS.into();
             }
         }
 
         for (k1, k2) in [(kws::ERRORS, kws::CATEGORIES)] {
             if !(m.contains_key(k1) || m.contains_key(k2)) {
                 error!("one of '{k1}' or '{k2}' must be specified");
-                return BAD_SPEC.into();
+                return MISSING_ATTRIBUTE.into();
             }
         }
 
@@ -150,7 +147,7 @@ impl MainParser {
                     "MainObject must be a Mapping: deserialized a {}",
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -163,7 +160,7 @@ impl MainParser {
 
             if !kws::is_main_kw(&key) {
                 error!("invalid MainObject attribute: {}", key);
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
 
             match key.as_str() {
@@ -191,7 +188,7 @@ impl ModuleParser {
                     "ModuleObject must be a Mapping: deserialized a {}",
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -204,7 +201,7 @@ impl ModuleParser {
 
             if !kws::is_mod_kw(&key) {
                 error!("invalid ModuleObject attribute: {}", key);
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
 
             match key.as_str() {
@@ -257,7 +254,7 @@ impl ErrorsParser {
             Value::Sequence(s) => Self::sequence(s),
             ref ov => {
                 error!("ErrorsList must be a Sequence: deserialized {:?}", ov);
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -273,9 +270,13 @@ impl ErrorsParser {
                         "ErrorObject in ErrorsList must be a String or a Mapping: deserialized {:?}",
                         ov
                     );
-                    return BAD_SPEC.into();
+                    return BAD_VALUE_TYPE.into();
                 }
             }
+        }
+        if errors.is_empty() {
+            error!("Empty ErrorsList is not allowed");
+            return EMPTY_LIST.into();
         }
         check_error_name_uniqueness(errors.iter().map(|e| e.name.as_str()))?;
         Ok(errors)
@@ -315,7 +316,7 @@ impl ErrorParser {
                     "ErrorObject must be a non-empty Mapping: deserialized {:?}",
                     m
                 );
-                BAD_SPEC.into()
+                MISSING_ATTRIBUTE.into()
             }
             1 if Self::is_short_mapping(&m) => Self::short_mapping(m),
             _ => Self::long_mapping(m),
@@ -333,7 +334,7 @@ impl ErrorParser {
                     "name in name-display notation must be a String: deserialized {:?}",
                     ov
                 );
-                return BAD_SPEC.into();
+                return BAD_VALUE_TYPE.into();
             }
         };
 
@@ -346,7 +347,7 @@ impl ErrorParser {
                     "display in name-display notation must be a String: deserialized {:?}",
                     ov
                 );
-                return BAD_SPEC.into();
+                return BAD_VALUE_TYPE.into();
             }
         };
 
@@ -365,7 +366,7 @@ impl ErrorParser {
 
             if !kws::is_err_kw(&key) {
                 error!("invalid ErrorObject attribute: {}", key);
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
 
             match key.as_str() {
@@ -399,7 +400,7 @@ impl CategoryParser {
                     "CategoryObject must be a Mapping: deserialized a {}",
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -410,12 +411,12 @@ impl CategoryParser {
                 Value::String(s) => {
                     if !kws::is_cat_kw(s) {
                         error!("invalid CategoryObject attribute: {}", s);
-                        return BAD_SPEC.into();
+                        return BAD_OBJECT_ATTRIBUTE.into();
                     }
                 }
                 ov => {
                     error!("a Mapping key must be a String: deserialized {:?}", ov);
-                    return BAD_SPEC.into();
+                    return BAD_VALUE_TYPE.into();
                 }
             }
         }
@@ -442,7 +443,7 @@ impl CategoryParser {
                     "ErrorsList is not allowed in top-level '{}' attribute",
                     kws::CATEGORY
                 );
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
             cat_spec.errors = ErrorsParser::value(v)?;
         }
@@ -456,11 +457,11 @@ impl CategoryParser {
             ParseMode::List => {
                 if cat_spec.name.is_empty() {
                     error!("CategoryObject name is mandatory in CategoriesList");
-                    return BAD_SPEC.into();
+                    return MISSING_ATTRIBUTE.into();
                 }
                 if cat_spec.errors.is_empty() {
                     error!("ErrorsList not found: category_name = {}", cat_spec.name);
-                    return BAD_SPEC.into();
+                    return MISSING_ATTRIBUTE.into();
                 }
             }
         }
@@ -480,7 +481,7 @@ impl CategoriesParser {
             Value::Sequence(s) => Self::sequence(s),
             ref ov => {
                 error!("CategoriesList must be a Sequence: deserialized {:?}", ov);
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -499,9 +500,13 @@ impl CategoriesParser {
                         "CategoryObject in CategoriesList must be a Mapping: deserialized {:?}",
                         ov
                     );
-                    return BAD_SPEC.into();
+                    return BAD_VALUE_TYPE.into();
                 }
             }
+        }
+        if categories.is_empty() {
+            error!("Empty CategoriesList is not allowed");
+            return EMPTY_LIST.into();
         }
         check_category_name_uniqueness(categories.iter().map(|c| c.name.as_str()))?;
         Ok(categories)
@@ -527,13 +532,13 @@ fn v2key(v: Value) -> Result<String, TbError> {
         Value::String(s) => s,
         ov => {
             error!("a Mapping key must be a String: deserialized {:?}", ov);
-            return BAD_SPEC.into();
+            return BAD_VALUE_TYPE.into();
         }
     };
 
     if !kws::is_any_kw(&key) {
         error!("invalid Mapping key: {}", key);
-        BAD_SPEC.into()
+        BAD_OBJECT_ATTRIBUTE.into()
     } else {
         Ok(key)
     }
@@ -544,7 +549,7 @@ fn v2string(v: Value, kw: &str) -> Result<String, TbError> {
         Value::String(s) => Ok(s),
         ov => {
             error!("`{}` must be a String: deserialized {:?}", kw, ov);
-            BAD_SPEC.into()
+            BAD_VALUE_TYPE.into()
         }
     }
 }
@@ -554,7 +559,7 @@ fn v2bool(v: Value, kw: &str) -> Result<bool, TbError> {
         Value::Bool(b) => Ok(b),
         ov => {
             error!("`{}` must be a Bool: deserialized {:?}", kw, ov);
-            BAD_SPEC.into()
+            BAD_VALUE_TYPE.into()
         }
     }
 }

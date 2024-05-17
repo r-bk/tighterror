@@ -1,6 +1,6 @@
 use crate::{
     coder::idents,
-    errors::kinds::general::BAD_YAML,
+    errors::{kinds::parser::*, TbErrorKind},
     parser::{
         testing::{
             log_init, spec_from_category, spec_from_err, spec_from_err_iter, spec_from_main,
@@ -18,14 +18,14 @@ const GOOD_BOOLEANS: [(&str, bool); 4] = [
     ("False", false),
 ];
 const BAD_BOOLEANS: [&str; 5] = ["yes", "tr ue", "1", "on", "null"];
-const BAD_IDENTS: [&str; 7] = [
-    "notUpperCamelCase",
-    "With Spaces",
-    "\"\"",
-    "\"  \"",
-    "\" PaddedWithSpaces  \"",
-    "Disallowed-Character-",
-    "null",
+const BAD_IDENTS: [(&str, TbErrorKind); 7] = [
+    ("notUpperCamelCase", BAD_IDENTIFIER_CASE),
+    ("With Spaces", BAD_IDENTIFIER_CHARACTERS),
+    ("\"\"", EMPTY_IDENTIFIER),
+    ("\"  \"", BAD_IDENTIFIER_CHARACTERS),
+    ("\" PaddedWithSpaces  \"", BAD_IDENTIFIER_CHARACTERS),
+    ("Disallowed-Character-", BAD_IDENTIFIER_CHARACTERS),
+    ("null", BAD_VALUE_TYPE),
 ];
 
 #[test]
@@ -124,7 +124,7 @@ fn test_err_doc_from_display() {
         );
 
         let res = YamlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(res.unwrap_err().kind(), BAD_VALUE_TYPE);
     }
 }
 
@@ -154,7 +154,7 @@ fn test_err_display() {
         );
 
         let res = YamlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(res.unwrap_err().kind(), BAD_VALUE_TYPE);
     }
 }
 
@@ -199,7 +199,7 @@ errors:
         let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", bad);
 
         let res = YamlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(res.unwrap_err().kind(), BAD_VALUE_TYPE);
     }
 }
 
@@ -207,27 +207,28 @@ errors:
 fn test_err_name() {
     log_init();
 
-    const BAD_NAMES: &[&str] = &[
-        "\"\"",
-        "\"  \"",
-        "camelCase",
-        "null",
-        "1",
-        "With Spaces",
-        "With-Dashes",
-        "CAPITAL_LETTERS",
+    const BAD_NAMES: &[(&str, TbErrorKind)] = &[
+        ("\"\"", EMPTY_IDENTIFIER),
+        ("\"  \"", BAD_IDENTIFIER_CHARACTERS),
+        ("camelCase", BAD_IDENTIFIER_CASE),
+        ("null", BAD_VALUE_TYPE),
+        ("1", BAD_VALUE_TYPE),
+        ("With Spaces", BAD_IDENTIFIER_CHARACTERS),
+        ("With-Dashes", BAD_IDENTIFIER_CHARACTERS),
+        ("CAPITAL_LETTERS", BAD_IDENTIFIER_CASE),
+        ("BadChars+", BAD_IDENTIFIER_CHARACTERS),
     ];
 
-    for bad in BAD_NAMES {
+    for (bad, kind) in BAD_NAMES {
         let s = format!("---\nerrors:\n  - name: {}", bad);
         let res = YamlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(res.unwrap_err().kind(), *kind);
     }
 
-    for bad in BAD_NAMES {
+    for (bad, kind) in BAD_NAMES {
         let s = format!("---\nerrors:\n  - {}", bad);
         let res = YamlParser::parse_str(&s);
-        assert_eq!(res, BAD_SPEC.into());
+        assert_eq!(res.unwrap_err().kind(), *kind);
     }
 }
 
@@ -316,7 +317,20 @@ fn test_top_kws() {
 my_errors:
     - BadError
 ";
-    assert_eq!(YamlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err(),
+        BAD_TOP_LEVEL_KEYWORD.into()
+    );
+
+    let s = "
+---
+true:
+    - BadError
+";
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err(),
+        BAD_KEYWORD_TYPE.into()
+    );
 
     let s = "
 ---
@@ -324,7 +338,10 @@ module:
   doc_from_display: true
 
 ";
-    assert_eq!(YamlParser::parse_str(s).unwrap_err(), BAD_SPEC.into());
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err(),
+        MISSING_ATTRIBUTE.into()
+    );
 }
 
 #[test]
@@ -352,7 +369,10 @@ fn test_module_doc_from_display() {
             "---\nmodule:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -535,7 +555,10 @@ fn test_module_result_from_err() {
             "---\nmodule:\n  result_from_err: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -562,7 +585,10 @@ fn test_module_result_from_err_kind() {
             "---\nmodule:\n  result_from_err_kind: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -589,7 +615,10 @@ fn test_error_trait() {
             "---\nmodule:\n  error_trait: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -616,7 +645,10 @@ fn test_module_flat_kinds() {
             "---\nmodule:\n  flat_kinds: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -639,7 +671,7 @@ categories:
       - Err1: another first error
 ";
 
-    assert_eq!(YamlParser::parse_str(s), BAD_SPEC.into());
+    assert_eq!(YamlParser::parse_str(s), NON_UNIQUE_NAME.into());
 
     let s = "
 ---
@@ -676,7 +708,10 @@ fn test_no_std() {
 
     for bad in BAD_BOOLEANS {
         let s = format!("---\nmain:\n  no_std: {}\n\nerrors:\n  - DummyErr", bad);
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -697,12 +732,12 @@ fn test_error_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
+    for (bad, kind) in BAD_IDENTS {
         let s = format!(
             "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 
     for bad in [idents::ERROR_CATEGORY, idents::ERROR_KIND] {
@@ -710,8 +745,15 @@ fn test_error_name() {
             "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
     }
+
+    let s = "---\nerrors:\n  - {}";
+
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -731,12 +773,12 @@ fn test_error_kind_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
+    for (bad, kind) in BAD_IDENTS {
         let s = format!(
             "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 
     for bad in [idents::ERROR, idents::ERROR_CATEGORY] {
@@ -744,7 +786,7 @@ fn test_error_kind_name() {
             "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
     }
 }
 
@@ -765,12 +807,12 @@ fn test_error_cat_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
+    for (bad, kind) in BAD_IDENTS {
         let s = format!(
             "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), kind);
     }
 
     for bad in [idents::ERROR, idents::ERROR_KIND] {
@@ -778,7 +820,7 @@ fn test_error_cat_name() {
             "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(YamlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
     }
 }
 
@@ -787,7 +829,7 @@ fn test_error_list_unique_names() {
     log_init();
 
     let s = "---\nerrors:\n  - FirstError\n  - FirstError\n  - SecondError\n";
-    assert_eq!(YamlParser::parse_str(s), BAD_SPEC.into());
+    assert_eq!(YamlParser::parse_str(s), NON_UNIQUE_NAME.into());
 
     let s = "---\nerrors:\n  - FirstError\n  - SecondError\n";
     assert!(YamlParser::parse_str(s).is_ok());
@@ -811,18 +853,26 @@ fn test_category_name() {
         assert_eq!(spec, res);
     }
 
-    for bad in BAD_IDENTS {
-        assert!(YamlParser::parse_str(&format!(
-            "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
-        ))
-        .is_err_and(|e| e.kind() == BAD_SPEC));
+    for (bad, kind) in BAD_IDENTS {
+        assert_eq!(
+            YamlParser::parse_str(&format!(
+                "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
+            ))
+            .unwrap_err()
+            .kind(),
+            kind
+        );
     }
 
     for bad in [kws::MAIN, kws::ERRORS] {
-        assert!(YamlParser::parse_str(&format!(
-            "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
-        ))
-        .is_err_and(|e| e.kind() == BAD_SPEC));
+        assert_eq!(
+            YamlParser::parse_str(&format!(
+                "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
+            ))
+            .unwrap_err()
+            .kind(),
+            BAD_IDENTIFIER_CASE
+        );
     }
 }
 
@@ -863,10 +913,14 @@ errors:
     assert_eq!(spec, res);
 
     for bad in ["1", "null"] {
-        assert!(YamlParser::parse_str(&format!(
-            "---\ncategory:\n  doc: {bad}\nerrors:\n  - DummyErr"
-        ))
-        .is_err_and(|e| e.kind() == BAD_SPEC));
+        assert_eq!(
+            YamlParser::parse_str(&format!(
+                "---\ncategory:\n  doc: {bad}\nerrors:\n  - DummyErr"
+            ))
+            .unwrap_err()
+            .kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -896,7 +950,10 @@ fn test_category_doc_from_display() {
             "---\ncategory:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
             bad
         );
-        assert_eq!(YamlParser::parse_str(&s), BAD_SPEC.into());
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            BAD_VALUE_TYPE
+        );
     }
 }
 
@@ -917,7 +974,10 @@ errors:
   - DummyErr
 ";
 
-    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        BAD_OBJECT_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -931,7 +991,10 @@ category:
   doc: Custom category.
   doc_from_display: false
 ";
-    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -949,7 +1012,22 @@ categories:
 errors:
   - DummyErr2
 ";
-    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MUTUALLY_EXCLUSIVE_KEYWORDS
+    );
+}
+
+#[test]
+fn test_categories_list_cannot_be_empty() {
+    log_init();
+
+    let s = "
+---
+categories: []
+";
+
+    assert_eq!(YamlParser::parse_str(s).unwrap_err().kind(), EMPTY_LIST);
 }
 
 #[test]
@@ -963,7 +1041,10 @@ categories:
     doc: Custom category.
     doc_from_display: false
 ";
-    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 
     let s = "
 ---
@@ -973,7 +1054,7 @@ categories:
     doc_from_display: false
     errors: []
 ";
-    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(YamlParser::parse_str(s).unwrap_err().kind(), EMPTY_LIST);
 }
 
 #[test]
@@ -988,7 +1069,10 @@ categories:
     errors:
       - DummyErr
 ";
-    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MISSING_ATTRIBUTE
+    );
 }
 
 #[test]
@@ -1068,5 +1152,8 @@ categories:
     errors:
       - DummyErr
 ";
-    assert!(YamlParser::parse_str(s).is_err_and(|e| e.kind() == BAD_SPEC));
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        NON_UNIQUE_NAME
+    );
 }

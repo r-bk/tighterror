@@ -9,14 +9,34 @@ module:
   err_kind_name: TbErrorKind
   err_cat_name: TbErrorCategory
 
-errors:
-  - SpecFileNotFound: Specification file couldn't be found.
-  - FailedToOpenSpecFile: Specification file couldn't be opened.
-  - BadSpec: Bad specification file format.
-  - BadYaml: Bad YAML file format.
-  - BadToml: Bad TOML file format.
-  - BadSpecFileExtension: Bad specification file name extension.
-  - FailedToWriteOutputFile: Output file couldn't be written.
-  - FailedToReadOutputFile: Output file couldn't be read.
-  - FailedToParseTokens: Generated code tokens couldn't be parsed.
-  - RustfmtFailed: Rustfmt tool exited with an error.
+categories:
+  - name: General
+    doc: General errors category.
+    errors:
+      - SpecFileNotFound: Specification file couldn't be found.
+      - FailedToOpenSpecFile: Specification file couldn't be opened.
+      - BadSpec: Bad specification file format.
+      - FailedToWriteOutputFile: Output file couldn't be written.
+      - FailedToReadOutputFile: Output file couldn't be read.
+      - FailedToParseTokens: Generated code tokens couldn't be parsed.
+      - RustfmtFailed: Rustfmt tool exited with an error.
+
+  - name: Parser
+    doc: Parser errors category.
+    errors:
+      - BadIdentifierCharacters: Identifier contains unsupported characters.
+      - BadIdentifierCase: Identifier is specified in an unsupported case.
+      - BadKeywordType: Specification keyword is not a String.
+      - BadModuleIdentifier: Identifier is not valid on module-level.
+      - BadName: Invalid name.
+      - BadObjectAttribute: An object attribute is invalid.
+      - BadSpecFileExtension: Specification filename extension is not supported or is missing.
+      - BadToml: TOML deserialization has failed.
+      - BadTopLevelKeyword: Specification contains an invalid top-level keyword.
+      - BadValueType: Specification value type is invalid.
+      - BadYaml: YAML deserialization has failed.
+      - EmptyIdentifier: An identifier cannot be an empty string.
+      - EmptyList: Empty list of objects is not allowed.
+      - MissingAttribute: Specification lacks a mandatory attribute.
+      - MutuallyExclusiveKeywords: Specification contains mutually exclusive keywords.
+      - NonUniqueName: A name is not unique.

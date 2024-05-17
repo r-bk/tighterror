@@ -1,8 +1,5 @@
 use crate::{
-    errors::{
-        kinds::general::{BAD_SPEC, BAD_TOML},
-        TbError,
-    },
+    errors::{kinds::parser::*, TbError},
     parser::{
         check_category_name_uniqueness, check_error_name_uniqueness,
         check_module_error_name_uniqueness, check_module_ident, check_name, kws, ParseMode,
@@ -51,7 +48,7 @@ impl TomlParser {
                     "specification document must be a Table: deserialized a {}",
                     value_type_name(&v)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -103,7 +100,7 @@ impl TomlParser {
         for k in table.keys() {
             if !kws::is_root_kw(k) {
                 log::error!("invalid top-level keyword: {}", k);
-                return BAD_SPEC.into();
+                return BAD_TOP_LEVEL_KEYWORD.into();
             }
         }
 
@@ -113,14 +110,14 @@ impl TomlParser {
         ] {
             if table.contains_key(k1) && table.contains_key(k2) {
                 log::error!("top-level attributes '{k1}' and '{k2}' are mutually exclusive");
-                return BAD_SPEC.into();
+                return MUTUALLY_EXCLUSIVE_KEYWORDS.into();
             }
         }
 
         for (k1, k2) in [(kws::ERRORS, kws::CATEGORIES)] {
             if !(table.contains_key(k1) || table.contains_key(k2)) {
                 log::error!("one of '{k1}' or '{k2}' must be specified");
-                return BAD_SPEC.into();
+                return MISSING_ATTRIBUTE.into();
             }
         }
 
@@ -142,7 +139,7 @@ impl MainParser {
                     "MainObject must be a Table: deserialized a {}",
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -155,7 +152,7 @@ impl MainParser {
 
             if !kws::is_main_kw(key) {
                 log::error!("invalid MainObject attribute: {}", key);
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
 
             match key {
@@ -183,7 +180,7 @@ impl ModuleParser {
                     "ModuleObject must be a Table: deserialized a {}",
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -196,7 +193,7 @@ impl ModuleParser {
 
             if !kws::is_mod_kw(key) {
                 log::error!("invalid ModuleObject attribute: {}", key);
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
 
             match key {
@@ -253,7 +250,7 @@ impl ErrorsParser {
                     kws::ERRORS,
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -269,9 +266,13 @@ impl ErrorsParser {
                         "ErrorObject must be a String or a Table: deserialized {:?}",
                         ov
                     );
-                    return BAD_SPEC.into();
+                    return BAD_VALUE_TYPE.into();
                 }
             }
+        }
+        if errors.is_empty() {
+            log::error!("Empty ErrorsList is not allowed");
+            return EMPTY_LIST.into();
         }
         check_error_name_uniqueness(errors.iter().map(|e| e.name.as_str()))?;
         Ok(errors)
@@ -300,7 +301,7 @@ impl ErrorParser {
 
             if !kws::is_err_kw(key) {
                 log::error!("invalid ErrorObject attribute: {}", key);
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
 
             match key {
@@ -334,7 +335,7 @@ impl CategoryParser {
                     "ModuleObject must be a Table: deserialized a {}",
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -343,7 +344,7 @@ impl CategoryParser {
         for k in t.keys() {
             if !kws::is_cat_kw(k) {
                 log::error!("invalid CategoryObject attribute: {}", k);
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
         }
 
@@ -369,7 +370,7 @@ impl CategoryParser {
                     "ErrorsList is not allowed in top-level '{}' attribute",
                     kws::CATEGORY
                 );
-                return BAD_SPEC.into();
+                return BAD_OBJECT_ATTRIBUTE.into();
             }
             cat_spec.errors = ErrorsParser::value(v)?;
         }
@@ -383,11 +384,11 @@ impl CategoryParser {
             ParseMode::List => {
                 if cat_spec.name.is_empty() {
                     log::error!("CategoryObject name is mandatory in CategoriesList");
-                    return BAD_SPEC.into();
+                    return MISSING_ATTRIBUTE.into();
                 }
                 if cat_spec.errors.is_empty() {
                     log::error!("ErrorsList not found: category_name = {}", cat_spec.name);
-                    return BAD_SPEC.into();
+                    return MISSING_ATTRIBUTE.into();
                 }
             }
         }
@@ -410,7 +411,7 @@ impl CategoriesParser {
                     "CategoryList must be an Array: deserialized a {}",
                     value_type_name(ov)
                 );
-                BAD_SPEC.into()
+                BAD_VALUE_TYPE.into()
             }
         }
     }
@@ -429,9 +430,13 @@ impl CategoriesParser {
                         "CategoryObject in CategoriesList must be a Table: deserialized {:?}",
                         ov
                     );
-                    return BAD_SPEC.into();
+                    return BAD_VALUE_TYPE.into();
                 }
             }
+        }
+        if categories.is_empty() {
+            log::error!("Empty CategoriesList is not allowed");
+            return EMPTY_LIST.into();
         }
         check_category_name_uniqueness(categories.iter().map(|c| c.name.as_str()))?;
         Ok(categories)
@@ -455,7 +460,7 @@ fn value_type_name(value: &Value) -> &'static str {
 fn check_key(k: &str) -> Result<&str, TbError> {
     if !kws::is_any_kw(k) {
         log::error!("invalid Table key: {}", k);
-        BAD_SPEC.into()
+        BAD_OBJECT_ATTRIBUTE.into()
     } else {
         Ok(k)
     }
@@ -466,7 +471,7 @@ fn v2string(v: Value, kw: &str) -> Result<String, TbError> {
         Value::String(s) => Ok(s),
         ov => {
             log::error!("`{}` must be a String: deserialized {:?}", kw, ov);
-            BAD_SPEC.into()
+            BAD_VALUE_TYPE.into()
         }
     }
 }
@@ -476,7 +481,7 @@ fn v2bool(v: Value, kw: &str) -> Result<bool, TbError> {
         Value::Boolean(b) => Ok(b),
         ov => {
             log::error!("`{}` must be a Boolean: deserialized {:?}", kw, ov);
-            BAD_SPEC.into()
+            BAD_VALUE_TYPE.into()
         }
     }
 }
