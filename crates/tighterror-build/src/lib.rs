@@ -140,4 +140,3 @@ pub mod errors;
 
 pub(crate) mod parser;
 pub(crate) mod spec;
-pub(crate) mod util;

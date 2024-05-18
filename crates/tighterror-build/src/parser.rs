@@ -2,10 +2,13 @@ use crate::{
     coder::idents,
     errors::{kinds::parser::*, TbError},
     spec::Spec,
-    util::{get_non_unique_names, open_spec_file},
 };
 use regex::Regex;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashSet,
+    fs::File,
+    path::{Path, PathBuf},
+};
 
 #[cfg(not(any(feature = "yaml", feature = "toml")))]
 compile_error!("At least one of the markup language features ['yaml', 'toml'] must be enabled.");
@@ -183,6 +186,35 @@ fn spec_file_path(spec: Option<&str>) -> Result<&str, TbError> {
     }
 
     SPEC_FILE_NOT_FOUND.into()
+}
+
+fn open_spec_file(path: &PathBuf) -> Result<File, TbError> {
+    match File::options().read(true).open(path) {
+        Ok(f) => Ok(f),
+        Err(e) => {
+            log::error!("Failed to open the spec file {:?}: {e}", path);
+            FAILED_TO_OPEN_SPEC_FILE.into()
+        }
+    }
+}
+
+fn get_non_unique_names<'a, I>(iter: I) -> Vec<String>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let mut ans = HashSet::new();
+    let mut hs = HashSet::new();
+
+    for n in iter {
+        let lower = n.to_lowercase();
+        if hs.contains(&lower) {
+            ans.insert(n.to_owned());
+        } else {
+            hs.insert(lower);
+        }
+    }
+
+    Vec::from_iter(ans)
 }
 
 #[cfg(test)]
