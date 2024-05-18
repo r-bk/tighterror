@@ -13,8 +13,6 @@ categories:
   - name: General
     doc: General errors category.
     errors:
-      - SpecFileNotFound: Specification file couldn't be found.
-      - FailedToOpenSpecFile: Specification file couldn't be opened.
       - BadSpec: Bad specification file format.
       - FailedToWriteOutputFile: Output file couldn't be written.
       - FailedToReadOutputFile: Output file couldn't be read.
@@ -37,6 +35,8 @@ categories:
       - BadYaml: YAML deserialization has failed.
       - EmptyIdentifier: An identifier cannot be an empty string.
       - EmptyList: Empty list of objects is not allowed.
+      - FailedToOpenSpecFile: Specification file couldn't be opened.
       - MissingAttribute: Specification lacks a mandatory attribute.
       - MutuallyExclusiveKeywords: Specification contains mutually exclusive keywords.
       - NonUniqueName: A name is not unique.
+      - SpecFileNotFound: Specification file couldn't be found.

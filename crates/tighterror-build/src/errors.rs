@@ -221,16 +221,12 @@ mod _cn {
 
 mod _n {
     mod general {
-        const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
-        const FAILED_TO_OPEN_SPEC_FILE: &str = "FAILED_TO_OPEN_SPEC_FILE";
         const BAD_SPEC: &str = "BAD_SPEC";
         const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
         const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
         const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
         const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
-        pub static A: [&str; 7] = [
-            SPEC_FILE_NOT_FOUND,
-            FAILED_TO_OPEN_SPEC_FILE,
+        pub static A: [&str; 5] = [
             BAD_SPEC,
             FAILED_TO_WRITE_OUTPUT_FILE,
             FAILED_TO_READ_OUTPUT_FILE,
@@ -253,10 +249,12 @@ mod _n {
         const BAD_YAML: &str = "BAD_YAML";
         const EMPTY_IDENTIFIER: &str = "EMPTY_IDENTIFIER";
         const EMPTY_LIST: &str = "EMPTY_LIST";
+        const FAILED_TO_OPEN_SPEC_FILE: &str = "FAILED_TO_OPEN_SPEC_FILE";
         const MISSING_ATTRIBUTE: &str = "MISSING_ATTRIBUTE";
         const MUTUALLY_EXCLUSIVE_KEYWORDS: &str = "MUTUALLY_EXCLUSIVE_KEYWORDS";
         const NON_UNIQUE_NAME: &str = "NON_UNIQUE_NAME";
-        pub static A: [&str; 16] = [
+        const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
+        pub static A: [&str; 18] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
             BAD_KEYWORD_TYPE,
@@ -270,9 +268,11 @@ mod _n {
             BAD_YAML,
             EMPTY_IDENTIFIER,
             EMPTY_LIST,
+            FAILED_TO_OPEN_SPEC_FILE,
             MISSING_ATTRIBUTE,
             MUTUALLY_EXCLUSIVE_KEYWORDS,
             NON_UNIQUE_NAME,
+            SPEC_FILE_NOT_FOUND,
         ];
     }
 
@@ -281,16 +281,12 @@ mod _n {
 
 mod _d {
     mod general {
-        const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
-        const FAILED_TO_OPEN_SPEC_FILE: &str = "Specification file couldn't be opened.";
         const BAD_SPEC: &str = "Bad specification file format.";
         const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
         const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
         const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
         const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
-        pub static A: [&str; 7] = [
-            SPEC_FILE_NOT_FOUND,
-            FAILED_TO_OPEN_SPEC_FILE,
+        pub static A: [&str; 5] = [
             BAD_SPEC,
             FAILED_TO_WRITE_OUTPUT_FILE,
             FAILED_TO_READ_OUTPUT_FILE,
@@ -314,11 +310,13 @@ mod _d {
         const BAD_YAML: &str = "YAML deserialization has failed.";
         const EMPTY_IDENTIFIER: &str = "An identifier cannot be an empty string.";
         const EMPTY_LIST: &str = "Empty list of objects is not allowed.";
+        const FAILED_TO_OPEN_SPEC_FILE: &str = "Specification file couldn't be opened.";
         const MISSING_ATTRIBUTE: &str = "Specification lacks a mandatory attribute.";
         const MUTUALLY_EXCLUSIVE_KEYWORDS: &str =
             "Specification contains mutually exclusive keywords.";
         const NON_UNIQUE_NAME: &str = "A name is not unique.";
-        pub static A: [&str; 16] = [
+        const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
+        pub static A: [&str; 18] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
             BAD_KEYWORD_TYPE,
@@ -332,9 +330,11 @@ mod _d {
             BAD_YAML,
             EMPTY_IDENTIFIER,
             EMPTY_LIST,
+            FAILED_TO_OPEN_SPEC_FILE,
             MISSING_ATTRIBUTE,
             MUTUALLY_EXCLUSIVE_KEYWORDS,
             NON_UNIQUE_NAME,
+            SPEC_FILE_NOT_FOUND,
         ];
     }
 
@@ -343,11 +343,11 @@ mod _d {
 
 mod _p {
     pub type R = u8;
-    pub const KIND_BITS: usize = 5;
+    pub const KIND_BITS: usize = 6;
     pub const CAT_BITS: usize = 1;
     pub const CAT_MASK: R = 1;
     pub const CAT_MAX: R = 1;
-    pub static VAR_MAXES: [R; 2] = [6, 15];
+    pub static VAR_MAXES: [R; 2] = [4, 17];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
 }
@@ -373,26 +373,20 @@ pub mod kinds {
         use super::c;
         use super::EK;
 
-        /// Specification file couldn't be found.
-        pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::GENERAL, 0);
-
-        /// Specification file couldn't be opened.
-        pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::GENERAL, 1);
-
         /// Bad specification file format.
-        pub const BAD_SPEC: EK = EK::new(c::GENERAL, 2);
+        pub const BAD_SPEC: EK = EK::new(c::GENERAL, 0);
 
         /// Output file couldn't be written.
-        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 3);
+        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 1);
 
         /// Output file couldn't be read.
-        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 4);
+        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 2);
 
         /// Generated code tokens couldn't be parsed.
-        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 5);
+        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 3);
 
         /// Rustfmt tool exited with an error.
-        pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 6);
+        pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 4);
     }
 
     /// Parser category error kind constants.
@@ -439,13 +433,19 @@ pub mod kinds {
         /// Empty list of objects is not allowed.
         pub const EMPTY_LIST: EK = EK::new(c::PARSER, 12);
 
+        /// Specification file couldn't be opened.
+        pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::PARSER, 13);
+
         /// Specification lacks a mandatory attribute.
-        pub const MISSING_ATTRIBUTE: EK = EK::new(c::PARSER, 13);
+        pub const MISSING_ATTRIBUTE: EK = EK::new(c::PARSER, 14);
 
         /// Specification contains mutually exclusive keywords.
-        pub const MUTUALLY_EXCLUSIVE_KEYWORDS: EK = EK::new(c::PARSER, 14);
+        pub const MUTUALLY_EXCLUSIVE_KEYWORDS: EK = EK::new(c::PARSER, 15);
 
         /// A name is not unique.
-        pub const NON_UNIQUE_NAME: EK = EK::new(c::PARSER, 15);
+        pub const NON_UNIQUE_NAME: EK = EK::new(c::PARSER, 16);
+
+        /// Specification file couldn't be found.
+        pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::PARSER, 17);
     }
 }

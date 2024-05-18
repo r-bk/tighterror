@@ -1,4 +1,4 @@
-use crate::errors::{kinds::general::FAILED_TO_OPEN_SPEC_FILE, TbError};
+use crate::errors::{kinds::parser::FAILED_TO_OPEN_SPEC_FILE, TbError};
 use std::{collections::HashSet, fs::File, path::PathBuf};
 
 pub fn open_spec_file(path: &PathBuf) -> Result<File, TbError> {

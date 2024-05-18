@@ -5,7 +5,7 @@ use crate::{
     util::{get_non_unique_names, open_spec_file},
 };
 use regex::Regex;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[cfg(not(any(feature = "yaml", feature = "toml")))]
 compile_error!("At least one of the markup language features ['yaml', 'toml'] must be enabled.");
@@ -32,7 +32,12 @@ pub enum ParseMode {
     List,
 }
 
-pub fn from_path(path: PathBuf) -> Result<Spec, TbError> {
+pub fn parse(spec: Option<&str>) -> Result<Spec, TbError> {
+    let path = spec_file_path(spec)?;
+    from_path(path.into())
+}
+
+fn from_path(path: PathBuf) -> Result<Spec, TbError> {
     match path.extension() {
         #[cfg(feature = "yaml")]
         Some(e) if e == "yaml" => YamlParser::parse_file(open_spec_file(&path)?),
@@ -160,6 +165,24 @@ where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("<flat_kinds> module error", iter)
+}
+
+fn spec_file_path(spec: Option<&str>) -> Result<&str, TbError> {
+    if let Some(p) = spec {
+        return Ok(p);
+    }
+
+    #[cfg(feature = "yaml")]
+    if Path::new(crate::DEFAULT_SPEC_PATH_YAML).is_file() {
+        return Ok(crate::DEFAULT_SPEC_PATH_YAML);
+    }
+
+    #[cfg(feature = "toml")]
+    if Path::new(crate::DEFAULT_SPEC_PATH_TOML).is_file() {
+        return Ok(crate::DEFAULT_SPEC_PATH_TOML);
+    }
+
+    SPEC_FILE_NOT_FOUND.into()
 }
 
 #[cfg(test)]

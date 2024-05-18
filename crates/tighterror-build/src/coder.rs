@@ -1,8 +1,6 @@
 use crate::{
     errors::{
-        kinds::general::{
-            FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE, SPEC_FILE_NOT_FOUND,
-        },
+        kinds::general::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
         TbError,
     },
     parser,
@@ -24,24 +22,6 @@ pub use options::*;
 
 const TMP_FILE_PFX: &str = "tighterror.";
 const TMP_FILE_SFX: &str = ".rs";
-
-fn spec_file_path(opts: &CodegenOptions) -> Result<&str, TbError> {
-    if let Some(ref p) = opts.spec {
-        return Ok(p.as_str());
-    }
-
-    #[cfg(feature = "yaml")]
-    if Path::new(crate::DEFAULT_SPEC_PATH_YAML).is_file() {
-        return Ok(crate::DEFAULT_SPEC_PATH_YAML);
-    }
-
-    #[cfg(feature = "toml")]
-    if Path::new(crate::DEFAULT_SPEC_PATH_TOML).is_file() {
-        return Ok(crate::DEFAULT_SPEC_PATH_TOML);
-    }
-
-    SPEC_FILE_NOT_FOUND.into()
-}
 
 /// Generates Rust source code from a specification file.
 ///
@@ -65,8 +45,7 @@ fn spec_file_path(opts: &CodegenOptions) -> Result<&str, TbError> {
 /// # foo().unwrap();
 /// ```
 pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
-    let path = spec_file_path(opts)?;
-    let spec = parser::from_path(path.into())?;
+    let spec = parser::parse(opts.spec.as_deref())?;
     let code = generator::spec_to_rust(opts, &spec)?;
 
     match spec.main.output(opts.output.as_deref()) {
