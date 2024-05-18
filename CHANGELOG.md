@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.15], [b-0.0.15], [c-0.0.15] - 2024-05-18
+
+A small release on the way to multiple modules.
+
+### Changed
+
+- add a custom implementation of `core::fmt::Debug` for `ErrorKind` and
+  `ErrorCategory`. The default implementation only prints the decimal value
+  of the underlying Rust type. The new custom implementation prints the name,
+  and in case of `ErrorKind` also the category, of the object.
+
 ## [0.0.14], [b-0.0.14], [c-0.0.14] - 2024-04-26
 
 A relatively big release with support for multiple categories.
@@ -295,3 +306,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.14]: https://github.com/r-bk/tighterror/releases/tag/v0.0.14
 [b-0.0.14]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.14
 [c-0.0.14]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.14
+[0.0.15]: https://github.com/r-bk/tighterror/releases/tag/v0.0.15
+[b-0.0.15]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.15
+[c-0.0.15]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.15
