@@ -160,6 +160,7 @@ impl<'a> ModuleGenerator<'a> {
 
     fn private_modules_tokens(&self) -> TokenStream {
         let constants_tokens = self.private_constants_tokens();
+        let types = self.private_types();
         let category_names = self.private_category_names();
         let error_names = self.private_error_names();
         let error_display = self.private_error_display();
@@ -181,6 +182,7 @@ impl<'a> ModuleGenerator<'a> {
             }
             mod #private_mod {
                 #constants_tokens
+                #types
             }
         }
     }
@@ -212,6 +214,18 @@ impl<'a> ModuleGenerator<'a> {
             ];
             const _: () = assert!(KIND_BITS <= R::BITS as usize);
             const _: () = assert!(CAT_BITS <= usize::BITS as usize); // for casting to usize
+        }
+    }
+
+    fn private_types(&self) -> TokenStream {
+        quote! {
+            pub(super) struct Ident<'a>(pub(super) &'a str);
+            impl<'a> core::fmt::Debug for Ident<'a> {
+                #[inline]
+                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                    f.pad(self.0)
+                }
+            }
         }
     }
 
@@ -329,13 +343,14 @@ impl<'a> ModuleGenerator<'a> {
 
     fn category_tokens(&self) -> TokenStream {
         let err_cat_name = self.err_cat_name_ident();
+        let err_cat_name_str = self.module.err_cat_name();
         let err_cat_doc = doc_tokens(self.module.err_cat_doc());
         let category_max_comparison = self.category_max_comparison();
         let category_names_mod = category_names_mod_ident();
         let private_mod = private_mod_ident();
         quote! {
             #err_cat_doc
-            #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
             pub struct #err_cat_name(#private_mod::R);
 
@@ -369,12 +384,22 @@ impl<'a> ModuleGenerator<'a> {
                     f.pad(self.name())
                 }
             }
+
+            impl core::fmt::Debug for #err_cat_name {
+                #[inline]
+                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                    f.debug_tuple(#err_cat_name_str)
+                        .field(&#private_mod::Ident(self.name()))
+                        .finish()
+                }
+            }
         }
     }
 
     fn error_kind_tokens(&self) -> TokenStream {
         let err_name = self.err_name_ident();
         let err_kind_name = self.err_kind_name_ident();
+        let err_kind_name_str = self.module.err_kind_name();
         let err_cat_name = self.err_cat_name_ident();
         let private_mod = private_mod_ident();
         let error_names_mod = error_names_mod_ident();
@@ -396,7 +421,7 @@ impl<'a> ModuleGenerator<'a> {
 
         quote! {
             #err_kind_doc
-            #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
             pub struct #err_kind_name(#private_mod::R);
 
@@ -482,6 +507,17 @@ impl<'a> ModuleGenerator<'a> {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                     f.pad(self.name())
+                }
+            }
+
+            impl core::fmt::Debug for #err_kind_name {
+                #[inline]
+                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                    f.debug_struct(#err_kind_name_str)
+                        .field("cat", &#private_mod::Ident(self.category().name()))
+                        .field("var", &#private_mod::Ident(self.name()))
+                        .field("val", &self.0)
+                        .finish()
                 }
             }
 

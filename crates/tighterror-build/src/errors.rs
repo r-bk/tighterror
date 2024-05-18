@@ -6,7 +6,7 @@
  * See the [categories] module for category constants.
 */
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
 pub struct TbErrorCategory(_p::R);
 
@@ -41,13 +41,22 @@ impl core::fmt::Display for TbErrorCategory {
     }
 }
 
+impl core::fmt::Debug for TbErrorCategory {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("TbErrorCategory")
+            .field(&_p::Ident(self.name()))
+            .finish()
+    }
+}
+
 /**
  * Error kind type.
  *
  * See the [kinds] module for error kind constants.
 */
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
 pub struct TbErrorKind(_p::R);
 
@@ -132,6 +141,17 @@ impl core::fmt::Display for TbErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.pad(self.name())
+    }
+}
+
+impl core::fmt::Debug for TbErrorKind {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("TbErrorKind")
+            .field("cat", &_p::Ident(self.category().name()))
+            .field("var", &_p::Ident(self.name()))
+            .field("val", &self.0)
+            .finish()
     }
 }
 
@@ -350,6 +370,13 @@ mod _p {
     pub static VAR_MAXES: [R; 2] = [4, 17];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
+    pub(super) struct Ident<'a>(pub(super) &'a str);
+    impl<'a> core::fmt::Debug for Ident<'a> {
+        #[inline]
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            f.pad(self.0)
+        }
+    }
 }
 
 /// Error category constants.
