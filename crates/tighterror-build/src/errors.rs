@@ -234,27 +234,12 @@ impl<T> core::convert::From<TbError> for core::result::Result<T, TbError> {
 impl std::error::Error for TbError {}
 
 mod _cn {
-    pub const GENERAL: &str = "GENERAL";
     pub const PARSER: &str = "PARSER";
-    pub static A: [&str; 2] = [GENERAL, PARSER];
+    pub const CODER: &str = "CODER";
+    pub static A: [&str; 2] = [PARSER, CODER];
 }
 
 mod _n {
-    mod general {
-        const BAD_SPEC: &str = "BAD_SPEC";
-        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
-        const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
-        const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
-        const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
-        pub static A: [&str; 5] = [
-            BAD_SPEC,
-            FAILED_TO_WRITE_OUTPUT_FILE,
-            FAILED_TO_READ_OUTPUT_FILE,
-            FAILED_TO_PARSE_TOKENS,
-            RUSTFMT_FAILED,
-        ];
-    }
-
     mod parser {
         const BAD_IDENTIFIER_CHARACTERS: &str = "BAD_IDENTIFIER_CHARACTERS";
         const BAD_IDENTIFIER_CASE: &str = "BAD_IDENTIFIER_CASE";
@@ -296,25 +281,29 @@ mod _n {
         ];
     }
 
-    pub static A: [&[&str]; 2] = [&general::A, &parser::A];
-}
-
-mod _d {
-    mod general {
-        const BAD_SPEC: &str = "Bad specification file format.";
-        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
-        const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
-        const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
-        const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
-        pub static A: [&str; 5] = [
-            BAD_SPEC,
-            FAILED_TO_WRITE_OUTPUT_FILE,
-            FAILED_TO_READ_OUTPUT_FILE,
+    mod coder {
+        const CATEGORY_REQUIRED: &str = "CATEGORY_REQUIRED";
+        const ERROR_REQUIRED: &str = "ERROR_REQUIRED";
+        const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
+        const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
+        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
+        const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
+        const TOO_MANY_BITS: &str = "TOO_MANY_BITS";
+        pub static A: [&str; 7] = [
+            CATEGORY_REQUIRED,
+            ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
+            FAILED_TO_READ_OUTPUT_FILE,
+            FAILED_TO_WRITE_OUTPUT_FILE,
             RUSTFMT_FAILED,
+            TOO_MANY_BITS,
         ];
     }
 
+    pub static A: [&[&str]; 2] = [&parser::A, &coder::A];
+}
+
+mod _d {
     mod parser {
         const BAD_IDENTIFIER_CHARACTERS: &str = "Identifier contains unsupported characters.";
         const BAD_IDENTIFIER_CASE: &str = "Identifier is specified in an unsupported case.";
@@ -358,7 +347,27 @@ mod _d {
         ];
     }
 
-    pub static A: [&[&str]; 2] = [&general::A, &parser::A];
+    mod coder {
+        const CATEGORY_REQUIRED: &str = "At least one category must be defined.";
+        const ERROR_REQUIRED: &str = "At least one error must be defined.";
+        const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
+        const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
+        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
+        const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
+        const TOO_MANY_BITS: &str =
+            "The number of required bits exceeds the largest supported type u64.";
+        pub static A: [&str; 7] = [
+            CATEGORY_REQUIRED,
+            ERROR_REQUIRED,
+            FAILED_TO_PARSE_TOKENS,
+            FAILED_TO_READ_OUTPUT_FILE,
+            FAILED_TO_WRITE_OUTPUT_FILE,
+            RUSTFMT_FAILED,
+            TOO_MANY_BITS,
+        ];
+    }
+
+    pub static A: [&[&str]; 2] = [&parser::A, &coder::A];
 }
 
 mod _p {
@@ -367,7 +376,7 @@ mod _p {
     pub const CAT_BITS: usize = 1;
     pub const CAT_MASK: R = 1;
     pub const CAT_MAX: R = 1;
-    pub static VAR_MAXES: [R; 2] = [4, 17];
+    pub static VAR_MAXES: [R; 2] = [17, 6];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
@@ -383,38 +392,17 @@ mod _p {
 pub mod categories {
     use super::TbErrorCategory as C;
 
-    /// General errors category.
-    pub const GENERAL: C = C::new(0);
-
     /// Parser errors category.
-    pub const PARSER: C = C::new(1);
+    pub const PARSER: C = C::new(0);
+
+    /// Coder errors category.
+    pub const CODER: C = C::new(1);
 }
 
 /// Error kind constants.
 pub mod kinds {
     use super::categories as c;
     use super::TbErrorKind as EK;
-
-    /// General category error kind constants.
-    pub mod general {
-        use super::c;
-        use super::EK;
-
-        /// Bad specification file format.
-        pub const BAD_SPEC: EK = EK::new(c::GENERAL, 0);
-
-        /// Output file couldn't be written.
-        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::GENERAL, 1);
-
-        /// Output file couldn't be read.
-        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::GENERAL, 2);
-
-        /// Generated code tokens couldn't be parsed.
-        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::GENERAL, 3);
-
-        /// Rustfmt tool exited with an error.
-        pub const RUSTFMT_FAILED: EK = EK::new(c::GENERAL, 4);
-    }
 
     /// Parser category error kind constants.
     pub mod parser {
@@ -474,5 +462,32 @@ pub mod kinds {
 
         /// Specification file couldn't be found.
         pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::PARSER, 17);
+    }
+
+    /// Coder category error kind constants.
+    pub mod coder {
+        use super::c;
+        use super::EK;
+
+        /// At least one category must be defined.
+        pub const CATEGORY_REQUIRED: EK = EK::new(c::CODER, 0);
+
+        /// At least one error must be defined.
+        pub const ERROR_REQUIRED: EK = EK::new(c::CODER, 1);
+
+        /// Generated code tokens couldn't be parsed.
+        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::CODER, 2);
+
+        /// Output file couldn't be read.
+        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::CODER, 3);
+
+        /// Output file couldn't be written.
+        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::CODER, 4);
+
+        /// Rustfmt tool exited with an error.
+        pub const RUSTFMT_FAILED: EK = EK::new(c::CODER, 5);
+
+        /// The number of required bits exceeds the largest supported type u64.
+        pub const TOO_MANY_BITS: EK = EK::new(c::CODER, 6);
     }
 }

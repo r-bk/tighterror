@@ -10,15 +10,6 @@ module:
   err_cat_name: TbErrorCategory
 
 categories:
-  - name: General
-    doc: General errors category.
-    errors:
-      - BadSpec: Bad specification file format.
-      - FailedToWriteOutputFile: Output file couldn't be written.
-      - FailedToReadOutputFile: Output file couldn't be read.
-      - FailedToParseTokens: Generated code tokens couldn't be parsed.
-      - RustfmtFailed: Rustfmt tool exited with an error.
-
   - name: Parser
     doc: Parser errors category.
     errors:
@@ -40,3 +31,14 @@ categories:
       - MutuallyExclusiveKeywords: Specification contains mutually exclusive keywords.
       - NonUniqueName: A name is not unique.
       - SpecFileNotFound: Specification file couldn't be found.
+
+  - name: Coder
+    doc: Coder errors category.
+    errors:
+      - CategoryRequired: At least one category must be defined.
+      - ErrorRequired: At least one error must be defined.
+      - FailedToParseTokens: Generated code tokens couldn't be parsed.
+      - FailedToReadOutputFile: Output file couldn't be read.
+      - FailedToWriteOutputFile: Output file couldn't be written.
+      - RustfmtFailed: Rustfmt tool exited with an error.
+      - TooManyBits: The number of required bits exceeds the largest supported type u64.

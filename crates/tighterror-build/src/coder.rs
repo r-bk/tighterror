@@ -1,6 +1,6 @@
 use crate::{
     errors::{
-        kinds::general::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
+        kinds::coder::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
         TbError,
     },
     parser,

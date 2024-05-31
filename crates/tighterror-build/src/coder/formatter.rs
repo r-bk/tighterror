@@ -1,5 +1,5 @@
 use crate::errors::{
-    kinds::general::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED},
+    kinds::coder::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED},
     TbError,
 };
 use log::{error, warn};
