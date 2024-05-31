@@ -66,7 +66,7 @@ impl<'a> ModuleGenerator<'a> {
             .checked_shl(n_kind_bits as u32)
             .map(|v| v - 1)
             .unwrap_or(u64::MAX);
-        let repr_type = Self::calc_repr_type(n_kind_bits)?;
+        let repr_type = Self::calc_repr_type(n_kind_bits);
         assert!(n_category_bits < repr_type.bits());
         assert!(n_variant_bits <= repr_type.bits());
         assert!(n_kind_bits <= repr_type.bits());
@@ -124,16 +124,13 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
-    fn calc_repr_type(n_bits: usize) -> Result<ReprType, TbError> {
+    fn calc_repr_type(n_bits: usize) -> ReprType {
         match n_bits {
-            1..=8 => Ok(ReprType::U8),
-            9..=16 => Ok(ReprType::U16),
-            17..=32 => Ok(ReprType::U32),
-            33..=64 => Ok(ReprType::U64),
-            _ => {
-                log::error!("repr_type: bad number of bits: {n_bits}");
-                BAD_SPEC.into()
-            }
+            1..=8 => ReprType::U8,
+            9..=16 => ReprType::U16,
+            17..=32 => ReprType::U32,
+            33..=64 => ReprType::U64,
+            _ => panic!("repr_type: bad number of bits: {n_bits}"),
         }
     }
 
