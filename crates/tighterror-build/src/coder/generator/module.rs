@@ -4,7 +4,7 @@ use crate::{
         error_displays_mod_ident, error_names_mod_ident, outer_doc_tokens, private_mod_ident,
         tests_mod_ident, ReprType,
     },
-    errors::{kinds::coder as ce, TbError},
+    errors::{kinds::coder::*, TbError},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec},
     CodegenOptions,
 };
@@ -50,7 +50,7 @@ impl<'a> ModuleGenerator<'a> {
             log::error!(
                 "not enough bits in largest supported underlying type `u64`: {n_kind_bits}"
             );
-            return ce::TOO_MANY_BITS.into();
+            return TOO_MANY_BITS.into();
         }
         let variant_mask = 1u64
             .checked_shl(n_variant_bits as u32)
@@ -89,7 +89,7 @@ impl<'a> ModuleGenerator<'a> {
         match n_categories {
             0 => {
                 log::error!("at least one category must be defined");
-                ce::CATEGORY_REQUIRED.into()
+                CATEGORY_REQUIRED.into()
             }
             1 => Ok(0),
             n => Self::calc_n_bits(n, "categories"),
@@ -101,7 +101,7 @@ impl<'a> ModuleGenerator<'a> {
             Ok(usize::try_from(po2.trailing_zeros()).unwrap())
         } else {
             log::error!("too many {name}: {n}");
-            ce::TOO_MANY_BITS.into()
+            TOO_MANY_BITS.into()
         }
     }
 
@@ -110,14 +110,14 @@ impl<'a> ModuleGenerator<'a> {
             Some(n) => n,
             None => {
                 log::error!("at least one category must be defined");
-                return ce::CATEGORY_REQUIRED.into();
+                return CATEGORY_REQUIRED.into();
             }
         };
 
         match n {
             0 => {
                 log::error!("at least one error must be defined");
-                ce::ERROR_REQUIRED.into()
+                ERROR_REQUIRED.into()
             }
             1 => Ok(1),
             n => Self::calc_n_bits(n, "errors in largest category"),
