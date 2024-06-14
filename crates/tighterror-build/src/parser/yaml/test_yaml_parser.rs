@@ -377,6 +377,24 @@ fn test_module_doc_from_display() {
 }
 
 #[test]
+fn test_module_name() {
+    log_init();
+    for good_name in ["errors", "my_errors"] {
+        let s = format!("---\nmodule:\n  name: {good_name}\nerrors:\n  - DummyErr");
+        let module = ModuleSpec {
+            name: Some(good_name.into()),
+            ..Default::default()
+        };
+        assert_eq!(spec_from_module(module), YamlParser::parse_str(&s).unwrap());
+    }
+
+    for bad_name in ["\"\"", "My_Errors", "ERRORS"] {
+        let s = format!("---\nmodule:\n  name: {bad_name}\nerrors:\n  - DummyErr");
+        assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), BAD_NAME);
+    }
+}
+
+#[test]
 fn test_module_doc() {
     log_init();
     let s = "
@@ -687,6 +705,40 @@ categories:
     errors:
       - Err2: another first error
 ";
+
+    assert!(YamlParser::parse_str(s).is_ok());
+}
+
+#[test]
+fn test_module_categories_forbidden_in_single() {
+    log_init();
+
+    let s = r#"
+---
+module:
+  name: my_errors
+  categories:
+    - name: BadCategory
+      errors:
+        - BadError
+
+errors:
+  - GoodError
+"#;
+
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        BAD_OBJECT_ATTRIBUTE
+    );
+
+    let s = r#"
+---
+module:
+  name: my_errors
+
+errors:
+  - GoodError
+"#;
 
     assert!(YamlParser::parse_str(s).is_ok());
 }
@@ -1118,10 +1170,10 @@ categories:
     };
 
     let spec = Spec {
-        module: ModuleSpec {
+        modules: vec![ModuleSpec {
             categories: vec![cat1, cat2],
             ..Default::default()
-        },
+        }],
         ..Default::default()
     };
 
@@ -1156,4 +1208,227 @@ categories:
         YamlParser::parse_str(s).unwrap_err().kind(),
         NON_UNIQUE_NAME
     );
+}
+
+#[test]
+fn test_multiple_modules() {
+    log_init();
+
+    let s = "
+---
+modules:
+  - name: mod_1
+    categories:
+      - name: M1C1
+        errors:
+          - M1C1E1
+      - name: M1C2
+        errors:
+          - M1C2E1
+
+  - name: mod_2
+    categories:
+      - name: M2C1
+        errors:
+          - M2C1E1
+      - name: M2C2
+        errors:
+          - M2C2E1
+          - M2C2E2
+";
+
+    let spec = Spec {
+        modules: vec![
+            ModuleSpec {
+                name: Some("mod_1".into()),
+                categories: vec![
+                    CategorySpec {
+                        name: "M1C1".into(),
+                        errors: vec![ErrorSpec {
+                            name: "M1C1E1".into(),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    },
+                    CategorySpec {
+                        name: "M1C2".into(),
+                        errors: vec![ErrorSpec {
+                            name: "M1C2E1".into(),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    },
+                ],
+                ..Default::default()
+            },
+            ModuleSpec {
+                name: Some("mod_2".into()),
+                categories: vec![
+                    CategorySpec {
+                        name: "M2C1".into(),
+                        errors: vec![ErrorSpec {
+                            name: "M2C1E1".into(),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    },
+                    CategorySpec {
+                        name: "M2C2".into(),
+                        errors: vec![
+                            ErrorSpec {
+                                name: "M2C2E1".into(),
+                                ..Default::default()
+                            },
+                            ErrorSpec {
+                                name: "M2C2E2".into(),
+                                ..Default::default()
+                            },
+                        ],
+                        ..Default::default()
+                    },
+                ],
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    let res = YamlParser::parse_str(s).unwrap();
+    assert_eq!(spec, res);
+}
+
+#[test]
+fn test_errors_and_modules_mutual_exclusion() {
+    log_init();
+
+    let s = r#"
+---
+modules:
+  - name: my_module
+    categories:
+      - name: General
+        errors:
+          - MyError
+errors:
+  - MyOtherError
+"#;
+
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MUTUALLY_EXCLUSIVE_KEYWORDS
+    );
+
+    let s = r#"
+---
+modules:
+  - name: my_module
+    categories:
+      - name: General
+        errors:
+          - MyError
+"#;
+
+    assert!(YamlParser::parse_str(s).is_ok());
+}
+
+#[test]
+fn test_category_and_modules_mutual_exclusion() {
+    log_init();
+
+    let s = r#"
+---
+modules:
+  - name: my_module
+    categories:
+      - name: General
+        errors:
+          - MyError
+category:
+  name: OtherCategory
+"#;
+
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MUTUALLY_EXCLUSIVE_KEYWORDS
+    );
+
+    let s = r#"
+---
+modules:
+  - name: my_module
+    categories:
+      - name: General
+        errors:
+          - MyError
+"#;
+
+    assert!(YamlParser::parse_str(s).is_ok());
+}
+
+#[test]
+fn test_categories_and_modules_mutual_exclusion() {
+    log_init();
+
+    let s = r#"
+---
+modules:
+  - name: my_module
+    categories:
+      - name: General
+        errors:
+          - MyError
+
+categories:
+  - name: OtherCategory
+    errors:
+      - OtherError
+"#;
+
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MUTUALLY_EXCLUSIVE_KEYWORDS
+    );
+
+    let s = r#"
+---
+categories:
+  - name: OtherCategory
+    errors:
+      - OtherError
+"#;
+
+    assert!(YamlParser::parse_str(s).is_ok());
+}
+
+#[test]
+fn test_module_and_modules_mutual_exclusion() {
+    log_init();
+
+    let s = r#"
+---
+modules:
+  - name: my_module
+    categories:
+      - name: General
+        errors:
+          - MyError
+module:
+  name: my_module
+"#;
+
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        MUTUALLY_EXCLUSIVE_KEYWORDS
+    );
+
+    let s = r#"
+---
+modules:
+  - name: my_module
+    categories:
+      - name: General
+        errors:
+          - MyError
+"#;
+
+    assert!(YamlParser::parse_str(s).is_ok());
 }

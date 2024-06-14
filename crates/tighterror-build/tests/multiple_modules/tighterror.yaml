@@ -1,0 +1,61 @@
+---
+modules:
+  - name: internal_errors
+    doc: Internal errors.
+    doc_from_display: true
+    categories:
+      - name: Parser
+        doc: Parser errors category.
+        errors:
+          - BadFile: Configuration file is malformed.
+      - name: Processor
+        doc: Processor errors category.
+        errors:
+          - BadFile: Processor file is malformed or missing.
+          - BadState: Internal error, state mismatch.
+  - name: errors
+    doc: Public errors.
+    doc_from_display: true
+    err_doc: A custom error struct doc.
+    err_kind_doc: A custom error doc.
+    err_cat_doc: A custom category doc.
+    error_trait: true
+    result_from_err: true
+    result_from_err_kind: true
+    err_name: McError
+    err_kind_name: McErrorKind
+    err_cat_name: McErrorCategory
+    categories:
+      - name: Parsing
+        doc: Parsing errors category.
+        errors:
+          - BadToken: Decoded an invalid token.
+          - QueueFull: Parsing queue is full.
+
+      - name: Processing
+        doc: Processing errors category.
+        errors:
+          - OutOfMemory: Memory pool is empty.
+          - QueueFull: Processing queue is full.
+
+      - name: General
+        doc: General errors category.
+        errors:
+          - name: BadArg
+            display: Invalid argument received.
+            doc: |
+              An invalid argument was received.
+
+              # Examples
+
+              ```rust
+              # struct Error;
+              # impl From<u32> for Error {
+              #     fn from(v: u32) -> Self {
+              #         Self{}
+              #     }
+              # }
+              # const BAD_ARG: u32 = 0;
+              let e: Error = BAD_ARG.into();
+              ```
+          - Timeout: Operation timed out.

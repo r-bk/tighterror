@@ -7,7 +7,8 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 
 mod module;
-use module::ModuleGenerator;
+mod modules;
+use modules::ModulesGenerator;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 enum ReprType {
@@ -29,7 +30,7 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn rust(&self) -> Result<String, TbError> {
-        let mg = ModuleGenerator::new(self.opts, &self.spec.main, &self.spec.module)?;
+        let mg = ModulesGenerator::new(self.opts, &self.spec.main, &self.spec.modules);
         let tokens = mg.rust()?;
         pretty(tokens)
     }
@@ -52,31 +53,15 @@ fn _handle_multiline_doc(doc: &str) -> String {
     }
 }
 
-fn _doc_tokens(doc: &str, outer: bool) -> TokenStream {
+fn doc_tokens(doc: &str) -> TokenStream {
     if doc.is_empty() {
         quote! {}
     } else {
         let doc = _handle_multiline_doc(doc);
-        if outer {
-            quote! {
-                #![doc = #doc]
-            }
-        } else {
-            quote! {
-                #[doc = #doc]
-            }
+        quote! {
+            #[doc = #doc]
         }
     }
-}
-
-fn doc_tokens(doc: &str) -> TokenStream {
-    const OUTER: bool = false;
-    _doc_tokens(doc, OUTER)
-}
-
-fn outer_doc_tokens(doc: &str) -> TokenStream {
-    const OUTER: bool = true;
-    _doc_tokens(doc, OUTER)
 }
 
 impl ReprType {

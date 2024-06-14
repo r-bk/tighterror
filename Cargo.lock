@@ -458,6 +458,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_multiple_modules"
+version = "0.0.0"
+dependencies = [
+ "env_logger 0.11.3",
+ "tighterror",
+ "tighterror-build",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"

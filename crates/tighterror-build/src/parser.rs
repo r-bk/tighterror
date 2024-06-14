@@ -3,6 +3,7 @@ use crate::{
     errors::{kinds::parser::*, TbError},
     spec::Spec,
 };
+use convert_case::{Case, Casing};
 use regex::Regex;
 use std::{
     collections::HashSet,
@@ -79,8 +80,6 @@ fn check_ident_chars(ident: &str, name: &str) -> Result<(), TbError> {
 }
 
 fn check_ident(ident: &str, name: &str) -> Result<(), TbError> {
-    use convert_case::{Case, Casing};
-
     if ident.is_empty() {
         log::error!("`{}` cannot be an empty string", name);
         return EMPTY_IDENTIFIER.into();
@@ -135,6 +134,18 @@ fn check_name(name: &str) -> Result<(), TbError> {
     }
 }
 
+fn check_module_name(name: &str) -> Result<(), TbError> {
+    if name.is_empty() {
+        log::error!("module name cannot be an empty string");
+        BAD_NAME.into()
+    } else if !name.is_case(Case::Snake) {
+        log::error!("module name must be specified in lower_snake_case: {name}");
+        BAD_NAME.into()
+    } else {
+        Ok(())
+    }
+}
+
 fn check_name_uniqueness<'a, I>(item_name: &str, iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
@@ -168,6 +179,13 @@ where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("<flat_kinds> module error", iter)
+}
+
+fn check_module_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    check_name_uniqueness("module", iter)
 }
 
 fn spec_file_path(spec: Option<&str>) -> Result<&str, TbError> {
@@ -240,7 +258,7 @@ mod testing {
         };
 
         Spec {
-            module,
+            modules: vec![module],
             ..Default::default()
         }
     }
@@ -258,7 +276,7 @@ mod testing {
         };
 
         Spec {
-            module,
+            modules: vec![module],
             ..Default::default()
         }
     }
@@ -278,7 +296,7 @@ mod testing {
         module.categories = vec![cat];
 
         Spec {
-            module,
+            modules: vec![module],
             ..Default::default()
         }
     }
@@ -300,7 +318,10 @@ mod testing {
             ..Default::default()
         };
 
-        Spec { main, module }
+        Spec {
+            main,
+            modules: vec![module],
+        }
     }
 
     pub fn spec_from_category(mut cat: CategorySpec) -> Spec {
@@ -316,7 +337,7 @@ mod testing {
         };
 
         Spec {
-            module,
+            modules: vec![module],
             ..Default::default()
         }
     }

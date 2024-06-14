@@ -18,6 +18,6 @@ pub use module::*;
 pub struct Spec {
     /// The main spec
     pub main: MainSpec,
-    /// A tighterror module spec
-    pub module: ModuleSpec,
+    /// A list of tighterror module specs
+    pub modules: Vec<ModuleSpec>,
 }

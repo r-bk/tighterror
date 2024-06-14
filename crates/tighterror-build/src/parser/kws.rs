@@ -16,18 +16,21 @@ pub const ERR_KIND_NAME: &str = "err_kind_name";
 pub const ERR_CAT_NAME: &str = "err_cat_name";
 pub const NO_STD: &str = "no_std";
 pub const MODULE: &str = "module";
+pub const MODULES: &str = "modules";
 pub const CATEGORY: &str = "category";
 pub const CATEGORIES: &str = "categories";
 pub const FLAT_KINDS: &str = "flat_kinds";
 
 pub const ERR_KWS: [&str; 4] = [NAME, DISPLAY, DOC, DOC_FROM_DISPLAY];
 pub const CAT_KWS: [&str; 4] = [NAME, DOC, DOC_FROM_DISPLAY, ERRORS];
-pub const MODULE_KWS: [&str; 12] = [
+pub const MODULE_KWS: [&str; 14] = [
+    CATEGORIES,
     DOC_FROM_DISPLAY,
     DOC,
     ERR_CAT_DOC,
     ERR_DOC,
     ERR_KIND_DOC,
+    NAME,
     RESULT_FROM_ERR,
     RESULT_FROM_ERR_KIND,
     ERROR_TRAIT,
@@ -37,8 +40,17 @@ pub const MODULE_KWS: [&str; 12] = [
     FLAT_KINDS,
 ];
 pub const MAIN_KWS: [&str; 2] = [OUTPUT, NO_STD];
-pub const ROOT_KWS: [&str; 5] = [MAIN, ERRORS, MODULE, CATEGORY, CATEGORIES];
-pub const ALL_KWS: [&str; 21] = [
+pub const ROOT_KWS: [&str; 6] = [MAIN, ERRORS, MODULE, MODULES, CATEGORY, CATEGORIES];
+pub const REQUIRED_ROOT_KWS: [&str; 3] = [ERRORS, CATEGORIES, MODULES];
+pub const MUTUALLY_EXCLUSIVE_ROOT_KWS: [(&str, &str); 6] = [
+    (ERRORS, CATEGORIES),
+    (CATEGORY, CATEGORIES),
+    (ERRORS, MODULES),
+    (CATEGORY, MODULES),
+    (CATEGORIES, MODULES),
+    (MODULE, MODULES),
+];
+pub const ALL_KWS: [&str; 22] = [
     ERR_CAT_DOC,
     DISPLAY,
     DOC,
@@ -57,6 +69,7 @@ pub const ALL_KWS: [&str; 21] = [
     ERR_CAT_NAME,
     NO_STD,
     MODULE,
+    MODULES,
     CATEGORY,
     CATEGORIES,
     FLAT_KINDS,

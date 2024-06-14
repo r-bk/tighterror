@@ -8,8 +8,13 @@ use super::{
     idents, CategorySpec, ErrorSpec, OverridableErrorSpec,
 };
 
+#[allow(dead_code)]
+pub const IMPLICIT_MODULE_NAME: &str = "errors";
+
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ModuleSpec {
+    /// The name of the module
+    pub name: Option<String>,
     /// Module documentation
     pub doc: Option<String>,
     /// Error struct's documentation
@@ -40,6 +45,13 @@ pub struct ModuleSpec {
 }
 
 impl ModuleSpec {
+    pub fn implicit_with_categories(categories: Vec<CategorySpec>) -> Self {
+        Self {
+            categories,
+            ..Default::default()
+        }
+    }
+
     #[allow(dead_code)]
     pub fn errors_iter(&self) -> ModuleSpecErrorIter {
         ModuleSpecErrorIter {
@@ -105,6 +117,10 @@ impl ModuleSpec {
         self.err_kind_doc
             .as_deref()
             .unwrap_or(DEFAULT_ERROR_KIND_STRUCT_DOC)
+    }
+
+    pub fn name(&self) -> &str {
+        self.name.as_deref().unwrap_or(IMPLICIT_MODULE_NAME)
     }
 
     pub fn doc(&self) -> &str {

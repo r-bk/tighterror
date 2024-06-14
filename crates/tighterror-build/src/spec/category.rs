@@ -23,4 +23,12 @@ impl CategorySpec {
     pub fn kinds_module_name(&self) -> String {
         self.name.to_case(Snake)
     }
+
+    pub fn implicit_with_errors(errors: Vec<ErrorSpec>) -> Self {
+        Self {
+            name: IMPLICIT_CATEGORY_NAME.into(),
+            errors,
+            ..Default::default()
+        }
+    }
 }

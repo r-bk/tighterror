@@ -2,7 +2,8 @@ use crate::{
     errors::{kinds::parser::*, TbError},
     parser::{
         check_category_name_uniqueness, check_error_name_uniqueness,
-        check_module_error_name_uniqueness, check_module_ident, check_name, kws, ParseMode,
+        check_module_error_name_uniqueness, check_module_ident, check_module_name,
+        check_module_name_uniqueness, check_name, kws, ParseMode,
     },
     spec::{
         definitions::DEFAULT_FLAT_KINDS, CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec,
@@ -62,35 +63,56 @@ impl YamlParser {
             spec.main = MainParser::value(v)?;
         }
 
+        if let Some(v) = m.remove(kws::MODULES) {
+            spec.modules = ModulesParser::value(v)?;
+        }
+
         if let Some(v) = m.remove(kws::MODULE) {
-            spec.module = ModuleParser::value(v)?;
+            let mp = ModuleParser(ParseMode::Single);
+            spec.modules.push(mp.value(v)?);
         }
 
         if let Some(v) = m.remove(kws::CATEGORY) {
             let parser = CategoryParser(ParseMode::Single);
             let cat_spec = parser.value(v)?;
-            spec.module.categories.push(cat_spec);
+            if let Some(m) = spec.modules.first_mut() {
+                m.categories.push(cat_spec);
+            } else {
+                spec.modules
+                    .push(ModuleSpec::implicit_with_categories(vec![cat_spec]));
+            };
         }
 
         if let Some(v) = m.remove(kws::CATEGORIES) {
-            spec.module.categories = CategoriesParser::value(v)?;
+            let categories = CategoriesParser::value(v)?;
+            if let Some(m) = spec.modules.first_mut() {
+                m.categories = categories;
+            } else {
+                spec.modules
+                    .push(ModuleSpec::implicit_with_categories(categories));
+            }
         }
 
         if let Some(v) = m.remove(kws::ERRORS) {
             let errors = ErrorsParser::value(v)?;
-            if let Some(cat) = spec.module.categories.first_mut() {
-                cat.errors = errors;
+            if let Some(m) = spec.modules.first_mut() {
+                if let Some(c) = m.categories.first_mut() {
+                    c.errors = errors;
+                } else {
+                    m.categories
+                        .push(CategorySpec::implicit_with_errors(errors));
+                }
             } else {
-                spec.module.categories.push(CategorySpec {
-                    name: IMPLICIT_CATEGORY_NAME.into(),
-                    errors,
-                    ..Default::default()
-                });
+                spec.modules.push(ModuleSpec::implicit_with_categories(vec![
+                    CategorySpec::implicit_with_errors(errors),
+                ]));
             }
         }
 
-        if spec.module.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS) {
-            check_module_error_name_uniqueness(spec.module.errors_iter().map(|e| e.name.as_str()))?;
+        for m in &spec.modules {
+            if m.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS) {
+                check_module_error_name_uniqueness(m.errors_iter().map(|e| e.name.as_str()))?;
+            }
         }
 
         Ok(spec)
@@ -112,21 +134,23 @@ impl YamlParser {
             }
         }
 
-        for (k1, k2) in [
-            (kws::ERRORS, kws::CATEGORIES),
-            (kws::CATEGORY, kws::CATEGORIES),
-        ] {
+        for (k1, k2) in kws::MUTUALLY_EXCLUSIVE_ROOT_KWS {
             if m.contains_key(k1) && m.contains_key(k2) {
                 error!("top-level attributes '{k1}' and '{k2}' are mutually exclusive");
                 return MUTUALLY_EXCLUSIVE_KEYWORDS.into();
             }
         }
 
-        for (k1, k2) in [(kws::ERRORS, kws::CATEGORIES)] {
-            if !(m.contains_key(k1) || m.contains_key(k2)) {
-                error!("one of '{k1}' or '{k2}' must be specified");
-                return MISSING_ATTRIBUTE.into();
-            }
+        if !m.keys().any(|k| {
+            kws::REQUIRED_ROOT_KWS
+                .iter()
+                .any(|req| k.as_str().map(|key| key == *req).unwrap_or(false))
+        }) {
+            error!(
+                "one of {:?} top-level attributes must be specified",
+                kws::REQUIRED_ROOT_KWS
+            );
+            return MISSING_ATTRIBUTE.into();
         }
 
         Ok(())
@@ -177,12 +201,12 @@ impl MainParser {
 // ----------------------------------------------------------------------------
 
 #[derive(Debug)]
-struct ModuleParser;
+struct ModuleParser(ParseMode);
 
 impl ModuleParser {
-    fn value(v: Value) -> Result<ModuleSpec, TbError> {
+    fn value(self, v: Value) -> Result<ModuleSpec, TbError> {
         match v {
-            Value::Mapping(m) => Self::mapping(m),
+            Value::Mapping(m) => self.mapping(m),
             ref ov => {
                 error!(
                     "ModuleObject must be a Mapping: deserialized a {}",
@@ -193,7 +217,7 @@ impl ModuleParser {
         }
     }
 
-    fn mapping(m: Mapping) -> Result<ModuleSpec, TbError> {
+    fn mapping(self, m: Mapping) -> Result<ModuleSpec, TbError> {
         let mut mod_spec = ModuleSpec::default();
 
         for (k, v) in m.into_iter() {
@@ -205,6 +229,17 @@ impl ModuleParser {
             }
 
             match key.as_str() {
+                kws::NAME => mod_spec.name = Some(v2string(v, kws::NAME)?),
+                kws::CATEGORIES => {
+                    if let ParseMode::Single = self.0 {
+                        error!(
+                            "CategoriesList is not allowed in top-level `{}` attribute",
+                            kws::MODULE
+                        );
+                        return BAD_OBJECT_ATTRIBUTE.into();
+                    }
+                    mod_spec.categories = CategoriesParser::value(v)?;
+                }
                 kws::DOC_FROM_DISPLAY => {
                     mod_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
                 }
@@ -239,7 +274,54 @@ impl ModuleParser {
             }
         }
 
+        if let Some(ref n) = mod_spec.name {
+            check_module_name(n)?;
+        }
+
+        if let ParseMode::List = self.0 {
+            if let Some(ref name) = mod_spec.name {
+                if mod_spec.categories.is_empty() {
+                    error!("CategoriesList is missing: module = {name}");
+                    return MISSING_ATTRIBUTE.into();
+                }
+            } else {
+                error!("ModuleObject name is mandatory in ModulesList");
+                return MISSING_ATTRIBUTE.into();
+            }
+        }
+
         Ok(mod_spec)
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+#[derive(Debug)]
+struct ModulesParser;
+
+impl ModulesParser {
+    fn value(v: Value) -> Result<Vec<ModuleSpec>, TbError> {
+        match v {
+            Value::Sequence(s) => Self::sequence(s),
+            ref ov => {
+                error!("ModulesList must be a Sequence: deserialized {:?}", ov);
+                BAD_VALUE_TYPE.into()
+            }
+        }
+    }
+
+    fn sequence(s: Sequence) -> Result<Vec<ModuleSpec>, TbError> {
+        let mut modules = Vec::new();
+        for v in s.into_iter() {
+            let mp = ModuleParser(ParseMode::List);
+            modules.push(mp.value(v)?);
+        }
+        if modules.is_empty() {
+            error!("Empty ModulesList is not allowed");
+            return EMPTY_LIST.into();
+        }
+        check_module_name_uniqueness(modules.iter().map(|m| m.name()))?;
+        Ok(modules)
     }
 }
 

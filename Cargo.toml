@@ -20,6 +20,7 @@ exclude = [".git*", ".vscode/*", "Makefile.toml"]
 members = [
     "crates/tighterror-build",
     "crates/tighterror-build/tests/multiple_categories",
+    "crates/tighterror-build/tests/multiple_modules",
     "crates/cargo-tighterror",
 ]
 
