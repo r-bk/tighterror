@@ -11,5 +11,6 @@ members = [
     "minimal_with_display",
     "multiple_categories",
     "multiple_categories_toml",
+    "multiple_modules_toml",
 ]
 resolver = "2"
