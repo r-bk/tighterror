@@ -9,6 +9,7 @@ members = [
     "minimal_no_std",
     "minimal_toml",
     "minimal_with_display",
+    "multiple_categories",
     "multiple_categories_toml",
 ]
 resolver = "2"

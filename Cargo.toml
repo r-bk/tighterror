@@ -19,7 +19,6 @@ exclude = [".git*", ".vscode/*", "Makefile.toml"]
 [workspace]
 members = [
     "crates/tighterror-build",
-    "crates/tighterror-build/tests/multiple_categories",
     "crates/tighterror-build/tests/multiple_modules",
     "crates/cargo-tighterror",
 ]
