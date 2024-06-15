@@ -207,14 +207,12 @@
 //!
 //! ## Error Object
 //!
-//! An *error object* is comprised from the following attributes:
+//! An *error object* specifies a single *error kind*.
 //!
-//! ```yaml
-//! name: <string> (required)
-//! display: <string>
-//! doc: <string>
-//! doc_from_display: <bool>
-//! ```
+//! Note that *error object* is never defined standalone. It must be defined as
+//! an item in an [*error list*](#error-list).
+//!
+//! An *error object* comprises the following attributes:
 //!
 //! * `name` - string (required)
 //!
@@ -248,9 +246,6 @@
 //!   to affect all errors in the module.
 //!   Values defined on lower levels win.<br>
 //!   Default: `false`<br>
-//!
-//! An *error object* never appears standalone. It must be defined as an item
-//! in an [*error list*](#error-list).
 //!
 //! ### Error Object Examples
 //!
@@ -384,14 +379,28 @@
 //!
 //! ## Category Object
 //!
-//! A *category object* is comprised from the following attributes:
+//! A *category object* defines properties of a single *error category*.
+//! An *error category* groups several *error kinds* logically and allows
+//! matching the whole group with a single match arm.
 //!
-//! ```yaml
-//! name: <string> (required*)
-//! doc: <string>
-//! doc_from_display: <bool>
-//! errors: <ErrorList> (required*)
-//! ```
+//! A *category object* can appear as a standalone root-level attribute
+//! `category` or as an item in a [*category list*](#category-list).
+//! Definition at the root-level allows specification of a single category.
+//! Definition as an item in a *category list* allows specification
+//! of multiple categories.
+//!
+//! When a *category object* is specified at the root-level its `errors`
+//! attribute is forbidden and should be defined at the root-level too.
+//! Therefore, the whole *category object* at the root-level is
+//! optional because all other attributes have default values.
+//!
+//! When no *category object* is defined *tighterror* creates an implicit
+//! `General` category. When there is only a single category the number of
+//! *category* bits is zero.
+//!
+//! ---
+//!
+//! A *category object* comprises the following attributes:
 //!
 //! * `name` - string
 //!
@@ -423,33 +432,13 @@
 //!
 //! * `errors` - ErrorList
 //!
-//!   Defines the list of errors belonging to this category.<br>
+//!   Defines the [list of errors](#error-list) belonging to this category.<br>
 //!
 //!   This is a mandatory attribute when *category object* is defined
 //!   as an item in a [*category list*](#category-list). Conversely, when
 //!   a *category object* is defined as a standalone root-level attribute
 //!   (see below) this attribute is forbidden, and the error list must be
-//!   defined as a root-level attribute.
-//!
-//!   See the [*error list*](#error-list) section for more information.<br><br>
-//!
-//! A *category object* can appear as a standalone root-level attribute
-//! `category` or as an item in a [*category list*](#category-list).
-//! Definition at the root-level allows specification of a single category.
-//! Definition as an item in a *category list* allows specification
-//! of multiple categories.
-//!
-//! When a *category object* is specified at the root-level its `errors`
-//! attribute is forbidden, it must be defined at the root-level instead.
-//! Therefore, the whole *category object* at the root-level is
-//! optional because all other attributes have default values.
-//!
-//! When no *category object* is defined *tighterror* creates an implicit
-//! `General` category.
-//!
-//! When there is only a single category the number of *category* bits is zero.
-//!
-//! See [*category list*](#category-list) documentation for more information.
+//!   defined as a root-level attribute.<br><br>
 //!
 //! ### Category Object Examples
 //!
@@ -575,22 +564,9 @@
 //! All attributes of the *module object* have default values. Therefore,
 //! the whole `module` section is optional.
 //!
-//! ```yaml
 //! ---
-//! module:
-//!   doc: <string>
-//!   doc_from_display: <bool>
-//!   err_cat_doc: <string>
-//!   err_cat_name: <string>
-//!   err_doc: <string>
-//!   err_kind_doc: <string>
-//!   err_kind_name: <string>
-//!   err_name: <string>
-//!   error_trait: <bool>
-//!   flat_kinds: <bool>
-//!   result_from_err: <bool>
-//!   result_from_err_kind: <bool>
-//! ```
+//!
+//! A *module object* comprises the following attributes:
 //!
 //! * `doc` - string (optional)
 //!
@@ -760,23 +736,37 @@
 //!    to create a `Result<T, Error>` from `ErrorKind`.<br>
 //!    Default: `true`<br><br>
 //!
+//! ### Module Object Examples
+//!
+//! YAML
+//!
+//! ```yaml
+//! module:
+//!   name: internal_errors
+//!   flat_kinds: true
+//! ```
+//!
+//! TOML
+//!
+//! ```toml
+//! [module]
+//! name = "internal_errors"
+//! doc_from_display = true
+//! error_trait = false
+//! ```
+//!
 //! ## Main Object
 //!
-//! The main configuration object is identified by the `main`
+//! The *main* configuration object is identified by the `main`
 //! keyword and is found at the root-level of a specification file. It defines
-//! attributes that affect the code generation globally, applicable to all
-//! other specification objects in the file.
+//! attributes applicable to all other specification objects in the file.
 //!
 //! All attributes of the *main object* have default values. Therefore, the
 //! whole `main` section is optional.
 //!
-//! The *main object* is comprised of the following attributes:
+//! ---
 //!
-//! ```yaml
-//! main:
-//!   no_std: <bool>
-//!   output: <string>
-//! ```
+//! A *main object* comprises the following attributes:
 //!
 //! * `no_std` - bool (optional)
 //!
@@ -795,6 +785,25 @@
 //!
 //!   This attribute is overridden by the `-o, --output` command-line
 //!   argument in *cargo-tighterror*.<br><br>
+//!
+//! ### Main Object Examples
+//!
+//! YAML
+//!
+//! ```yaml
+//! ---
+//! main:
+//!   no_std: true
+//!   output: src/errors.rs
+//! ```
+//!
+//! TOML
+//!
+//! ```toml
+//! [main]
+//! no_std = true
+//! output = "src/errors.rs"
+//! ```
 //!
 //! # tighterror-build
 //!
