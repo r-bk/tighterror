@@ -4,7 +4,6 @@ main:
 
 module:
   doc_from_display: true
-  doc: Crate errors.
   err_name: TbError
   err_kind_name: TbErrorKind
   err_cat_name: TbErrorCategory
