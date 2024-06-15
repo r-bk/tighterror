@@ -281,13 +281,13 @@
 //! *Error list* is an ordered list of [*error objects*](#error-object)
 //! with unique names. It is identified by the `errors` keyword.
 //!
-//! The `errors` keyword may appear as a standalone top-level attribute or as
+//! The `errors` keyword may appear as a standalone root-level attribute or as
 //! an attribute of a [*category object*](#category-object).
-//! When specified at the top-level the specification file defines only a single
+//! When specified at the root-level the specification file defines only a single
 //! category and the list defines all the errors of the specification.
 //! When specified at *category object* level the specification file can define
 //! more than one category, and the list defines errors belonging to the
-//! category in which it is specified. The top-level and per-category notations
+//! category in which it is specified. The root-level and per-category notations
 //! are mutually exclusive.
 //!
 //! To allow more compact specification of errors *tighterror* supports
@@ -427,21 +427,21 @@
 //!
 //!   This is a mandatory attribute when *category object* is defined
 //!   as an item in a [*category list*](#category-list). Conversely, when
-//!   a *category object* is defined as a standalone top-level attribute
+//!   a *category object* is defined as a standalone root-level attribute
 //!   (see below) this attribute is forbidden, and the error list must be
-//!   defined as a top-level attribute.
+//!   defined as a root-level attribute.
 //!
 //!   See the [*error list*](#error-list) section for more information.<br><br>
 //!
-//! A *category object* can appear as a standalone top-level attribute
+//! A *category object* can appear as a standalone root-level attribute
 //! `category` or as an item in a [*category list*](#category-list).
-//! Definition at the top-level allows specification of a single category.
+//! Definition at the root-level allows specification of a single category.
 //! Definition as an item in a *category list* allows specification
 //! of multiple categories.
 //!
-//! When a *category object* is specified at the top-level its `errors`
-//! attribute is forbidden, it must be defined at the top-level instead.
-//! Therefore, the whole *category object* at the top-level is
+//! When a *category object* is specified at the root-level its `errors`
+//! attribute is forbidden, it must be defined at the root-level instead.
+//! Therefore, the whole *category object* at the root-level is
 //! optional because all other attributes have default values.
 //!
 //! When no *category object* is defined *tighterror* creates an implicit
@@ -499,7 +499,7 @@
 //! *Category list* is an ordered list of [*category objects*](#category-object)
 //! with unique names. It is identified by the `categories` keyword.
 //!
-//! The `categories` keyword may appear as a standalone top-level attribute of a
+//! The `categories` keyword may appear as a standalone root-level attribute of a
 //! specification file. It allows definition of one or more categories, each
 //! with its own set of errors.
 //!
@@ -507,8 +507,8 @@
 //! *category list* the `name` and `errors` attributes are mandatory.
 //!
 //! Also note that `category` and `categories` keywords are mutually exclusive,
-//! as well as top-level `errors` and `categories` keywords. `category` and
-//! top-level `errors` keywords are used only for a single-category
+//! as well as root-level `errors` and `categories` keywords. `category` and
+//! root-level `errors` keywords are used only for a single-category
 //! specification.
 //!
 //! The order of elements in a list matters because category constant identifier
@@ -568,7 +568,7 @@
 //! ## Module Object
 //!
 //! The module object is identified by the `module` keyword
-//! and is found at the top-level of a specification file.
+//! and is found at the root-level of a specification file.
 //! It defines attributes of objects that are present at the Rust module level
 //! and below.
 //!
@@ -763,7 +763,7 @@
 //! ## Main Object
 //!
 //! The main configuration object is identified by the `main`
-//! keyword and is found at the top-level of a specification file. It defines
+//! keyword and is found at the root-level of a specification file. It defines
 //! attributes that affect the code generation globally, applicable to all
 //! other specification objects in the file.
 //!

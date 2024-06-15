@@ -1,5 +1,3 @@
-//! Crate errors.
-
 /**
  * Error category type.
  *
@@ -249,7 +247,7 @@ mod _n {
         const BAD_OBJECT_ATTRIBUTE: &str = "BAD_OBJECT_ATTRIBUTE";
         const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
         const BAD_TOML: &str = "BAD_TOML";
-        const BAD_TOP_LEVEL_KEYWORD: &str = "BAD_TOP_LEVEL_KEYWORD";
+        const BAD_ROOT_LEVEL_KEYWORD: &str = "BAD_ROOT_LEVEL_KEYWORD";
         const BAD_VALUE_TYPE: &str = "BAD_VALUE_TYPE";
         const BAD_YAML: &str = "BAD_YAML";
         const EMPTY_IDENTIFIER: &str = "EMPTY_IDENTIFIER";
@@ -268,7 +266,7 @@ mod _n {
             BAD_OBJECT_ATTRIBUTE,
             BAD_SPEC_FILE_EXTENSION,
             BAD_TOML,
-            BAD_TOP_LEVEL_KEYWORD,
+            BAD_ROOT_LEVEL_KEYWORD,
             BAD_VALUE_TYPE,
             BAD_YAML,
             EMPTY_IDENTIFIER,
@@ -314,7 +312,8 @@ mod _d {
         const BAD_SPEC_FILE_EXTENSION: &str =
             "Specification filename extension is not supported or is missing.";
         const BAD_TOML: &str = "TOML deserialization has failed.";
-        const BAD_TOP_LEVEL_KEYWORD: &str = "Specification contains an invalid top-level keyword.";
+        const BAD_ROOT_LEVEL_KEYWORD: &str =
+            "Specification contains an invalid root-level keyword.";
         const BAD_VALUE_TYPE: &str = "Specification value type is invalid.";
         const BAD_YAML: &str = "YAML deserialization has failed.";
         const EMPTY_IDENTIFIER: &str = "An identifier cannot be an empty string.";
@@ -334,7 +333,7 @@ mod _d {
             BAD_OBJECT_ATTRIBUTE,
             BAD_SPEC_FILE_EXTENSION,
             BAD_TOML,
-            BAD_TOP_LEVEL_KEYWORD,
+            BAD_ROOT_LEVEL_KEYWORD,
             BAD_VALUE_TYPE,
             BAD_YAML,
             EMPTY_IDENTIFIER,
@@ -433,8 +432,8 @@ pub mod kinds {
         /// TOML deserialization has failed.
         pub const BAD_TOML: EK = EK::new(c::PARSER, 7);
 
-        /// Specification contains an invalid top-level keyword.
-        pub const BAD_TOP_LEVEL_KEYWORD: EK = EK::new(c::PARSER, 8);
+        /// Specification contains an invalid root-level keyword.
+        pub const BAD_ROOT_LEVEL_KEYWORD: EK = EK::new(c::PARSER, 8);
 
         /// Specification value type is invalid.
         pub const BAD_VALUE_TYPE: EK = EK::new(c::PARSER, 9);

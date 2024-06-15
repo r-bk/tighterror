@@ -9,7 +9,7 @@ pub const CATEGORY_CONSTS_MOD: &str = "categories";
 pub const ERROR_KINDS_MOD: &str = "kinds";
 pub const TESTS_MOD: &str = "tests";
 
-const TOP_LEVEL: [&str; 10] = [
+const ROOT_LEVEL: [&str; 10] = [
     ERROR,
     ERROR_CATEGORY,
     ERROR_KIND,
@@ -22,6 +22,6 @@ const TOP_LEVEL: [&str; 10] = [
     TESTS_MOD,
 ];
 
-pub fn is_top_level_ident(s: &str) -> bool {
-    TOP_LEVEL.iter().any(|v| *v == s)
+pub fn is_root_level_ident(s: &str) -> bool {
+    ROOT_LEVEL.iter().any(|v| *v == s)
 }

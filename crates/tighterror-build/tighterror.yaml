@@ -20,7 +20,7 @@ categories:
       - BadObjectAttribute: An object attribute is invalid.
       - BadSpecFileExtension: Specification filename extension is not supported or is missing.
       - BadToml: TOML deserialization has failed.
-      - BadTopLevelKeyword: Specification contains an invalid top-level keyword.
+      - BadRootLevelKeyword: Specification contains an invalid root-level keyword.
       - BadValueType: Specification value type is invalid.
       - BadYaml: YAML deserialization has failed.
       - EmptyIdentifier: An identifier cannot be an empty string.

@@ -123,8 +123,8 @@ impl YamlParser {
             match k {
                 Value::String(s) => {
                     if !kws::is_root_kw(s) {
-                        error!("invalid top-level keyword: {}", s);
-                        return BAD_TOP_LEVEL_KEYWORD.into();
+                        error!("invalid root-level keyword: {}", s);
+                        return BAD_ROOT_LEVEL_KEYWORD.into();
                     }
                 }
                 ov => {
@@ -136,7 +136,7 @@ impl YamlParser {
 
         for (k1, k2) in kws::MUTUALLY_EXCLUSIVE_ROOT_KWS {
             if m.contains_key(k1) && m.contains_key(k2) {
-                error!("top-level attributes '{k1}' and '{k2}' are mutually exclusive");
+                error!("root-level attributes '{k1}' and '{k2}' are mutually exclusive");
                 return MUTUALLY_EXCLUSIVE_KEYWORDS.into();
             }
         }
@@ -147,7 +147,7 @@ impl YamlParser {
                 .any(|req| k.as_str().map(|key| key == *req).unwrap_or(false))
         }) {
             error!(
-                "one of {:?} top-level attributes must be specified",
+                "one of {:?} root-level attributes must be specified",
                 kws::REQUIRED_ROOT_KWS
             );
             return MISSING_ATTRIBUTE.into();
@@ -233,7 +233,7 @@ impl ModuleParser {
                 kws::CATEGORIES => {
                     if let ParseMode::Single = self.0 {
                         error!(
-                            "CategoriesList is not allowed in top-level `{}` attribute",
+                            "CategoriesList is not allowed in root-level `{}` attribute",
                             kws::MODULE
                         );
                         return BAD_OBJECT_ATTRIBUTE.into();
@@ -522,7 +522,7 @@ impl CategoryParser {
         if let Some(v) = m.remove(kws::ERRORS) {
             if matches!(self.0, ParseMode::Single) {
                 error!(
-                    "ErrorsList is not allowed in top-level '{}' attribute",
+                    "ErrorsList is not allowed in root-level '{}' attribute",
                     kws::CATEGORY
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();

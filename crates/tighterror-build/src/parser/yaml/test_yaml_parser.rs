@@ -319,7 +319,7 @@ my_errors:
 ";
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err(),
-        BAD_TOP_LEVEL_KEYWORD.into()
+        BAD_ROOT_LEVEL_KEYWORD.into()
     );
 
     let s = "

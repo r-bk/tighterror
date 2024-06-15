@@ -341,7 +341,7 @@ my_errors = [\"BadError\"]
 ";
     assert_eq!(
         TomlParser::parse_str(s).unwrap_err().kind(),
-        BAD_TOP_LEVEL_KEYWORD
+        BAD_ROOT_LEVEL_KEYWORD
     );
 
     let s = "

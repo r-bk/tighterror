@@ -111,7 +111,7 @@ fn check_module_ident(ident: &str, kw: &str) -> Result<(), TbError> {
     if kw == kws::ERR_CAT_NAME && ident == idents::ERROR_CATEGORY {
         return Ok(());
     }
-    if idents::is_top_level_ident(ident) {
+    if idents::is_root_level_ident(ident) {
         log::error!("`{}` cannot be a reserved identifier: {}", kw, ident);
         BAD_MODULE_IDENTIFIER.into()
     } else {

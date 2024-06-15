@@ -121,14 +121,14 @@ impl TomlParser {
     fn check_toplevel_attributes(table: &toml::Table) -> Result<(), TbError> {
         for k in table.keys() {
             if !kws::is_root_kw(k) {
-                log::error!("invalid top-level keyword: {}", k);
-                return BAD_TOP_LEVEL_KEYWORD.into();
+                log::error!("invalid root-level keyword: {}", k);
+                return BAD_ROOT_LEVEL_KEYWORD.into();
             }
         }
 
         for (k1, k2) in kws::MUTUALLY_EXCLUSIVE_ROOT_KWS {
             if table.contains_key(k1) && table.contains_key(k2) {
-                log::error!("top-level attributes '{k1}' and '{k2}' are mutually exclusive");
+                log::error!("root-level attributes '{k1}' and '{k2}' are mutually exclusive");
                 return MUTUALLY_EXCLUSIVE_KEYWORDS.into();
             }
         }
@@ -138,7 +138,7 @@ impl TomlParser {
             .any(|k| kws::REQUIRED_ROOT_KWS.iter().any(|req| req == k))
         {
             log::error!(
-                "one of {:?} top-level attributes must be specified",
+                "one of {:?} root-level attributes must be specified",
                 kws::REQUIRED_ROOT_KWS
             );
             return MISSING_ATTRIBUTE.into();
@@ -224,7 +224,7 @@ impl ModuleParser {
                 kws::CATEGORIES => {
                     if let ParseMode::Single = self.0 {
                         log::error!(
-                            "CategoriesList is not allowed in top-level `{}` attribute",
+                            "CategoriesList is not allowed in root-level `{}` attribute",
                             kws::MODULE
                         );
                         return BAD_OBJECT_ATTRIBUTE.into();
@@ -448,7 +448,7 @@ impl CategoryParser {
         if let Some(v) = t.remove(kws::ERRORS) {
             if matches!(self.0, ParseMode::Single) {
                 log::error!(
-                    "ErrorsList is not allowed in top-level '{}' attribute",
+                    "ErrorsList is not allowed in root-level '{}' attribute",
                     kws::CATEGORY
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();
