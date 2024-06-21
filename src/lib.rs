@@ -28,6 +28,7 @@
 //!     * [Category Object](#category-object)
 //!     * [Category List](#category-list)
 //!     * [Module Object](#module-object)
+//!     * [Module List](#module-list)
 //!     * [Main Object](#main-object)
 //! 1. [tighterror-build](#tighterror-build)
 //! 1. [cargo-tighterror](#cargo-tighterror)
@@ -488,9 +489,10 @@
 //! *Category list* is an ordered list of [*category objects*](#category-object)
 //! with unique names. It is identified by the `categories` keyword.
 //!
-//! The `categories` keyword may appear as a standalone root-level attribute of a
-//! specification file. It allows definition of one or more categories, each
-//! with its own set of errors.
+//! The `categories` keyword may appear as a standalone root-level attribute,
+//! or as an attribute of a [module object](#module-object).
+//! It allows definition of one or more categories, each with its own set of
+//! errors.
 //!
 //! Note that when a *category object* is defined as an item in a
 //! *category list* the `name` and `errors` attributes are mandatory.
@@ -554,19 +556,41 @@
 //! display = "A file path is invalid."
 //! ```
 //!
+//! See [module list examples](#module-list-examples) for an example
+//! of a *category list* specified as a *module object* attribute.
+//!
 //! ## Module Object
 //!
-//! The module object is identified by the `module` keyword
-//! and is found at the root-level of a specification file.
-//! It defines attributes of objects that are present at the Rust module level
-//! and below.
+//! A *module object* defines the topmost Rust construct in *tighterror* - a
+//! module. All other *tighterror* types and definitions are sub-items of a
+//! module. Hence, a *module object* controls attributes of its direct and
+//! indirect descendant objects.
 //!
-//! All attributes of the *module object* have default values. Therefore,
-//! the whole `module` section is optional.
+//! A *module object* can appear as a standalone `module` attribute or as part
+//! of a [module list](#module-list). Definition at the root-level allows
+//! specification of a single module. Definition as an item in *module list*
+//! allows specification of multiple modules.
+//!
+//! Note that when *module object* appears as an item in a *module list* its
+//! `name` and `categories` attributes are mandatory. Conversely, when defined
+//! under the `module` attribute, `categories` is forbidden and `name`
+//! has a default value. Hence, the whole `module` section is optional.
+//!
+//! When no *module object* is explicitly defined *tighterror* creates an
+//! implicit `errors` module.
 //!
 //! ---
 //!
 //! A *module object* comprises the following attributes:
+//!
+//! * `categories` - CategoryList (optional)
+//!
+//!   Defines the [list of categories](#category-list) of this module.
+//!
+//!   This attribute is required when a *module object* is specified as an item
+//!   in a *module list*. When specified under the root-level `module` attribute
+//!   `categories` must be specified as root-level attribute too (see [category
+//!   list](#category-list)).<br><br>
 //!
 //! * `doc` - string (optional)
 //!
@@ -753,6 +777,76 @@
 //! name = "internal_errors"
 //! doc_from_display = true
 //! error_trait = false
+//! ```
+//!
+//! ## Module List
+//!
+//! *Module list* is a list of *module objects* with unique names. It is
+//! identified by the `modules` keyword.
+//!
+//! The `modules` keyword may appear as a standalone root-level attribute of
+//! a specification file. It allows definition of one or more modules, each
+//! with its own set of categories and errors.
+//!
+//! Note that when a *module object* is defined as an item in a *module list*
+//! its `name` and `categories` attributes are mandatory.
+//!
+//! Also note that the root-level keywords `errors`, `category`, `categories`
+//! and `module` are mutually exclusive with `modules`.
+//!
+//! ### Module List Examples
+//!
+//! **YAML**
+//!
+//! ```yaml
+//! modules:
+//!   - name: errors
+//!     categories:
+//!       - name: General
+//!         errors:
+//!           - BadArg: An argument is invalid.
+//!           - Timeout: Operation timed out.
+//!   - name: parser_errors
+//!     categories:
+//!       - name: General
+//!         errors:
+//!           - BadFileFormat: Input file is malformed.
+//!           - BadObjectAttribute: An object attribute is invalid.
+//! ```
+//!
+//! **TOML**
+//!
+//! The following is a TOML equivalent of the previous example.
+//! A *module list* in TOML is an array of tables.
+//!
+//! ```toml
+//! [[modules]]
+//! name = "errors"
+//!
+//! [[modules.categories]]
+//! name = "General"
+//!
+//! [[modules.categories.errors]]
+//! name = "BadArg"
+//! display = "An argument is invalid."
+//!
+//! [[modules.categories.errors]]
+//! name = "Timeout"
+//! display = "Operation timed out."
+//!
+//! [[modules]]
+//! name = "parser_errors"
+//!
+//! [[modules.categories]]
+//! name = "General"
+//!
+//! [[modules.categories.errors]]
+//! name = "BadFileFormat"
+//! display = "Input file is malformed."
+//!
+//! [[modules.categories.errors]]
+//! name = "BadObjectAttribute"
+//! display = "An object attribute is invalid."
 //! ```
 //!
 //! ## Main Object
