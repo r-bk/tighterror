@@ -1,6 +1,6 @@
 [package]
 name = "cargo-tighterror"
-version = "0.0.15"
+version = "0.0.16"
 authors = ["Rafael Buchbinder <rafi@rbk.io>"]
 edition = "2021"
 description = "The cargo plugin of the tighterror framework."
@@ -18,7 +18,7 @@ repository = "https://github.com/r-bk/tighterror"
 clap = { version = "4.4", features = ["derive"] }
 log = "0.4"
 pretty_env_logger = "0.5"
-tighterror-build = { version = "0.0.15", path = "../tighterror-build" }
+tighterror-build = { version = "0.0.16", path = "../tighterror-build" }
 
 [package.metadata.docs.rs]
 all-features = true
