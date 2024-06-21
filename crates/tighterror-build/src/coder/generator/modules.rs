@@ -25,7 +25,7 @@ impl<'a> ModulesGenerator<'a> {
     pub fn rust(&self) -> Result<TokenStream, TbError> {
         let mut ts = TokenStream::default();
         for m in self.modules {
-            let mg = ModuleGenerator::new(self.opts, self.main, m)?;
+            let mg = ModuleGenerator::new(self.opts, self.main, m, self.modules.len())?;
             let tokens = mg.rust()?;
             if self.modules.len() > 1 {
                 let module_name = format_ident!("{}", m.name());

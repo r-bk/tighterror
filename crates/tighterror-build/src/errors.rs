@@ -1,3 +1,5 @@
+//! Crate errors.
+
 /**
  * Error category type.
  *

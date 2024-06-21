@@ -1,8 +1,8 @@
 use crate::{
     coder::generator::{
         categories_mod_ident, category_names_mod_ident, doc_tokens, err_kinds_mod_ident,
-        error_displays_mod_ident, error_names_mod_ident, private_mod_ident, tests_mod_ident,
-        ReprType,
+        error_displays_mod_ident, error_names_mod_ident, outer_doc_tokens, private_mod_ident,
+        tests_mod_ident, ReprType,
     },
     errors::{kinds::coder::*, TbError},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec},
@@ -17,6 +17,8 @@ pub struct ModuleGenerator<'a> {
     opts: &'a CodegenOptions,
     main: &'a MainSpec,
     module: &'a ModuleSpec,
+    /// total number of modules in Spec
+    n_modules: usize,
     /// total number of categories
     n_categories: usize,
     /// number of bits required for categories
@@ -40,6 +42,7 @@ impl<'a> ModuleGenerator<'a> {
         opts: &'a CodegenOptions,
         main: &'a MainSpec,
         module: &'a ModuleSpec,
+        n_modules: usize,
     ) -> Result<ModuleGenerator<'a>, TbError> {
         let n_categories = module.categories.len();
         let n_category_bits = Self::calc_n_category_bits(n_categories)?;
@@ -74,6 +77,7 @@ impl<'a> ModuleGenerator<'a> {
             opts,
             main,
             module,
+            n_modules,
             n_categories,
             n_category_bits,
             n_variant_bits,
@@ -135,6 +139,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     pub fn rust(&self) -> Result<TokenStream, TbError> {
+        let module_doc = self.module_doc_tokens();
         let private_modules = self.private_modules_tokens();
         let category_tokens = self.category_tokens();
         let error_kind_tokens = self.error_kind_tokens();
@@ -143,6 +148,7 @@ impl<'a> ModuleGenerator<'a> {
         let error_kind_constants = self.error_kind_constants_tokens();
         let test = self.test_tokens();
         Ok(quote! {
+            #module_doc
             #category_tokens
             #error_kind_tokens
             #error_tokens
@@ -1092,5 +1098,13 @@ impl<'a> ModuleGenerator<'a> {
     fn ut_err_kind_arr(&self) -> TokenStream {
         let add_cat_mod = !self.module.flat_kinds();
         self.ut_err_kind_arr_impl(add_cat_mod)
+    }
+
+    fn module_doc_tokens(&self) -> TokenStream {
+        if self.n_modules == 1 {
+            outer_doc_tokens(self.module.doc())
+        } else {
+            TokenStream::default()
+        }
     }
 }

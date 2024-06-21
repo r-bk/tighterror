@@ -53,15 +53,31 @@ fn _handle_multiline_doc(doc: &str) -> String {
     }
 }
 
-fn doc_tokens(doc: &str) -> TokenStream {
+fn _doc_tokens(doc: &str, outer: bool) -> TokenStream {
     if doc.is_empty() {
         quote! {}
     } else {
         let doc = _handle_multiline_doc(doc);
-        quote! {
-            #[doc = #doc]
+        if outer {
+            quote! {
+                #![doc = #doc]
+            }
+        } else {
+            quote! {
+                #[doc = #doc]
+            }
         }
     }
+}
+
+fn doc_tokens(doc: &str) -> TokenStream {
+    const OUTER: bool = false;
+    _doc_tokens(doc, OUTER)
+}
+
+fn outer_doc_tokens(doc: &str) -> TokenStream {
+    const OUTER: bool = true;
+    _doc_tokens(doc, OUTER)
 }
 
 impl ReprType {

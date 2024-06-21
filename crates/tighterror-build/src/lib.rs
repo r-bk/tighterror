@@ -136,7 +136,6 @@ pub const DEFAULT_SPEC_PATH_TOML: &str = "tighterror.toml";
 mod coder;
 pub use coder::*;
 
-/// Crate errors
 pub mod errors;
 
 pub(crate) mod parser;
