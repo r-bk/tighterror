@@ -14,7 +14,7 @@ pub struct Args {
     #[arg(short, long, value_name = "PATH")]
     pub spec: Option<String>,
 
-    /// The output file path
+    /// The output path
     #[arg(short, long, value_name = "PATH")]
     pub output: Option<String>,
 

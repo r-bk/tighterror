@@ -1,4 +1,5 @@
 pub const STDOUT_DST: &str = "-";
+pub const IMPLICIT_FILENAME: &str = "tighterror.rs";
 pub const DEFAULT_MODULE_DOC: &str = "";
 pub const DEFAULT_ERROR_STRUCT_DOC: &str =
     "Error type.\n\nSee the [kinds] module for error kind constants.";

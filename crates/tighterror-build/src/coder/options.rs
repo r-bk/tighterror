@@ -54,13 +54,20 @@ impl CodegenOptions {
         self
     }
 
-    /// Sets the output file path.
+    /// Sets the output path.
     ///
-    /// If the value is `"-"`, or output file path is not set at all, the
+    /// This can be either an absolute path, a relative path, or hyphen `-`.
+    /// A relative path is calculated relative to the directory containing
+    /// the specification file.
+    ///
+    /// If the path points to an existing directory the output is written to
+    /// file `tighterror.rs` under that directory.
+    ///
+    /// If the value is a hyphen `-`, or output path is not set at all, the
     /// output is written to `stdout`.
     ///
-    /// A `Some` value defined here overrides the `output` value in the
-    /// specification file.
+    /// A `Some` value defined here overrides the `MainObject::output` attribute
+    /// in the specification file.
     ///
     /// # Examples
     ///

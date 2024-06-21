@@ -29,7 +29,7 @@ Usage: cargo tighterror [OPTIONS]
 
 Options:
   -s, --spec <PATH>    The specification file path
-  -o, --output <PATH>  The output file path
+  -o, --output <PATH>  The output path
   -t, --test           Include a unit-test in the generated code
   -u, --update         Do not overwrite the output file if data is unchanged
   -h, --help           Print help

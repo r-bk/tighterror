@@ -872,12 +872,15 @@
 //!
 //! * `output` - string (optional)
 //!
-//!   Defines the output file path.
+//!   Defines the output path.
 //!
 //!   This can be either an absolute path, a relative path, or a hyphen `-`.
 //!   A relative path is calculated relative to the directory containing the
 //!   specification file. Hyphen `-` forces the output to be written to
 //!   `stdout`.
+//!
+//!   If the path points to an existing directory the output is written to
+//!   file `tighterror.rs` under that directory.
 //!
 //!   When undefined the output is written to `stdout`.
 //!
@@ -950,7 +953,7 @@
 //!
 //! Options:
 //!   -s, --spec <PATH>    The specification file path
-//!   -o, --output <PATH>  The output file path
+//!   -o, --output <PATH>  The output path
 //!   -t, --test           Include a unit-test in the generated code
 //!   -u, --update         Do not overwrite the output file if data is unchanged
 //!   -h, --help           Print help
@@ -971,16 +974,15 @@
 //!
 //! * `-o, --output <PATH>` (optional)
 //!
-//!   Defines the output file path.
+//!   Defines the output path.
 //!
 //!   This can be either an absolute path, a relative path, or a hyphen `-`.
 //!   A relative path is calculated relative to the directory containing the
 //!   specification file.
 //!
-//!   This argument overrides the `output` attribute defined in the
-//!   specification file. If this argument is omitted and output file
-//!   path isn't defined in the specification file the output is written to
-//!   `stdout`.
+//!   This argument overrides the `MainObject::output` attribute defined in the
+//!   specification file. If this argument is omitted and output path isn't
+//!   defined in the specification file the output is written to `stdout`.
 //!
 //!   Use hyphen `-` to force the output to be written to `stdout`.<br><br>
 //!

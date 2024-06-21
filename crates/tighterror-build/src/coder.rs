@@ -1,10 +1,13 @@
 use crate::{
     errors::{
-        kinds::coder::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
+        kinds::coder::{BAD_PATH, FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
         TbError,
     },
     parser,
-    spec::definitions::{DEFAULT_UPDATE_MODE, STDOUT_DST},
+    spec::{
+        definitions::{DEFAULT_UPDATE_MODE, IMPLICIT_FILENAME, STDOUT_DST},
+        Spec,
+    },
 };
 use log::error;
 use std::{
@@ -48,7 +51,7 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
     let spec = parser::parse(opts.spec.as_deref())?;
     let code = generator::spec_to_rust(opts, &spec)?;
 
-    match spec.main.output(&spec.path, opts.output.as_deref())? {
+    match output_path(opts, &spec)? {
         p if p == STDOUT_DST => {
             if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
                 error!("failed to write to stdout: {e}");
@@ -65,6 +68,28 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
             }
         }
     }
+}
+
+fn output_path(opts: &CodegenOptions, spec: &Spec) -> Result<String, TbError> {
+    let op = spec.main.output(&spec.path, opts.output.as_deref())?;
+    if op == STDOUT_DST {
+        return Ok(op);
+    }
+    let op_path = Path::new(op.as_str());
+    if let Ok(md) = std::fs::metadata(op_path) {
+        if md.is_dir() {
+            return op_path
+                .join(IMPLICIT_FILENAME)
+                .as_os_str()
+                .to_str()
+                .map(|s| s.to_owned())
+                .ok_or_else(|| {
+                    log::error!("failed to build implicit specification file path: output={op}");
+                    BAD_PATH.into()
+                });
+        }
+    }
+    Ok(op)
 }
 
 fn write_code<P>(code: String, path: P) -> Result<(), TbError>
