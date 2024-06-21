@@ -1,4 +1,6 @@
 use super::definitions::{DEFAULT_NO_STD, STDOUT_DST};
+use crate::errors::{kinds::coder::BAD_PATH, TbError};
+use std::path::Path;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct MainSpec {
@@ -10,11 +12,37 @@ pub struct MainSpec {
 }
 
 impl MainSpec {
-    pub fn output<'a>(&'a self, path: Option<&'a str>) -> &'a str {
-        path.or(self.output.as_deref()).unwrap_or(STDOUT_DST)
+    pub fn output(&self, spec_path: &str, path: Option<&str>) -> Result<String, TbError> {
+        if let Some(p) = path {
+            return Ok(p.to_owned());
+        }
+        match self.output {
+            Some(ref o) if o == STDOUT_DST => Ok(STDOUT_DST.into()),
+            Some(ref o) => output_path(spec_path, o),
+            None => Ok(STDOUT_DST.into()),
+        }
     }
 
     pub fn no_std(&self) -> bool {
         self.no_std.unwrap_or(DEFAULT_NO_STD)
     }
+}
+
+fn output_path(spec_path: &str, output: &str) -> Result<String, TbError> {
+    let op = Path::new(output);
+    if op.is_absolute() {
+        return Ok(output.to_owned());
+    }
+    if let Some(sp) = Path::new(spec_path).parent() {
+        return sp
+            .join(output)
+            .as_os_str()
+            .to_str()
+            .map(|s| s.to_owned())
+            .ok_or_else(|| {
+                log::error!("failed to build specification file relative path: spec={spec_path}, output={output}");
+                BAD_PATH.into()
+            });
+    }
+    Ok(output.to_owned())
 }

@@ -38,7 +38,9 @@ pub enum ParseMode {
 
 pub fn parse(spec: Option<&str>) -> Result<Spec, TbError> {
     let path = spec_file_path(spec)?;
-    from_path(path.into())
+    let mut spec = from_path(path.into())?;
+    spec.path = path.into();
+    Ok(spec)
 }
 
 fn from_path(path: PathBuf) -> Result<Spec, TbError> {
@@ -321,6 +323,7 @@ mod testing {
         Spec {
             main,
             modules: vec![module],
+            ..Default::default()
         }
     }
 

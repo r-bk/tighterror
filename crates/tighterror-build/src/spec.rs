@@ -16,6 +16,8 @@ pub use module::*;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Spec {
+    /// The specification file path
+    pub path: String,
     /// The main spec
     pub main: MainSpec,
     /// A list of tighterror module specs

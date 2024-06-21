@@ -872,10 +872,14 @@
 //!
 //! * `output` - string (optional)
 //!
-//!   Defines the output file path. When undefined the output is written to
+//!   Defines the output file path.
+//!
+//!   This can be either an absolute path, a relative path, or a hyphen `-`.
+//!   A relative path is calculated relative to the directory containing the
+//!   specification file. Hyphen `-` forces the output to be written to
 //!   `stdout`.
 //!
-//!   The value `-` forces the output to be written to `stdout`.
+//!   When undefined the output is written to `stdout`.
 //!
 //!   This attribute is overridden by the `-o, --output` command-line
 //!   argument in *cargo-tighterror*.<br><br>
@@ -968,6 +972,10 @@
 //! * `-o, --output <PATH>` (optional)
 //!
 //!   Defines the output file path.
+//!
+//!   This can be either an absolute path, a relative path, or a hyphen `-`.
+//!   A relative path is calculated relative to the directory containing the
+//!   specification file.
 //!
 //!   This argument overrides the `output` attribute defined in the
 //!   specification file. If this argument is omitted and output file

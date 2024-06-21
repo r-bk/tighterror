@@ -48,7 +48,7 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
     let spec = parser::parse(opts.spec.as_deref())?;
     let code = generator::spec_to_rust(opts, &spec)?;
 
-    match spec.main.output(opts.output.as_deref()) {
+    match spec.main.output(&spec.path, opts.output.as_deref())? {
         p if p == STDOUT_DST => {
             if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
                 error!("failed to write to stdout: {e}");
@@ -59,9 +59,9 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
         }
         p => {
             if opts.update.unwrap_or(DEFAULT_UPDATE_MODE) {
-                update_code(code, p)
+                update_code(code, &p)
             } else {
-                write_code(code, p)
+                write_code(code, &p)
             }
         }
     }
