@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.16], [b-0.0.16], [c-0.0.16] - 2024-06-21
+
+### Changed
+
+- add support for *multiple modules*
+
+  Now it is possible to maintain more than one *tighterror* module in the
+  same specification file. This allows having dedicated error types
+  for different sub-systems in a large codebase.
+
+  ```yaml
+  ---
+  modules:
+    - name: errors
+      categories:
+        - name: Parser
+          errors:
+            - BadToken
+
+    - name: internal_errors
+      categories:
+        - name: Scheduler
+          errors:
+            - QueueFull: Scheduler queue is full.
+            - Timeout: Operation timed out.
+  ```
+
+- add fine-grained errors in `tighterror-build`.
+
+  This allows a better unit-testing because error conditions have more specific
+  error codes. Hence, it becomes less possible that a unit has returned an error
+  code, but the error condition that returned the error code is not the one that
+  the unit-test intended to check.
+
 ## [0.0.15], [b-0.0.15], [c-0.0.15] - 2024-05-18
 
 A small release on the way to multiple modules.
@@ -309,3 +343,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.15]: https://github.com/r-bk/tighterror/releases/tag/v0.0.15
 [b-0.0.15]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.15
 [c-0.0.15]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.15
+[0.0.16]: https://github.com/r-bk/tighterror/releases/tag/v0.0.16
+[b-0.0.16]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.16
+[c-0.0.16]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.16
