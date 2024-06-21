@@ -1393,3 +1393,51 @@ errors = ["MyError"]
 
     assert!(TomlParser::parse_str(s).is_ok());
 }
+
+#[test]
+fn test_module_name_uniqueness() {
+    log_init();
+
+    let s = r#"
+[[modules]]
+name = "my_errors"
+
+[[modules.categories]]
+name = "Cat1"
+doc = "First category."
+doc_from_display = false
+errors = ["DummyErr"]
+
+[[modules]]
+name = "my_errors"
+
+[[modules.categories]]
+name = "Cat2"
+doc = "Second category."
+errors = ["AnotherErr"]
+"#;
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        NON_UNIQUE_NAME
+    );
+
+    let s = r#"
+[[modules]]
+name = "my_errors"
+
+[[modules.categories]]
+name = "Cat1"
+doc = "First category."
+doc_from_display = false
+errors = ["DummyErr"]
+
+[[modules]]
+name = "your_errors"
+
+[[modules.categories]]
+name = "Cat2"
+doc = "Second category."
+errors = ["AnotherErr"]
+"#;
+    assert!(TomlParser::parse_str(s).is_ok());
+}

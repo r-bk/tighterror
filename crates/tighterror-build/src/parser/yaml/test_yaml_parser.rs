@@ -1432,3 +1432,49 @@ modules:
 
     assert!(YamlParser::parse_str(s).is_ok());
 }
+
+#[test]
+fn test_module_name_uniqueness() {
+    log_init();
+
+    let s = r#"
+---
+modules:
+  - name: my_errors
+    categories:
+      - name: Cat1
+        doc: First category.
+        doc_from_display: false
+        errors:
+          - DummyErr
+  - name: my_errors
+    categories:
+      - name: Cat2
+        doc: Second category.
+        errors:
+          - AnotherErr
+"#;
+    assert_eq!(
+        YamlParser::parse_str(s).unwrap_err().kind(),
+        NON_UNIQUE_NAME
+    );
+
+    let s = r#"
+---
+modules:
+  - name: my_errors
+    categories:
+      - name: Cat1
+        doc: First category.
+        doc_from_display: false
+        errors:
+          - DummyErr
+  - name: your_errors
+    categories:
+      - name: Cat2
+        doc: Second category.
+        errors:
+          - AnotherErr
+"#;
+    assert!(YamlParser::parse_str(s).is_ok());
+}
