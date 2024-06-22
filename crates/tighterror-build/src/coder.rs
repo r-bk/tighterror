@@ -5,7 +5,7 @@ use crate::{
     },
     parser,
     spec::{
-        definitions::{DEFAULT_UPDATE_MODE, IMPLICIT_FILENAME, STDOUT_DST},
+        definitions::{DEFAULT_UPDATE_MODE, IMPLICIT_FILENAME, STDOUT_PATH},
         Spec,
     },
 };
@@ -52,7 +52,7 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
     let code = generator::spec_to_rust(opts, &spec)?;
 
     match output_path(opts, &spec)? {
-        p if p == STDOUT_DST => {
+        p if p == STDOUT_PATH => {
             if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
                 error!("failed to write to stdout: {e}");
                 FAILED_TO_WRITE_OUTPUT_FILE.into()
@@ -72,7 +72,7 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
 
 fn output_path(opts: &CodegenOptions, spec: &Spec) -> Result<String, TbError> {
     let op = spec.main.output(&spec.path, opts.output.as_deref())?;
-    if op == STDOUT_DST {
+    if op == STDOUT_PATH {
         return Ok(op);
     }
     let op_path = Path::new(op.as_str());

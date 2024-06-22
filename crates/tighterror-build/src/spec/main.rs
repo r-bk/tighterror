@@ -1,4 +1,4 @@
-use super::definitions::{DEFAULT_NO_STD, STDOUT_DST};
+use super::definitions::{DEFAULT_NO_STD, STDOUT_PATH};
 use crate::errors::{kinds::coder::BAD_PATH, TbError};
 use std::path::Path;
 
@@ -17,9 +17,9 @@ impl MainSpec {
             return Ok(p.to_owned());
         }
         match self.output {
-            Some(ref o) if o == STDOUT_DST => Ok(STDOUT_DST.into()),
+            Some(ref o) if o == STDOUT_PATH => Ok(STDOUT_PATH.into()),
             Some(ref o) => output_path(spec_path, o),
-            None => Ok(STDOUT_DST.into()),
+            None => Ok(STDOUT_PATH.into()),
         }
     }
 
