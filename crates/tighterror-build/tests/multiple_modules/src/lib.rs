@@ -4,7 +4,15 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 
-include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+/// Public errors.
+pub mod errors {
+    include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+}
+
+/// Internal errors.
+pub mod internal_errors {
+    include!(concat!(env!("OUT_DIR"), "/internal_errors.rs"));
+}
 
 #[cfg(test)]
 mod tests {

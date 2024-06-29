@@ -1,7 +1,6 @@
 ---
 modules:
   - name: internal_errors
-    doc: Internal errors.
     doc_from_display: true
     categories:
       - name: Parser
@@ -14,7 +13,6 @@ modules:
           - BadFile: Processor file is malformed or missing.
           - BadState: Internal error, state mismatch.
   - name: errors
-    doc: Public errors.
     doc_from_display: true
     err_doc: A custom error struct doc.
     err_kind_doc: A custom error doc.
