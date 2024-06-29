@@ -1,4 +1,5 @@
 use crate::errors::TbError;
+use std::path::PathBuf;
 
 /// Options for the code generator.
 ///
@@ -18,8 +19,8 @@ use crate::errors::TbError;
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct CodegenOptions {
-    pub(crate) spec: Option<String>,
-    pub(crate) output: Option<String>,
+    pub(crate) spec: Option<PathBuf>,
+    pub(crate) output: Option<PathBuf>,
     pub(crate) test: Option<bool>,
     pub(crate) update: Option<bool>,
     pub(crate) separate_files: Option<bool>,
@@ -33,7 +34,7 @@ impl CodegenOptions {
 
     /// Sets the specification file path.
     ///
-    /// If `Some` value is not specified the default specification filenames
+    /// If a value is not specified the default specification filenames
     /// are used in the following order:
     /// * if the `yaml` feature is enabled the path [DEFAULT_SPEC_PATH_YAML]
     ///   is used
@@ -43,15 +44,31 @@ impl CodegenOptions {
     /// # Examples
     /// ```rust
     /// # use tighterror_build::CodegenOptions;
-    /// CodegenOptions::new().spec(None);
-    /// CodegenOptions::new().spec("tighterror.yaml".to_owned());
-    /// CodegenOptions::new().spec(Some("myerrors.toml".into()));
+    /// CodegenOptions::new().spec("tighterror.yaml");
     /// ```
     ///
     /// [DEFAULT_SPEC_PATH_YAML]: crate::DEFAULT_SPEC_PATH_YAML
     /// [DEFAULT_SPEC_PATH_TOML]: crate::DEFAULT_SPEC_PATH_TOML
-    pub fn spec(&mut self, spec: impl Into<Option<String>>) -> &mut Self {
-        self.spec = spec.into();
+    pub fn spec(&mut self, spec: impl Into<PathBuf>) -> &mut Self {
+        self.spec = Some(spec.into());
+        self
+    }
+
+    /// Sets the specification file path option.
+    ///
+    /// This method enhances [`spec`](Self::spec) to set the specification
+    /// file path option. This is handy when one needs to
+    /// reset the option back to `None` or has an `Option<PathBuf>` parsed
+    /// from command line.
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use tighterror_build::CodegenOptions;
+    /// CodegenOptions::new().spec_option(None);
+    /// CodegenOptions::new().spec_option(Some("tighterror.yaml".into()));
+    /// ```
+    pub fn spec_option(&mut self, spec: Option<PathBuf>) -> &mut Self {
+        self.spec = spec;
         self
     }
 
@@ -74,12 +91,27 @@ impl CodegenOptions {
     ///
     /// ```rust
     /// # use tighterror_build::CodegenOptions;
-    /// CodegenOptions::new().output(None);
-    /// CodegenOptions::new().output("src/errors.rs".to_owned());
-    /// CodegenOptions::new().output(Some("myerrors.rs".into()));
+    /// CodegenOptions::new().output("src/errors.rs");
     /// ```
-    pub fn output(&mut self, output: impl Into<Option<String>>) -> &mut Self {
-        self.output = output.into();
+    pub fn output(&mut self, output: impl Into<PathBuf>) -> &mut Self {
+        self.output = Some(output.into());
+        self
+    }
+
+    /// Sets the output path option.
+    ///
+    /// This method enhances [`output`](Self::output) to set the output path
+    /// option. This is handy when one needs to reset the option back to `None`
+    /// or has an `Option<PathBuf>` parsed from command line.
+    ///
+    /// # Examples
+    /// ```rust
+    ///  # use tighterror_build::CodegenOptions;
+    /// CodegenOptions::new().output_option(None);
+    /// CodegenOptions::new().output_option(Some("./src".into()));
+    /// ```
+    pub fn output_option(&mut self, output: Option<PathBuf>) -> &mut Self {
+        self.output = output;
         self
     }
 

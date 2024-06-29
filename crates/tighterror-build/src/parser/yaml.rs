@@ -188,7 +188,7 @@ impl MainParser {
             }
 
             match key.as_str() {
-                kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?),
+                kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?.into()),
                 kws::NO_STD => main_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
                 _ => panic!("internal error: unhandled MainObject attribute: {}", key),
             }

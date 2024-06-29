@@ -57,7 +57,7 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
     let modules = generator::spec_to_rust(&frozen, &spec)?;
 
     match frozen.output {
-        p if p == STDOUT_PATH => {
+        p if p.as_os_str() == STDOUT_PATH => {
             debug_assert_eq!(modules.len(), 1);
             let code = modules[0].code.as_bytes();
             if let Err(e) = io::stdout().lock().write_all(code) {

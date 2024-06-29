@@ -289,9 +289,8 @@ mod _n {
         const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
         const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
         const TOO_MANY_BITS: &str = "TOO_MANY_BITS";
-        const BAD_PATH: &str = "BAD_PATH";
         const OUTPUT_PATH_NOT_DIRECTORY: &str = "OUTPUT_PATH_NOT_DIRECTORY";
-        pub static A: [&str; 9] = [
+        pub static A: [&str; 8] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
@@ -299,7 +298,6 @@ mod _n {
             FAILED_TO_WRITE_OUTPUT_FILE,
             RUSTFMT_FAILED,
             TOO_MANY_BITS,
-            BAD_PATH,
             OUTPUT_PATH_NOT_DIRECTORY,
         ];
     }
@@ -361,9 +359,8 @@ mod _d {
         const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
         const TOO_MANY_BITS: &str =
             "The number of required bits exceeds the largest supported type u64.";
-        const BAD_PATH: &str = "A file-system path couldn't be converted to string.";
         const OUTPUT_PATH_NOT_DIRECTORY: &str = "Output path is not a directory.";
-        pub static A: [&str; 9] = [
+        pub static A: [&str; 8] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
@@ -371,7 +368,6 @@ mod _d {
             FAILED_TO_WRITE_OUTPUT_FILE,
             RUSTFMT_FAILED,
             TOO_MANY_BITS,
-            BAD_PATH,
             OUTPUT_PATH_NOT_DIRECTORY,
         ];
     }
@@ -385,7 +381,7 @@ mod _p {
     pub const CAT_BITS: usize = 1;
     pub const CAT_MASK: R = 1;
     pub const CAT_MAX: R = 1;
-    pub static VAR_MAXES: [R; 2] = [17, 8];
+    pub static VAR_MAXES: [R; 2] = [17, 7];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
@@ -499,10 +495,7 @@ pub mod kinds {
         /// The number of required bits exceeds the largest supported type u64.
         pub const TOO_MANY_BITS: EK = EK::new(c::CODER, 6);
 
-        /// A file-system path couldn't be converted to string.
-        pub const BAD_PATH: EK = EK::new(c::CODER, 7);
-
         /// Output path is not a directory.
-        pub const OUTPUT_PATH_NOT_DIRECTORY: EK = EK::new(c::CODER, 8);
+        pub const OUTPUT_PATH_NOT_DIRECTORY: EK = EK::new(c::CODER, 7);
     }
 }

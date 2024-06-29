@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "cargo")]
@@ -12,11 +13,11 @@ enum CargoCli {
 pub struct Args {
     /// The specification file path
     #[arg(short, long, value_name = "PATH")]
-    pub spec: Option<String>,
+    pub spec: Option<PathBuf>,
 
     /// The output path
     #[arg(short, long, value_name = "PATH")]
-    pub output: Option<String>,
+    pub output: Option<PathBuf>,
 
     /// Include a unit-test in the generated code
     #[arg(short, long)]

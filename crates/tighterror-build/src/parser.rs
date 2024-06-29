@@ -36,7 +36,7 @@ pub enum ParseMode {
     List,
 }
 
-pub fn parse(spec: Option<&str>) -> Result<Spec, TbError> {
+pub fn parse(spec: Option<&Path>) -> Result<Spec, TbError> {
     let path = spec_file_path(spec)?;
     let mut spec = from_path(path.into())?;
     spec.path = path.into();
@@ -190,19 +190,19 @@ where
     check_name_uniqueness("module", iter)
 }
 
-fn spec_file_path(spec: Option<&str>) -> Result<&str, TbError> {
+fn spec_file_path(spec: Option<&Path>) -> Result<&Path, TbError> {
     if let Some(p) = spec {
         return Ok(p);
     }
 
     #[cfg(feature = "yaml")]
     if Path::new(crate::DEFAULT_SPEC_PATH_YAML).is_file() {
-        return Ok(crate::DEFAULT_SPEC_PATH_YAML);
+        return Ok(Path::new(crate::DEFAULT_SPEC_PATH_YAML));
     }
 
     #[cfg(feature = "toml")]
     if Path::new(crate::DEFAULT_SPEC_PATH_TOML).is_file() {
-        return Ok(crate::DEFAULT_SPEC_PATH_TOML);
+        return Ok(Path::new(crate::DEFAULT_SPEC_PATH_TOML));
     }
 
     SPEC_FILE_NOT_FOUND.into()

@@ -1,4 +1,5 @@
 use crate::coder::idents;
+use std::path::PathBuf;
 
 mod error;
 pub use error::*;
@@ -17,7 +18,7 @@ pub use module::*;
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Spec {
     /// The specification file path
-    pub path: String,
+    pub path: PathBuf,
     /// The main spec
     pub main: MainSpec,
     /// A list of tighterror module specs

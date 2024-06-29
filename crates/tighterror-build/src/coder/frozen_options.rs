@@ -1,13 +1,13 @@
 use crate::{
     coder::CodegenOptions,
-    errors::{kinds::coder::*, TbError},
+    errors::{kinds::coder::OUTPUT_PATH_NOT_DIRECTORY, TbError},
     spec::{definitions::*, Spec},
 };
-use std::path::Path;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct FrozenOptions {
-    pub(crate) output: String,
+    pub(crate) output: PathBuf,
     pub(crate) test: bool,
     pub(crate) update: bool,
     pub(crate) separate_files: bool,
@@ -26,7 +26,7 @@ impl FrozenOptions {
 
     fn output_path(opts: &CodegenOptions, spec: &Spec) -> Result<OutputPath, TbError> {
         let output = spec.main.output(&spec.path, opts.output.as_deref())?;
-        if output == STDOUT_PATH {
+        if output.as_os_str() == STDOUT_PATH {
             return Ok(OutputPath {
                 path: output,
                 separate_files: false,
@@ -34,25 +34,15 @@ impl FrozenOptions {
         }
 
         let separate_files = opts.separate_files.unwrap_or(DEFAULT_SEPARATE_FILES);
-        let path = Path::new(output.as_str());
-        let is_dir = path.is_dir();
+        let is_dir = output.is_dir();
 
         if separate_files && !is_dir {
-            log::error!("output path must be a directory in separate-files mode: {output}");
+            log::error!("output path must be a directory in separate-files mode: {output:?}");
             return OUTPUT_PATH_NOT_DIRECTORY.into();
         }
 
         let op = if is_dir && !separate_files {
-            path.join(IMPLICIT_FILENAME)
-                .as_os_str()
-                .to_str()
-                .map(|s| s.to_owned())
-                .ok_or_else(|| {
-                    log::error!(
-                        "failed to build implicit specification file path: output={output}"
-                    );
-                    TbError::from(BAD_PATH)
-                })?
+            output.join(IMPLICIT_FILENAME)
         } else {
             output
         };
@@ -66,6 +56,6 @@ impl FrozenOptions {
 
 #[derive(Debug)]
 struct OutputPath {
-    path: String,
+    path: PathBuf,
     separate_files: bool,
 }
