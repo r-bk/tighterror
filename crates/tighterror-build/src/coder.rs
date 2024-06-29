@@ -1,13 +1,10 @@
 use crate::{
     errors::{
-        kinds::coder::{BAD_PATH, FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
+        kinds::coder::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
         TbError,
     },
     parser,
-    spec::{
-        definitions::{DEFAULT_UPDATE_MODE, IMPLICIT_FILENAME, STDOUT_PATH},
-        Spec,
-    },
+    spec::definitions::STDOUT_PATH,
 };
 use log::error;
 use std::{
@@ -18,6 +15,8 @@ use std::{
 };
 
 mod formatter;
+mod frozen_options;
+pub(crate) use frozen_options::*;
 mod generator;
 pub(crate) mod idents;
 mod options;
@@ -49,9 +48,10 @@ const TMP_FILE_SFX: &str = ".rs";
 /// ```
 pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
     let spec = parser::parse(opts.spec.as_deref())?;
-    let code = generator::spec_to_rust(opts, &spec)?;
+    let frozen = FrozenOptions::new(opts, &spec)?;
+    let code = generator::spec_to_rust(&frozen, &spec)?;
 
-    match output_path(opts, &spec)? {
+    match frozen.output {
         p if p == STDOUT_PATH => {
             if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
                 error!("failed to write to stdout: {e}");
@@ -61,35 +61,13 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
             }
         }
         p => {
-            if opts.update.unwrap_or(DEFAULT_UPDATE_MODE) {
+            if frozen.update {
                 update_code(code, &p)
             } else {
                 write_code(code, &p)
             }
         }
     }
-}
-
-fn output_path(opts: &CodegenOptions, spec: &Spec) -> Result<String, TbError> {
-    let op = spec.main.output(&spec.path, opts.output.as_deref())?;
-    if op == STDOUT_PATH {
-        return Ok(op);
-    }
-    let op_path = Path::new(op.as_str());
-    if let Ok(md) = std::fs::metadata(op_path) {
-        if md.is_dir() {
-            return op_path
-                .join(IMPLICIT_FILENAME)
-                .as_os_str()
-                .to_str()
-                .map(|s| s.to_owned())
-                .ok_or_else(|| {
-                    log::error!("failed to build implicit specification file path: output={op}");
-                    BAD_PATH.into()
-                });
-        }
-    }
-    Ok(op)
 }
 
 fn write_code<P>(code: String, path: P) -> Result<(), TbError>

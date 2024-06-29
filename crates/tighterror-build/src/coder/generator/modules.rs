@@ -2,19 +2,19 @@ use crate::{
     coder::generator::{doc_tokens, module::ModuleGenerator},
     errors::TbError,
     spec::{MainSpec, ModuleSpec},
-    CodegenOptions,
+    FrozenOptions,
 };
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
 pub struct ModulesGenerator<'a> {
-    opts: &'a CodegenOptions,
+    opts: &'a FrozenOptions,
     main: &'a MainSpec,
     modules: &'a [ModuleSpec],
 }
 
 impl<'a> ModulesGenerator<'a> {
-    pub fn new(opts: &'a CodegenOptions, main: &'a MainSpec, modules: &'a [ModuleSpec]) -> Self {
+    pub fn new(opts: &'a FrozenOptions, main: &'a MainSpec, modules: &'a [ModuleSpec]) -> Self {
         ModulesGenerator {
             opts,
             main,

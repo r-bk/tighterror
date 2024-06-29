@@ -6,7 +6,7 @@ use crate::{
     },
     errors::{kinds::coder::*, TbError},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec},
-    CodegenOptions,
+    FrozenOptions,
 };
 use proc_macro2::{Ident, Literal, TokenStream};
 use quote::{format_ident, quote};
@@ -14,7 +14,7 @@ use std::{num::TryFromIntError, str::FromStr};
 
 #[allow(dead_code)]
 pub struct ModuleGenerator<'a> {
-    opts: &'a CodegenOptions,
+    opts: &'a FrozenOptions,
     main: &'a MainSpec,
     module: &'a ModuleSpec,
     /// add a module doc string to the generated code
@@ -39,7 +39,7 @@ pub struct ModuleGenerator<'a> {
 
 impl<'a> ModuleGenerator<'a> {
     pub fn new(
-        opts: &'a CodegenOptions,
+        opts: &'a FrozenOptions,
         main: &'a MainSpec,
         module: &'a ModuleSpec,
         mod_doc: bool,
@@ -696,8 +696,7 @@ impl<'a> ModuleGenerator<'a> {
 
     fn test_tokens(&self) -> TokenStream {
         let tests_mod = tests_mod_ident();
-        let do_test = self.module.test(self.opts.test);
-        if do_test {
+        if self.opts.test {
             let test_tokens = self.test_tokens_impl();
             quote! {
                 #[cfg(test)]

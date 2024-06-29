@@ -1,5 +1,5 @@
 use crate::{
-    coder::{formatter::pretty, idents, options::CodegenOptions},
+    coder::{formatter::pretty, idents, FrozenOptions},
     errors::TbError,
     spec::Spec,
 };
@@ -20,12 +20,12 @@ enum ReprType {
 
 #[allow(dead_code)]
 struct RustGenerator<'a> {
-    opts: &'a CodegenOptions,
+    opts: &'a FrozenOptions,
     spec: &'a Spec,
 }
 
 impl<'a> RustGenerator<'a> {
-    fn new(opts: &'a CodegenOptions, spec: &'a Spec) -> RustGenerator<'a> {
+    fn new(opts: &'a FrozenOptions, spec: &'a Spec) -> RustGenerator<'a> {
         Self { opts, spec }
     }
 
@@ -132,6 +132,6 @@ fn categories_mod_ident() -> Ident {
     format_ident!("{}", idents::CATEGORY_CONSTS_MOD)
 }
 
-pub fn spec_to_rust(opts: &CodegenOptions, spec: &Spec) -> Result<String, TbError> {
+pub fn spec_to_rust(opts: &FrozenOptions, spec: &Spec) -> Result<String, TbError> {
     RustGenerator::new(opts, spec).rust()
 }

@@ -3,7 +3,7 @@ use super::{
         DEFAULT_CATEGORY_STRUCT_DOC, DEFAULT_DOC_FROM_DISPLAY, DEFAULT_ERROR_KIND_CONST_DOC,
         DEFAULT_ERROR_KIND_STRUCT_DOC, DEFAULT_ERROR_STRUCT_DOC, DEFAULT_ERROR_TRAIT,
         DEFAULT_ERR_INTO_RESULT, DEFAULT_ERR_KIND_INTO_RESULT, DEFAULT_FLAT_KINDS,
-        DEFAULT_GENERAL_CAT_DOC, DEFAULT_MODULE_DOC, DEFAULT_TEST,
+        DEFAULT_GENERAL_CAT_DOC, DEFAULT_MODULE_DOC,
     },
     idents, CategorySpec, ErrorSpec, OverridableErrorSpec,
 };
@@ -58,10 +58,6 @@ impl ModuleSpec {
             categories: self.categories.iter(),
             errors: [].iter(),
         }
-    }
-
-    pub fn test(&self, test: Option<bool>) -> bool {
-        test.unwrap_or(DEFAULT_TEST)
     }
 
     pub fn n_errors_in_largest_category(&self) -> Option<usize> {
