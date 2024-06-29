@@ -22,6 +22,7 @@ pub struct CodegenOptions {
     pub(crate) output: Option<String>,
     pub(crate) test: Option<bool>,
     pub(crate) update: Option<bool>,
+    pub(crate) separate_files: Option<bool>,
 }
 
 impl CodegenOptions {
@@ -123,6 +124,25 @@ impl CodegenOptions {
     /// ```
     pub fn update(&mut self, update: impl Into<Option<bool>>) -> &mut Self {
         self.update = update.into();
+        self
+    }
+
+    /// Enables the *separate files* mode.
+    ///
+    /// When enabled every module in specification is written to a separate
+    /// file. The [output](Self::output) option must point to an
+    /// existing directory. The module files, named after the modules
+    /// with addition of the `.rs` suffix, are written under that directory.
+    ///
+    /// For example, assuming `output` equals `./src` and there
+    /// are two modules named `errors` and `internal_errors`, the modules will
+    /// be written to `./src/errors.rs` and `./src/internal_errors.rs`
+    /// respectively.
+    ///
+    /// Note that if the output is written to `stdout` the *separate files*
+    /// mode is implicitly disabled.
+    pub fn separate_files(&mut self, separate_files: impl Into<Option<bool>>) -> &mut Self {
+        self.separate_files = separate_files.into();
         self
     }
 

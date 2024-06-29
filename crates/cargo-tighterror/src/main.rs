@@ -11,11 +11,13 @@ use args::*;
 fn codegen_main(args: Args) {
     let test = args.test();
     let update = args.update();
+    let separate_files = args.separate_files();
     if let Err(e) = CodegenOptions::new()
         .spec(args.spec)
         .output(args.output)
         .test(test)
         .update(update)
+        .separate_files(separate_files)
         .codegen()
     {
         error!("{e}");

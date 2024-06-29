@@ -9,6 +9,8 @@ pub struct MainSpec {
     pub output: Option<String>,
     /// Generate code for `no_std` environment
     pub no_std: Option<bool>,
+    /// Write every module in a separate file
+    pub separate_files: Option<bool>,
 }
 
 impl MainSpec {

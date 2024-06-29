@@ -25,6 +25,10 @@ pub struct Args {
     /// Do not overwrite the output file if data is unchanged
     #[arg(short, long)]
     pub update: bool,
+
+    /// Write modules in separate files
+    #[arg(short = 'S', long)]
+    pub separate_files: bool,
 }
 
 impl Args {
@@ -48,5 +52,9 @@ impl Args {
 
     pub fn update(&self) -> Option<bool> {
         Self::bool_to_opt(self.update)
+    }
+
+    pub fn separate_files(&self) -> Option<bool> {
+        Self::bool_to_opt(self.separate_files)
     }
 }

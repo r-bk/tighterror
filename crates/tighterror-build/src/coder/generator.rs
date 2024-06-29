@@ -18,6 +18,14 @@ enum ReprType {
     U64,
 }
 
+#[derive(Debug)]
+pub struct ModuleCode {
+    /// The module name
+    pub(crate) name: String,
+    /// The module code
+    pub(crate) code: String,
+}
+
 #[allow(dead_code)]
 struct RustGenerator<'a> {
     opts: &'a FrozenOptions,
@@ -29,10 +37,17 @@ impl<'a> RustGenerator<'a> {
         Self { opts, spec }
     }
 
-    fn rust(&self) -> Result<String, TbError> {
+    fn rust(&self) -> Result<Vec<ModuleCode>, TbError> {
         let mg = ModulesGenerator::new(self.opts, &self.spec.main, &self.spec.modules);
         let tokens = mg.rust()?;
-        pretty(tokens)
+        let mut ret = Vec::new();
+        for mt in tokens.into_iter() {
+            ret.push(ModuleCode {
+                name: mt.name,
+                code: pretty(mt.tokens)?,
+            });
+        }
+        Ok(ret)
     }
 }
 
@@ -132,6 +147,6 @@ fn categories_mod_ident() -> Ident {
     format_ident!("{}", idents::CATEGORY_CONSTS_MOD)
 }
 
-pub fn spec_to_rust(opts: &FrozenOptions, spec: &Spec) -> Result<String, TbError> {
+pub fn spec_to_rust(opts: &FrozenOptions, spec: &Spec) -> Result<Vec<ModuleCode>, TbError> {
     RustGenerator::new(opts, spec).rust()
 }

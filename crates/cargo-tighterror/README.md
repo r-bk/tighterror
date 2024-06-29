@@ -28,12 +28,13 @@ The cargo plugin of the tighterror framework.
 Usage: cargo tighterror [OPTIONS]
 
 Options:
-  -s, --spec <PATH>    The specification file path
-  -o, --output <PATH>  The output path
-  -t, --test           Include a unit-test in the generated code
-  -u, --update         Do not overwrite the output file if data is unchanged
-  -h, --help           Print help
-  -V, --version        Print version
+  -s, --spec <PATH>     The specification file path
+  -o, --output <PATH>   The output path
+  -t, --test            Include a unit-test in the generated code
+  -u, --update          Do not overwrite the output file if data is unchanged
+  -S, --separate-files  Write modules in separate files
+  -h, --help            Print help
+  -V, --version         Print version
 ```
 
 ## Documentation

@@ -18,12 +18,15 @@ mod formatter;
 mod frozen_options;
 pub(crate) use frozen_options::*;
 mod generator;
+use generator::ModuleCode;
 pub(crate) mod idents;
 mod options;
 pub use options::*;
 
 const TMP_FILE_PFX: &str = "tighterror.";
 const TMP_FILE_SFX: &str = ".rs";
+const RUST_FILE_EXTENSION: &str = "rs";
+const ALL_MODULES: &str = "*";
 
 /// Generates Rust source code from a specification file.
 ///
@@ -48,37 +51,50 @@ const TMP_FILE_SFX: &str = ".rs";
 /// ```
 pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
     let spec = parser::parse(opts.spec.as_deref())?;
+    debug_assert!(!spec.modules.is_empty());
+
     let frozen = FrozenOptions::new(opts, &spec)?;
-    let code = generator::spec_to_rust(&frozen, &spec)?;
+    let modules = generator::spec_to_rust(&frozen, &spec)?;
 
     match frozen.output {
         p if p == STDOUT_PATH => {
-            if let Err(e) = io::stdout().lock().write_all(code.as_bytes()) {
+            debug_assert_eq!(modules.len(), 1);
+            let code = modules[0].code.as_bytes();
+            if let Err(e) = io::stdout().lock().write_all(code) {
                 error!("failed to write to stdout: {e}");
                 FAILED_TO_WRITE_OUTPUT_FILE.into()
             } else {
                 Ok(())
             }
         }
-        p => {
-            if frozen.update {
-                update_code(code, &p)
-            } else {
-                write_code(code, &p)
-            }
-        }
+        _ if frozen.update => update_modules(&frozen, &modules),
+        _ => write_modules(&frozen, &modules),
     }
 }
 
-fn write_code<P>(code: String, path: P) -> Result<(), TbError>
-where
-    P: AsRef<Path> + AsRef<OsStr> + std::fmt::Debug,
-{
+fn write_modules(frozen: &FrozenOptions, modules: &[ModuleCode]) -> Result<(), TbError> {
+    if frozen.separate_files {
+        let dir = Path::new(&frozen.output);
+        for m in modules {
+            let mut path = dir.join(&m.name);
+            path.set_extension(RUST_FILE_EXTENSION);
+            write_code(&m.code, &path)?;
+        }
+    } else {
+        let path = Path::new(&frozen.output);
+        debug_assert_eq!(modules.len(), 1);
+        write_code(&modules[0].code, path)?;
+    }
+
+    Ok(())
+}
+
+fn write_code(code: &str, path: &Path) -> Result<(), TbError> {
     let file = match File::options()
         .write(true)
         .create(true)
         .truncate(true)
-        .open(&path)
+        .open(path)
     {
         Ok(f) => f,
         Err(e) => {
@@ -90,7 +106,7 @@ where
     write_and_format(code, path, file)
 }
 
-fn write_and_format<P>(code: String, path: P, mut file: File) -> Result<(), TbError>
+fn write_and_format<P>(code: &str, path: P, mut file: File) -> Result<(), TbError>
 where
     P: AsRef<OsStr> + std::fmt::Debug,
 {
@@ -125,7 +141,24 @@ where
     Ok(data)
 }
 
-fn update_code(code: String, path: &str) -> Result<(), TbError> {
+fn update_modules(frozen: &FrozenOptions, modules: &[ModuleCode]) -> Result<(), TbError> {
+    if frozen.separate_files {
+        let dir = Path::new(&frozen.output);
+        for m in modules {
+            let mut path = dir.join(&m.name);
+            path.set_extension(RUST_FILE_EXTENSION);
+            update_module(&m.code, &path)?;
+        }
+    } else {
+        let path = Path::new(&frozen.output);
+        debug_assert_eq!(modules.len(), 1);
+        update_module(&modules[0].code, path)?;
+    }
+
+    Ok(())
+}
+
+fn update_module(code: &str, path: &Path) -> Result<(), TbError> {
     let path = Path::new(path);
     if !path.exists() {
         return write_code(code, path);
