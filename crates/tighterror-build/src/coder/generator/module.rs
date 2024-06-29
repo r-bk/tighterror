@@ -17,8 +17,8 @@ pub struct ModuleGenerator<'a> {
     opts: &'a CodegenOptions,
     main: &'a MainSpec,
     module: &'a ModuleSpec,
-    /// total number of modules in Spec
-    n_modules: usize,
+    /// add a module doc string to the generated code
+    mod_doc: bool,
     /// total number of categories
     n_categories: usize,
     /// number of bits required for categories
@@ -42,7 +42,7 @@ impl<'a> ModuleGenerator<'a> {
         opts: &'a CodegenOptions,
         main: &'a MainSpec,
         module: &'a ModuleSpec,
-        n_modules: usize,
+        mod_doc: bool,
     ) -> Result<ModuleGenerator<'a>, TbError> {
         let n_categories = module.categories.len();
         let n_category_bits = Self::calc_n_category_bits(n_categories)?;
@@ -77,7 +77,7 @@ impl<'a> ModuleGenerator<'a> {
             opts,
             main,
             module,
-            n_modules,
+            mod_doc,
             n_categories,
             n_category_bits,
             n_variant_bits,
@@ -1101,7 +1101,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn module_doc_tokens(&self) -> TokenStream {
-        if self.n_modules == 1 {
+        if self.mod_doc {
             outer_doc_tokens(self.module.doc())
         } else {
             TokenStream::default()
