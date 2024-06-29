@@ -42,6 +42,7 @@ errors in a single Rust type.
   - [x] implicit
   - [x] single
   - [x] multiple
+  - [x] separate files
 - [ ] Variant error types
 - [ ] Category error types
 - [ ] Flags
