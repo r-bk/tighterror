@@ -6,7 +6,7 @@
 
 /// Crate errors.
 pub mod errors {
-    include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+    include!(concat!(env!("OUT_DIR"), "/tighterror.rs"));
 }
 
 #[cfg(test)]
