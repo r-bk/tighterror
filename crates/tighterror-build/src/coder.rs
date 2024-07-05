@@ -152,7 +152,6 @@ fn update_modules(frozen: &FrozenOptions, modules: &[ModuleCode]) -> Result<(), 
 }
 
 fn update_module(code: &str, path: &Path) -> Result<(), TbError> {
-    let path = Path::new(path);
     if !path.exists() {
         return write_code(code, path);
     }
