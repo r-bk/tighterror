@@ -1,6 +1,6 @@
 use crate::{
     coder::{
-        generator::{doc_tokens, module::ModuleGenerator},
+        generator::{helpers::doc_tokens, module::ModuleGenerator},
         ALL_MODULES,
     },
     errors::TbError,

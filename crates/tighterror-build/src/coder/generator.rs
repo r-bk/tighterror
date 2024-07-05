@@ -1,11 +1,10 @@
 use crate::{
-    coder::{formatter::pretty, idents, FrozenOptions},
+    coder::{formatter::pretty, FrozenOptions},
     errors::TbError,
     spec::Spec,
 };
-use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote};
 
+mod helpers;
 mod module;
 mod modules;
 mod repr_type;
@@ -42,78 +41,6 @@ impl<'a> RustGenerator<'a> {
         }
         Ok(ret)
     }
-}
-
-fn _handle_multiline_doc(doc: &str) -> String {
-    let n_lines = doc.lines().count();
-    if n_lines <= 1 {
-        if doc.starts_with(' ') {
-            doc.to_owned()
-        } else {
-            format!(" {doc}")
-        }
-    } else {
-        let mut s = String::from("\n");
-        for line in doc.lines() {
-            s.push_str(&format!(" * {}\n", line));
-        }
-        s
-    }
-}
-
-fn _doc_tokens(doc: &str, outer: bool) -> TokenStream {
-    if doc.is_empty() {
-        quote! {}
-    } else {
-        let doc = _handle_multiline_doc(doc);
-        if outer {
-            quote! {
-                #![doc = #doc]
-            }
-        } else {
-            quote! {
-                #[doc = #doc]
-            }
-        }
-    }
-}
-
-fn doc_tokens(doc: &str) -> TokenStream {
-    const OUTER: bool = false;
-    _doc_tokens(doc, OUTER)
-}
-
-fn outer_doc_tokens(doc: &str) -> TokenStream {
-    const OUTER: bool = true;
-    _doc_tokens(doc, OUTER)
-}
-
-fn category_names_mod_ident() -> Ident {
-    format_ident!("{}", idents::CATEGORY_NAMES_MOD)
-}
-
-fn error_names_mod_ident() -> Ident {
-    format_ident!("{}", idents::ERROR_NAMES_MOD)
-}
-
-fn error_displays_mod_ident() -> Ident {
-    format_ident!("{}", idents::ERROR_DISPLAYS_MOD)
-}
-
-fn private_mod_ident() -> Ident {
-    format_ident!("{}", idents::PRIVATE_MOD)
-}
-
-fn err_kinds_mod_ident() -> Ident {
-    format_ident!("{}", idents::ERROR_KINDS_MOD)
-}
-
-fn tests_mod_ident() -> Ident {
-    format_ident!("{}", idents::TESTS_MOD)
-}
-
-fn categories_mod_ident() -> Ident {
-    format_ident!("{}", idents::CATEGORY_CONSTS_MOD)
 }
 
 pub fn spec_to_rust(opts: &FrozenOptions, spec: &Spec) -> Result<Vec<ModuleCode>, TbError> {
