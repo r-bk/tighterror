@@ -13,14 +13,14 @@ compile_error!("At least one of the markup language features ['yaml', 'toml'] mu
 cfg_if::cfg_if! {
     if #[cfg(feature = "yaml")] {
         mod yaml;
-        pub(crate) use yaml::*;
+        use yaml::YamlParser;
     }
 }
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "toml")] {
         mod toml;
-        pub(crate) use self::toml::*;
+        use self::toml::TomlParser;
     }
 }
 
