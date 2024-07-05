@@ -41,8 +41,8 @@
 //!
 //! In its basic form a *tighterror* is a [newtype] around a small unsigned
 //! integer, e.g., `u8`.<br>
-//! Error conditions are identified by an error [`kind`](TightError::kind).
-//! Every *error kind* has a [`category`](TightErrorKind::category) that
+//! Error conditions are identified by an error [`kind`](Error::kind).
+//! Every *error kind* has a [`category`](Kind::category) that
 //! identifies the logical group the error belongs to.
 //!
 //! ```rust
@@ -61,9 +61,9 @@
 //! The [tighterror](crate) crate defines only the "public interface" of these
 //! structs, and associated types:
 //!
-//! - [`TightErrorCategory`] for `ErrorCategory`
-//! - [`TightErrorKind`] for `ErrorKind`
-//! - [`TightError`] for `Error`
+//! - [`Category`] for `ErrorCategory`
+//! - [`Kind`] for `ErrorKind`
+//! - [`Error`] for `Error`
 //!
 //! The concrete types are auto-generated from a specification file defined in
 //! the user project. The specification file is written in one of the supported
@@ -622,7 +622,7 @@
 //!   Defines the doc comment of the *error category* struct.
 //!
 //!   This becomes the doc comment of the struct that implements the
-//!   [TightErrorCategory] trait.<br>
+//!   [Category] trait.<br>
 //!   The default value is equivalent to the following YAML specification:
 //!   ```yaml
 //!   ---
@@ -639,7 +639,7 @@
 //!   Defines the name of the *error category* struct.
 //!
 //!   This becomes the name of the struct that implements the
-//!   [TightErrorCategory] trait.<br>
+//!   [Category] trait.<br>
 //!   The value must be a valid Rust struct name.<br>
 //!   Default: `ErrorCategory`<br><br>
 //!
@@ -648,7 +648,7 @@
 //!   Defines the doc comment of the *error* struct.
 //!
 //!   This becomes the doc comment of the struct that implements the
-//!   [TightError] trait.<br>
+//!   [Error] trait.<br>
 //!   The default value is equivalent to the following YAML specification:
 //!   ```yaml
 //!   ---
@@ -665,7 +665,7 @@
 //!   Defines the doc comment of the *error kind* struct.
 //!
 //!   This becomes the doc comment of the struct that implements the
-//!   [TightErrorKind] trait.<br>
+//!   [Kind] trait.<br>
 //!   The default value is equivalent to the following YAML specification:
 //!   ```yaml
 //!   ---
@@ -681,7 +681,7 @@
 //!
 //!   Defines the name of the *error kind* struct.
 //!
-//!   This becomes the name of the struct that implements the [TightErrorKind]
+//!   This becomes the name of the struct that implements the [Kind]
 //!   trait.<br>
 //!   The value must be a valid Rust struct name.<br>
 //!   Default: `ErrorKind`<br><br>
@@ -690,7 +690,7 @@
 //!
 //!   Defines the name of the *error* struct.
 //!
-//!   This becomes the name of the struct that implements the [TightError]
+//!   This becomes the name of the struct that implements the [Error]
 //!   trait.<br>
 //!   The value must be a valid Rust struct name.<br>
 //!   Default: `Error`<br><br>

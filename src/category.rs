@@ -4,7 +4,7 @@ use core::{
 };
 
 /// The trait of error categories.
-pub trait TightErrorCategory:
+pub trait Category:
     Eq + PartialEq + Ord + PartialOrd + Debug + Display + Copy + Clone + Hash
 {
     /// The number of bits required for the error category.

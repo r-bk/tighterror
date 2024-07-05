@@ -150,9 +150,9 @@ pub struct ErrorKind(u8);
 #[repr(transparent)]
 pub struct Error(ErrorKind);
 
-impl tighterror::TightErrorCategory for ErrorCategory { ... }
-impl tighterror::TightErrorKind for ErrorKind { ... }
-impl tighterror::TightError for Error { ... }
+impl tighterror::Category for ErrorCategory { ... }
+impl tighterror::Kind for ErrorKind { ... }
+impl tighterror::Error for Error { ... }
 
 pub mod categories {
    use super::ErrorCategory;

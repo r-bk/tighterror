@@ -24,7 +24,7 @@ impl TbErrorCategory {
     }
 }
 
-impl tighterror::TightErrorCategory for TbErrorCategory {
+impl tighterror::Category for TbErrorCategory {
     type R = _p::R;
     const BITS: usize = _p::CAT_BITS;
 
@@ -111,7 +111,7 @@ impl TbErrorKind {
     }
 }
 
-impl tighterror::TightErrorKind for TbErrorKind {
+impl tighterror::Kind for TbErrorKind {
     type R = _p::R;
     type Category = TbErrorCategory;
     const BITS: usize = _p::KIND_BITS;
@@ -186,7 +186,7 @@ impl TbError {
     }
 }
 
-impl tighterror::TightError for TbError {
+impl tighterror::Error for TbError {
     type R = _p::R;
     type Category = TbErrorCategory;
     type Kind = TbErrorKind;

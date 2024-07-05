@@ -12,10 +12,10 @@ const UNDEFINED_LOCATION: &str = "<undefined location>";
 ///
 /// A `Location` is *undefined* when the file name is an empty string.
 ///
-/// See [`TightError::location`] for more information.
+/// See [`Error::location`] for more information.
 ///
 /// [`panic::Location`]: core::panic::Location
-/// [`TightError::location`]: crate::TightError::location
+/// [`Error::location`]: crate::Error::location
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[non_exhaustive]
 pub struct Location {

@@ -1,13 +1,11 @@
-use crate::TightErrorCategory;
+use crate::Category;
 use core::{
     fmt::{Debug, Display},
     hash::Hash,
 };
 
 /// The trait of error kinds.
-pub trait TightErrorKind:
-    Copy + Clone + Eq + PartialEq + Ord + PartialOrd + Debug + Display + Hash
-{
+pub trait Kind: Copy + Clone + Eq + PartialEq + Ord + PartialOrd + Debug + Display + Hash {
     /// The total number of bits required for the error kind.
     ///
     /// This includes both category bits and variant bits.
@@ -19,7 +17,7 @@ pub trait TightErrorKind:
     type R;
 
     /// The error category concrete type.
-    type Category: TightErrorCategory<R = Self::R>;
+    type Category: Category<R = Self::R>;
 
     /// Returns the error category.
     fn category(&self) -> Self::Category;
@@ -29,8 +27,8 @@ pub trait TightErrorKind:
 
     /// Returns the error kind numerical value as the underlying Rust type.
     ///
-    /// This function allows embedding one instantiation of `TightError`
-    /// as a single category within another instantiation of `TightError`.
+    /// This function allows embedding one instantiation of `tighterror::Error`
+    /// as a single category within another instantiation of the trait.
     ///
     /// Persisting the raw values, and/or using them between different invocations
     /// of a program (possibly compiled with another version of error's origin crate)
@@ -43,8 +41,8 @@ pub trait TightErrorKind:
     /// The function returns `None` if `value` doesn't denote a valid error
     /// kind **in its current definition**.
     ///
-    /// This function allows embedding one instantiation of `TightError`
-    /// as a single category within another instantiation of `TightError`.
+    /// This function allows embedding one instantiation of `tighterror::Error`
+    /// as a single category within another instantiation of the trait.
     ///
     /// Persisting the raw values, and/or using them between different invocations
     /// of a program (possibly compiled with another version of error's origin crate)

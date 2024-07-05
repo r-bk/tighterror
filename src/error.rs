@@ -1,24 +1,24 @@
-use crate::{Location, TightErrorCategory, TightErrorKind};
+use crate::{Category, Kind, Location};
 use core::fmt::{Debug, Display};
 
 /// The trait of error types.
 ///
 /// See the crate documentation for more information.
-pub trait TightError: Debug + Display {
+pub trait Error: Debug + Display {
     /// The underlying Rust type of error kind.
     ///
     /// A concrete builtin type, e.g., `u8`.
     type R;
 
     /// The error category concrete type.
-    type Category: TightErrorCategory<R = Self::R>;
+    type Category: Category<R = Self::R>;
 
     /// The error kind concrete type.
-    type Kind: TightErrorKind<R = Self::R, Category = Self::Category>;
+    type Kind: Kind<R = Self::R, Category = Self::Category>;
 
     /// Returns the error kind.
     ///
-    /// The error kind is unique per `TightError` instantiation.
+    /// The error kind is unique per `tighterror::Error` instantiation.
     fn kind(&self) -> Self::Kind;
 
     /// Returns the error category.

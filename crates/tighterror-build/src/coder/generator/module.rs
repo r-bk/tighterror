@@ -365,7 +365,7 @@ impl<'a> ModuleGenerator<'a> {
                 }
             }
 
-            impl tighterror::TightErrorCategory for #err_cat_name {
+            impl tighterror::Category for #err_cat_name {
                 type R = #private_mod::R;
                 const BITS: usize = #private_mod::CAT_BITS;
 
@@ -473,7 +473,7 @@ impl<'a> ModuleGenerator<'a> {
                 }
             }
 
-            impl tighterror::TightErrorKind for #err_kind_name {
+            impl tighterror::Kind for #err_kind_name {
                 type R = #private_mod::R;
                 type Category = #err_cat_name;
 
@@ -567,7 +567,7 @@ impl<'a> ModuleGenerator<'a> {
                 }
             }
 
-            impl tighterror::TightError for #err_name {
+            impl tighterror::Error for #err_name {
                 type R = #private_mod::R;
                 type Category = #err_cat_name;
                 type Kind = #err_kind_name;
@@ -741,7 +741,7 @@ impl<'a> ModuleGenerator<'a> {
             let ident = format_ident!("{}", ident_name);
             quote! {
                 assert_eq!(#ident.name(), #ident_name);
-                assert_eq!(tighterror::TightErrorCategory::name(&#ident), #ident_name)
+                assert_eq!(tighterror::Category::name(&#ident), #ident_name)
             }
         });
         quote! {
@@ -822,7 +822,7 @@ impl<'a> ModuleGenerator<'a> {
                 let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
                     assert_eq!(#ident.name(), #ident_name);
-                    assert_eq!(tighterror::TightErrorKind::name(&#ident), #ident_name);
+                    assert_eq!(tighterror::Kind::name(&#ident), #ident_name);
                 }
             });
             quote! {
