@@ -1,10 +1,6 @@
 use crate::{
     errors::{kinds::parser::*, TbError},
-    parser::{
-        check_category_name_uniqueness, check_error_name_uniqueness,
-        check_module_error_name_uniqueness, check_module_ident, check_module_name,
-        check_module_name_uniqueness, check_name, kws, ParseMode,
-    },
+    parser::{helpers::*, kws, ParseMode},
     spec::{
         definitions::DEFAULT_FLAT_KINDS, CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec,
         IMPLICIT_CATEGORY_NAME,
