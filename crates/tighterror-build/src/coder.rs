@@ -73,16 +73,15 @@ pub fn codegen(opts: &CodegenOptions) -> Result<(), TbError> {
 
 fn write_modules(frozen: &FrozenOptions, modules: &[ModuleCode]) -> Result<(), TbError> {
     if frozen.separate_files {
-        let dir = Path::new(&frozen.output);
+        let dir = frozen.output.as_path();
         for m in modules {
             let mut path = dir.join(&m.name);
             path.set_extension(RUST_FILE_EXTENSION);
             write_code(&m.code, &path)?;
         }
     } else {
-        let path = Path::new(&frozen.output);
         debug_assert_eq!(modules.len(), 1);
-        write_code(&modules[0].code, path)?;
+        write_code(&modules[0].code, frozen.output.as_path())?;
     }
 
     Ok(())
@@ -136,16 +135,15 @@ fn read_code(path: &Path) -> Result<String, TbError> {
 
 fn update_modules(frozen: &FrozenOptions, modules: &[ModuleCode]) -> Result<(), TbError> {
     if frozen.separate_files {
-        let dir = Path::new(&frozen.output);
+        let dir = frozen.output.as_path();
         for m in modules {
             let mut path = dir.join(&m.name);
             path.set_extension(RUST_FILE_EXTENSION);
             update_module(&m.code, &path)?;
         }
     } else {
-        let path = Path::new(&frozen.output);
         debug_assert_eq!(modules.len(), 1);
-        update_module(&modules[0].code, path)?;
+        update_module(&modules[0].code, frozen.output.as_path())?;
     }
 
     Ok(())
