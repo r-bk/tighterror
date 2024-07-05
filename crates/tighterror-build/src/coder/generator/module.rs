@@ -2,7 +2,7 @@ use crate::{
     coder::generator::{
         categories_mod_ident, category_names_mod_ident, doc_tokens, err_kinds_mod_ident,
         error_displays_mod_ident, error_names_mod_ident, outer_doc_tokens, private_mod_ident,
-        tests_mod_ident, ReprType,
+        repr_type::ReprType, tests_mod_ident,
     },
     errors::{kinds::coder::*, TbError},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec},

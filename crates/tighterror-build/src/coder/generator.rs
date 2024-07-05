@@ -8,15 +8,8 @@ use quote::{format_ident, quote};
 
 mod module;
 mod modules;
+mod repr_type;
 use modules::ModulesGenerator;
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-enum ReprType {
-    U8,
-    U16,
-    U32,
-    U64,
-}
 
 #[derive(Debug)]
 pub struct ModuleCode {
@@ -93,30 +86,6 @@ fn doc_tokens(doc: &str) -> TokenStream {
 fn outer_doc_tokens(doc: &str) -> TokenStream {
     const OUTER: bool = true;
     _doc_tokens(doc, OUTER)
-}
-
-impl ReprType {
-    fn name(&self) -> &'static str {
-        match self {
-            Self::U8 => "u8",
-            Self::U16 => "u16",
-            Self::U32 => "u32",
-            Self::U64 => "u64",
-        }
-    }
-
-    fn ident(&self) -> syn::Ident {
-        format_ident!("{}", self.name())
-    }
-
-    fn bits(&self) -> usize {
-        match self {
-            Self::U8 => u8::BITS as usize,
-            Self::U16 => u16::BITS as usize,
-            Self::U32 => u32::BITS as usize,
-            Self::U64 => u64::BITS as usize,
-        }
-    }
 }
 
 fn category_names_mod_ident() -> Ident {
