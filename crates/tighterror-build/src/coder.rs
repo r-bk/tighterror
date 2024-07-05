@@ -8,7 +8,6 @@ use crate::{
 };
 use log::error;
 use std::{
-    ffi::OsStr,
     fs::File,
     io::{self, Read, Write},
     path::Path,
@@ -106,10 +105,7 @@ fn write_code(code: &str, path: &Path) -> Result<(), TbError> {
     write_and_format(code, path, file)
 }
 
-fn write_and_format<P>(code: &str, path: P, mut file: File) -> Result<(), TbError>
-where
-    P: AsRef<OsStr> + std::fmt::Debug,
-{
+fn write_and_format(code: &str, path: &Path, mut file: File) -> Result<(), TbError> {
     if let Err(e) = file.write_all(code.as_bytes()) {
         error!("failed to write to the output file {:?}: {e}", path);
         return FAILED_TO_WRITE_OUTPUT_FILE.into();
@@ -120,11 +116,8 @@ where
     Ok(())
 }
 
-fn read_code<P>(path: P) -> Result<String, TbError>
-where
-    P: AsRef<Path> + std::fmt::Debug,
-{
-    let mut file = match File::options().read(true).open(&path) {
+fn read_code(path: &Path) -> Result<String, TbError> {
+    let mut file = match File::options().read(true).open(path) {
         Ok(f) => f,
         Err(e) => {
             error!("failed to open the output file {:?}: {e}", path);
