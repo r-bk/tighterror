@@ -38,12 +38,12 @@ pub enum ParseMode {
 
 pub fn parse(spec: Option<&Path>) -> Result<Spec, TbError> {
     let path = spec_file_path(spec)?;
-    let mut spec = from_path(path.into())?;
+    let mut spec = parse_path(path.into())?;
     spec.path = path.into();
     Ok(spec)
 }
 
-fn from_path(path: PathBuf) -> Result<Spec, TbError> {
+fn parse_path(path: PathBuf) -> Result<Spec, TbError> {
     match path.extension() {
         #[cfg(feature = "yaml")]
         Some(e) if e == "yaml" => YamlParser::parse_file(open_spec_file(&path)?),
