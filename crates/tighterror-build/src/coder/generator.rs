@@ -6,6 +6,7 @@ use crate::{
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 
+mod bits;
 mod helpers;
 mod module;
 mod repr_type;
