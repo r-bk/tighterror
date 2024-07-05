@@ -1,14 +1,16 @@
 use crate::{
-    coder::{formatter::pretty, FrozenOptions},
+    coder::{formatter::pretty, FrozenOptions, ALL_MODULES},
     errors::TbError,
     spec::Spec,
 };
+use proc_macro2::TokenStream;
+use quote::{format_ident, quote};
 
 mod helpers;
 mod module;
-mod modules;
 mod repr_type;
-use modules::ModulesGenerator;
+
+use module::ModuleGenerator;
 
 #[derive(Debug)]
 pub struct ModuleCode {
@@ -30,13 +32,42 @@ impl<'a> RustGenerator<'a> {
     }
 
     fn rust(&self) -> Result<Vec<ModuleCode>, TbError> {
-        let mg = ModulesGenerator::new(self.opts, &self.spec.main, &self.spec.modules);
-        let tokens = mg.rust()?;
         let mut ret = Vec::new();
-        for mt in tokens.into_iter() {
+        let mut ts = TokenStream::default();
+        for m in &self.spec.modules {
+            let mod_doc = self.opts.separate_files || self.spec.modules.len() == 1;
+            let tokens = ModuleGenerator::new(self.opts, &self.spec.main, m, mod_doc)?.rust()?;
+            if self.spec.modules.len() > 1 && !self.opts.separate_files {
+                let module_name = format_ident!("{}", m.name());
+                let module_doc = helpers::doc_tokens(m.doc());
+                ts = quote! {
+                    #ts
+                    #module_doc
+                    pub mod #module_name {
+                        #tokens
+                    }
+                };
+            } else {
+                ret.push(ModuleCode {
+                    name: m.name().into(),
+                    code: pretty(tokens)?,
+                });
+            }
+        }
+        if ret.is_empty() {
+            let name = if self.spec.modules.len() > 1 {
+                ALL_MODULES.to_owned()
+            } else {
+                self.spec
+                    .modules
+                    .first()
+                    .expect("at least one module is expected to exist at this point")
+                    .name()
+                    .to_owned()
+            };
             ret.push(ModuleCode {
-                name: mt.name,
-                code: pretty(mt.tokens)?,
+                name,
+                code: pretty(ts)?,
             });
         }
         Ok(ret)
