@@ -13,7 +13,6 @@ pub struct TbErrorCategory(_p::R);
 impl TbErrorCategory {
     #[inline]
     const fn new(v: _p::R) -> Self {
-        debug_assert!(v <= _p::CAT_MAX);
         Self(v)
     }
 
@@ -62,17 +61,17 @@ pub struct TbErrorKind(_p::R);
 
 impl TbErrorKind {
     const fn new(cat: TbErrorCategory, variant: _p::R) -> Self {
-        Self(variant << _p::CAT_BITS | cat.0)
+        Self(cat.0 << _p::VAR_BITS | variant)
     }
 
     #[inline]
     fn category_value(&self) -> _p::R {
-        self.0 & _p::CAT_MASK
+        (self.0 & _p::CAT_MASK) >> _p::VAR_BITS
     }
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 >> _p::CAT_BITS
+        self.0 & _p::VAR_MASK
     }
 
     /// Returns the error category.
@@ -101,8 +100,8 @@ impl TbErrorKind {
     /// Creates an error kind from a raw value of the underlying Rust type.
     #[inline]
     pub fn from_value(value: _p::R) -> Option<Self> {
-        let cat = value & _p::CAT_MASK;
-        let variant = value >> _p::CAT_BITS;
+        let cat = (value & _p::CAT_MASK) >> _p::VAR_BITS;
+        let variant = value & _p::VAR_MASK;
         if cat <= _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
             Some(Self::new(TbErrorCategory::new(cat), variant))
         } else {
@@ -383,9 +382,11 @@ mod _p {
     pub type R = u8;
     pub const KIND_BITS: usize = 6;
     pub const CAT_BITS: usize = 1;
-    pub const CAT_MASK: R = 1;
     pub const CAT_MAX: R = 1;
+    pub const VAR_MASK: R = 31;
     pub static VAR_MAXES: [R; 2] = [17, 8];
+    pub const CAT_MASK: R = 32;
+    pub const VAR_BITS: usize = 5;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
