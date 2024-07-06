@@ -8,7 +8,6 @@ use super::{
     idents, CategorySpec, ErrorSpec, OverridableErrorSpec,
 };
 
-#[allow(dead_code)]
 pub const IMPLICIT_MODULE_NAME: &str = "errors";
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -52,7 +51,6 @@ impl ModuleSpec {
         }
     }
 
-    #[allow(dead_code)]
     pub fn errors_iter(&self) -> ModuleSpecErrorIter {
         ModuleSpecErrorIter {
             categories: self.categories.iter(),

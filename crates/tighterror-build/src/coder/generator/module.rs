@@ -8,7 +8,6 @@ use proc_macro2::{Ident, Literal, TokenStream};
 use quote::{format_ident, quote};
 use std::{num::TryFromIntError, str::FromStr};
 
-#[allow(dead_code)]
 pub struct ModuleGenerator<'a> {
     opts: &'a FrozenOptions,
     main: &'a MainSpec,
@@ -29,8 +28,6 @@ pub struct ModuleGenerator<'a> {
     variant_mask: u64,
     /// the mask of category bits (shifted)
     category_mask: u64,
-    /// the mask of kind bits (category + variant)
-    kind_mask: u64,
 }
 
 impl<'a> ModuleGenerator<'a> {
@@ -61,10 +58,6 @@ impl<'a> ModuleGenerator<'a> {
             .unwrap_or(u64::MAX)
             .checked_shl(n_variant_bits as u32)
             .unwrap_or(0);
-        let kind_mask = 1u64
-            .checked_shl(n_kind_bits as u32)
-            .map(|v| v - 1)
-            .unwrap_or(u64::MAX);
         let repr_type = Self::calc_repr_type(n_kind_bits);
         assert!(n_category_bits < repr_type.bits());
         assert!(n_variant_bits <= repr_type.bits());
@@ -81,7 +74,6 @@ impl<'a> ModuleGenerator<'a> {
             repr_type,
             variant_mask,
             category_mask,
-            kind_mask,
         })
     }
 
