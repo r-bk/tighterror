@@ -14,8 +14,6 @@ pub struct ModuleGenerator<'a> {
     module: &'a ModuleSpec,
     /// add a module doc string to the generated code
     mod_doc: bool,
-    /// total number of categories
-    n_categories: usize,
     /// number of bits required for categories
     n_category_bits: usize,
     /// number of bits required for error variant
@@ -67,7 +65,6 @@ impl<'a> ModuleGenerator<'a> {
             main,
             module,
             mod_doc,
-            n_categories,
             n_category_bits,
             n_variant_bits,
             n_kind_bits,
@@ -1099,7 +1096,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn n_categories_literal(&self) -> Literal {
-        Literal::usize_unsuffixed(self.n_categories)
+        Literal::usize_unsuffixed(self.module.categories.len())
     }
 
     fn ut_err_kind_arr_impl(&self, add_cat_mod: bool) -> TokenStream {
