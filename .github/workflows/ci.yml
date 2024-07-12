@@ -66,6 +66,43 @@ jobs:
         run: cargo clippy --workspace --all-features --all-targets
         working-directory: crates/tighterror-build/tests/extra
 
+  no-rustfmt:
+    runs-on: ubuntu-latest
+    env:
+      RUST_LOG: info
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: remove rustfmt
+        run: |
+          if which rustfmt; then
+            rm $(which rustfmt)
+            echo "remove-rustfmt: REMOVED"
+          fi
+          if which rustfmt; then
+            echo "remove-rustfmt: VERIFY ERR"
+            exit 1
+          else
+            echo "remove-rustfmt: VERIFY OK"
+          fi
+        shell: bash
+      - name: build without rustfmt
+        run: cargo build -vv --workspace --all-features --all-targets
+      - name: test without rustfmt
+        run: cargo test --workspace --all-features --all-targets
+      - name: check without rustfmt
+        run: cargo check --workspace --all-features --all-targets
+      - name: extra-tests build without rustfmt
+        run: cargo build -vv --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
+      - name: extra-tests test without rustfmt
+        run: cargo test --workspace --all-features --all-targets
+        working-directory: crates/tighterror-build/tests/extra
+      - name: extra-tests check without rustfmt
+        run: cargo check --workspace --all-features --all-targets
+
   common-ci:
     runs-on: ubuntu-latest
     steps:
