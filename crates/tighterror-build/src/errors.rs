@@ -288,15 +288,17 @@ mod _n {
         const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
         const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
         const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
+        const RUSTFMT_NOT_FOUND: &str = "RUSTFMT_NOT_FOUND";
         const TOO_MANY_BITS: &str = "TOO_MANY_BITS";
         const OUTPUT_PATH_NOT_DIRECTORY: &str = "OUTPUT_PATH_NOT_DIRECTORY";
-        pub static A: [&str; 8] = [
+        pub static A: [&str; 9] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
             FAILED_TO_READ_OUTPUT_FILE,
             FAILED_TO_WRITE_OUTPUT_FILE,
             RUSTFMT_FAILED,
+            RUSTFMT_NOT_FOUND,
             TOO_MANY_BITS,
             OUTPUT_PATH_NOT_DIRECTORY,
         ];
@@ -357,16 +359,18 @@ mod _d {
         const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
         const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
         const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
+        const RUSTFMT_NOT_FOUND: &str = "Rustfmt tool isn't found.";
         const TOO_MANY_BITS: &str =
             "The number of required bits exceeds the largest supported type u64.";
         const OUTPUT_PATH_NOT_DIRECTORY: &str = "Output path is not a directory.";
-        pub static A: [&str; 8] = [
+        pub static A: [&str; 9] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
             FAILED_TO_READ_OUTPUT_FILE,
             FAILED_TO_WRITE_OUTPUT_FILE,
             RUSTFMT_FAILED,
+            RUSTFMT_NOT_FOUND,
             TOO_MANY_BITS,
             OUTPUT_PATH_NOT_DIRECTORY,
         ];
@@ -381,7 +385,7 @@ mod _p {
     pub const CAT_BITS: usize = 1;
     pub const CAT_MASK: R = 1;
     pub const CAT_MAX: R = 1;
-    pub static VAR_MAXES: [R; 2] = [17, 7];
+    pub static VAR_MAXES: [R; 2] = [17, 8];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
@@ -492,10 +496,13 @@ pub mod kinds {
         /// Rustfmt tool exited with an error.
         pub const RUSTFMT_FAILED: EK = EK::new(c::CODER, 5);
 
+        /// Rustfmt tool isn't found.
+        pub const RUSTFMT_NOT_FOUND: EK = EK::new(c::CODER, 6);
+
         /// The number of required bits exceeds the largest supported type u64.
-        pub const TOO_MANY_BITS: EK = EK::new(c::CODER, 6);
+        pub const TOO_MANY_BITS: EK = EK::new(c::CODER, 7);
 
         /// Output path is not a directory.
-        pub const OUTPUT_PATH_NOT_DIRECTORY: EK = EK::new(c::CODER, 7);
+        pub const OUTPUT_PATH_NOT_DIRECTORY: EK = EK::new(c::CODER, 8);
     }
 }

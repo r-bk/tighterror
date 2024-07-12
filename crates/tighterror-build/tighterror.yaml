@@ -41,5 +41,6 @@ categories:
       - FailedToReadOutputFile: Output file couldn't be read.
       - FailedToWriteOutputFile: Output file couldn't be written.
       - RustfmtFailed: Rustfmt tool exited with an error.
+      - RustfmtNotFound: Rustfmt tool isn't found.
       - TooManyBits: The number of required bits exceeds the largest supported type u64.
       - OutputPathNotDirectory: Output path is not a directory.

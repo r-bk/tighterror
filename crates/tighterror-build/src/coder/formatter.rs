@@ -1,11 +1,11 @@
 use crate::errors::{
-    kinds::coder::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED},
+    kinds::coder::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED, RUSTFMT_NOT_FOUND},
     TbError,
 };
-use log::{error, warn};
+use log::{error, info, warn};
 use proc_macro2::TokenStream;
 use regex::RegexSet;
-use std::{ffi::OsStr, process::Command};
+use std::{ffi::OsStr, io::ErrorKind, process::Command};
 
 pub fn pretty(tokens: TokenStream) -> Result<String, TbError> {
     let tokens_str = tokens.to_string();
@@ -74,13 +74,18 @@ pub fn rustfmt(path: impl AsRef<OsStr>) -> Result<(), TbError> {
         Ok(exit_status) => {
             if !exit_status.success() {
                 warn!("rustfmt failed");
-                return RUSTFMT_FAILED.into();
+                RUSTFMT_FAILED.into()
+            } else {
+                Ok(())
             }
+        }
+        Err(e) if e.kind() == ErrorKind::NotFound => {
+            info!("rustfmt not found, skipping");
+            RUSTFMT_NOT_FOUND.into()
         }
         Err(e) => {
             warn!("failed to spawn rustfmt: {e}");
-            return RUSTFMT_FAILED.into();
+            RUSTFMT_FAILED.into()
         }
     }
-    Ok(())
 }
