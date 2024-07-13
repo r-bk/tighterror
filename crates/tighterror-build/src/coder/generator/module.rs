@@ -54,13 +54,13 @@ impl<'a> ModuleGenerator<'a> {
         let variant_mask = 1u64
             .checked_shl(n_variant_bits as u32)
             .map(|v| v - 1)
-            .unwrap_or(u64::MAX)
-            .checked_shl(n_category_bits as u32)
-            .unwrap_or(0);
+            .unwrap_or(u64::MAX);
         let category_mask = 1u64
             .checked_shl(n_category_bits as u32)
             .map(|v| v - 1)
-            .unwrap_or(u64::MAX);
+            .unwrap_or(u64::MAX)
+            .checked_shl(n_variant_bits as u32)
+            .unwrap_or(0);
         let kind_mask = 1u64
             .checked_shl(n_kind_bits as u32)
             .map(|v| v - 1)
@@ -188,7 +188,9 @@ impl<'a> ModuleGenerator<'a> {
         let repr_type = self.repr_type.ident();
         let n_kind_bits = Literal::usize_unsuffixed(self.n_kind_bits);
         let n_category_bits = Literal::usize_unsuffixed(self.n_category_bits);
+        let n_variant_bits = Literal::usize_unsuffixed(self.n_variant_bits);
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
+        let variant_mask = self.u64_to_repr_type_literal(self.variant_mask).unwrap();
         let category_mask = self.u64_to_repr_type_literal(self.category_mask).unwrap();
         let category_max = self
             .usize_to_repr_type_literal(self.module.category_max())
@@ -200,15 +202,25 @@ impl<'a> ModuleGenerator<'a> {
         };
         let variant_maxes_iter = self.module.categories.iter().map(variant_max);
 
+        let optional_tokens = if self.n_category_bits == 0 {
+            quote! {}
+        } else {
+            quote! {
+                pub const CAT_MASK: R = #category_mask;
+                pub const VAR_BITS: usize = #n_variant_bits;
+            }
+        };
+
         quote! {
             pub type R = #repr_type;
             pub const KIND_BITS: usize = #n_kind_bits;
             pub const CAT_BITS: usize = #n_category_bits;
-            pub const CAT_MASK: R = #category_mask;
             pub const CAT_MAX: R = #category_max;
+            pub const VAR_MASK: R = #variant_mask;
             pub static VAR_MAXES: [R; #n_categories] = [
                 #(#variant_maxes_iter),*
             ];
+            #optional_tokens
             const _: () = assert!(KIND_BITS <= R::BITS as usize);
             const _: () = assert!(CAT_BITS <= usize::BITS as usize); // for casting to usize
         }
@@ -342,7 +354,6 @@ impl<'a> ModuleGenerator<'a> {
         let err_cat_name = self.err_cat_name_ident();
         let err_cat_name_str = self.module.err_cat_name();
         let err_cat_doc = doc_tokens(self.module.err_cat_doc());
-        let category_max_comparison = self.category_max_comparison();
         let category_names_mod = category_names_mod_ident();
         let private_mod = private_mod_ident();
         quote! {
@@ -354,7 +365,6 @@ impl<'a> ModuleGenerator<'a> {
             impl #err_cat_name {
                 #[inline]
                 const fn new(v: #private_mod::R) -> Self {
-                    debug_assert!(v #category_max_comparison #private_mod::CAT_MAX);
                     Self(v)
                 }
 
@@ -416,6 +426,38 @@ impl<'a> ModuleGenerator<'a> {
             TokenStream::default()
         };
 
+        let err_kind_new_tokens = if self.n_category_bits == 0 {
+            quote! { assert!(cat.0 == #private_mod::CAT_MAX); Self(variant) }
+        } else {
+            quote! { Self(cat.0 << #private_mod::VAR_BITS | variant) }
+        };
+
+        let cat_value_tokens = if self.n_category_bits == 0 {
+            quote! { #private_mod::CAT_MAX }
+        } else {
+            quote! { (self.0 & #private_mod::CAT_MASK) >> #private_mod::VAR_BITS }
+        };
+
+        let from_value_tokens = if self.n_category_bits == 0 {
+            quote! {
+                if value <= #private_mod::VAR_MAXES[0] {
+                    Some(Self::new(#err_cat_name::new(0), value))
+                } else {
+                    None
+                }
+            }
+        } else {
+            quote! {
+                let cat = (value & #private_mod::CAT_MASK) >> #private_mod::VAR_BITS;
+                let variant = value & #private_mod::VAR_MASK;
+                if cat #category_max_comparison #private_mod::CAT_MAX && variant <= #private_mod::VAR_MAXES[cat as usize] {
+                    Some(Self::new(#err_cat_name::new(cat), variant))
+                } else {
+                    None
+                }
+            }
+        };
+
         quote! {
             #err_kind_doc
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -424,17 +466,17 @@ impl<'a> ModuleGenerator<'a> {
 
             impl #err_kind_name {
                 const fn new(cat: #err_cat_name, variant: #private_mod::R) -> Self {
-                    Self(variant << #private_mod::CAT_BITS | cat.0)
+                    #err_kind_new_tokens
                 }
 
                 #[inline]
                 fn category_value(&self) -> #private_mod::R {
-                    self.0 & #private_mod::CAT_MASK
+                    #cat_value_tokens
                 }
 
                 #[inline]
                 fn variant_value(&self) -> #private_mod::R {
-                    self.0 >> #private_mod::CAT_BITS
+                    self.0 & #private_mod::VAR_MASK
                 }
 
                 #[doc = " Returns the error category."]
@@ -463,13 +505,7 @@ impl<'a> ModuleGenerator<'a> {
                 #[doc = " Creates an error kind from a raw value of the underlying Rust type."]
                 #[inline]
                 pub fn from_value(value: #private_mod::R) -> Option<Self> {
-                    let cat = value & #private_mod::CAT_MASK;
-                    let variant = value >> #private_mod::CAT_BITS;
-                    if cat #category_max_comparison #private_mod::CAT_MAX && variant <= #private_mod::VAR_MAXES[cat as usize] {
-                        Some(Self::new(#err_cat_name::new(cat), variant))
-                    } else {
-                        None
-                    }
+                    #from_value_tokens
                 }
             }
 
