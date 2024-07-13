@@ -20,7 +20,6 @@ pub struct ModuleCode {
     pub(crate) code: String,
 }
 
-#[allow(dead_code)]
 struct RustGenerator<'a> {
     opts: &'a FrozenOptions,
     spec: &'a Spec,
