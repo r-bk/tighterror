@@ -35,7 +35,7 @@ impl<'a> RustGenerator<'a> {
         let mut ts = TokenStream::default();
         for m in &self.spec.modules {
             let mod_doc = self.opts.separate_files || self.spec.modules.len() == 1;
-            let tokens = ModuleGenerator::new(self.opts, &self.spec.main, m, mod_doc)?.rust()?;
+            let tokens = ModuleGenerator::new(self.opts, self.spec, m, mod_doc)?.rust()?;
             if self.spec.modules.len() > 1 && !self.opts.separate_files {
                 let module_name = format_ident!("{}", m.name());
                 let module_doc = helpers::doc_tokens(m.doc());

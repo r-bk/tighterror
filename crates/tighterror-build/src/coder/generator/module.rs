@@ -1,7 +1,7 @@
 use crate::{
     coder::generator::{helpers::*, repr_type::ReprType},
     errors::{kinds::coder::*, TbError},
-    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec},
+    spec::{CategorySpec, ErrorSpec, ModuleSpec, Spec},
     FrozenOptions,
 };
 use proc_macro2::{Ident, Literal, TokenStream};
@@ -10,7 +10,7 @@ use std::{num::TryFromIntError, str::FromStr};
 
 pub struct ModuleGenerator<'a> {
     opts: &'a FrozenOptions,
-    main: &'a MainSpec,
+    spec: &'a Spec,
     module: &'a ModuleSpec,
     /// add a module doc string to the generated code
     mod_doc: bool,
@@ -31,7 +31,7 @@ pub struct ModuleGenerator<'a> {
 impl<'a> ModuleGenerator<'a> {
     pub fn new(
         opts: &'a FrozenOptions,
-        main: &'a MainSpec,
+        spec: &'a Spec,
         module: &'a ModuleSpec,
         mod_doc: bool,
     ) -> Result<ModuleGenerator<'a>, TbError> {
@@ -62,7 +62,7 @@ impl<'a> ModuleGenerator<'a> {
         assert!(n_kind_bits <= repr_type.bits());
         Ok(Self {
             opts,
-            main,
+            spec,
             module,
             mod_doc,
             n_category_bits,
@@ -565,7 +565,7 @@ impl<'a> ModuleGenerator<'a> {
         } else {
             TokenStream::default()
         };
-        let error_trait = if self.module.error_trait(self.main.no_std) {
+        let error_trait = if self.module.error_trait(self.spec.main.no_std) {
             quote! {
                 impl std::error::Error for #err_name {}
             }
@@ -779,7 +779,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_category_display(&self) -> TokenStream {
-        if self.main.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let categories_mod = categories_mod_ident();
@@ -800,7 +800,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_category_uniqueness(&self) -> TokenStream {
-        if self.main.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_cat_name = self.err_cat_name_ident();
@@ -864,7 +864,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_err_kind_display(&self) -> TokenStream {
-        if self.main.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_kinds_mod = err_kinds_mod_ident();
@@ -891,7 +891,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_err_kind_uniqueness(&self) -> TokenStream {
-        if self.main.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
@@ -912,7 +912,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_err_kind_value_uniqueness(&self) -> TokenStream {
-        if self.main.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
@@ -983,7 +983,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_err_display(&self) -> TokenStream {
-        if self.main.no_std() {
+        if self.spec.main.no_std() {
             return TokenStream::default();
         }
         let err_name = self.err_name_ident();
