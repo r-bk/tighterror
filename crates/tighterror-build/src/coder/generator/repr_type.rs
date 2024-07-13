@@ -1,3 +1,8 @@
+use crate::errors::{kinds::coder::TOO_MANY_BITS, TbError};
+use std::any::type_name;
+
+type LargestReprType = u64;
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum ReprType {
     U8,
@@ -27,5 +32,19 @@ impl ReprType {
             Self::U32 => u32::BITS as usize,
             Self::U64 => u64::BITS as usize,
         }
+    }
+
+    pub fn from_n_bits(n_bits: usize) -> Result<Self, TbError> {
+        Ok(match n_bits {
+            0..=8 => ReprType::U8,
+            9..=16 => ReprType::U16,
+            17..=32 => ReprType::U32,
+            33..=64 => ReprType::U64,
+            _ => return TOO_MANY_BITS.into(),
+        })
+    }
+
+    pub fn largest_type_name() -> &'static str {
+        type_name::<LargestReprType>()
     }
 }

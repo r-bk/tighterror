@@ -1,6 +1,6 @@
 use crate::{
-    coder::generator::{helpers::*, repr_type::ReprType},
-    errors::{kinds::coder::*, TbError},
+    coder::generator::{bits::Bits, helpers::*, repr_type::ReprType},
+    errors::TbError,
     spec::{CategorySpec, ErrorSpec, ModuleSpec, Spec},
     FrozenOptions,
 };
@@ -14,18 +14,8 @@ pub struct ModuleGenerator<'a> {
     module: &'a ModuleSpec,
     /// add a module doc string to the generated code
     mod_doc: bool,
-    /// number of bits required for categories
-    n_category_bits: usize,
-    /// number of bits required for error variant
-    n_variant_bits: usize,
-    /// number of bits required for error kind (category + variant)
-    n_kind_bits: usize,
-    /// the representation type
-    repr_type: ReprType,
-    /// the mask of variant bits
-    variant_mask: u64,
-    /// the mask of category bits (shifted)
-    category_mask: u64,
+    /// bit calculations' results
+    bits: Bits,
 }
 
 impl<'a> ModuleGenerator<'a> {
@@ -35,92 +25,13 @@ impl<'a> ModuleGenerator<'a> {
         module: &'a ModuleSpec,
         mod_doc: bool,
     ) -> Result<ModuleGenerator<'a>, TbError> {
-        let n_categories = module.categories.len();
-        let n_category_bits = Self::calc_n_category_bits(n_categories)?;
-        let n_variant_bits = Self::calc_n_variant_bits(module)?;
-        assert!(n_variant_bits >= 1);
-        let n_kind_bits = n_category_bits + n_variant_bits;
-        if n_kind_bits > u64::BITS as usize {
-            log::error!(
-                "not enough bits in largest supported underlying type `u64`: {n_kind_bits}"
-            );
-            return TOO_MANY_BITS.into();
-        }
-        let variant_mask = 1u64
-            .checked_shl(n_variant_bits as u32)
-            .map(|v| v - 1)
-            .unwrap_or(u64::MAX);
-        let category_mask = 1u64
-            .checked_shl(n_category_bits as u32)
-            .map(|v| v - 1)
-            .unwrap_or(u64::MAX)
-            .checked_shl(n_variant_bits as u32)
-            .unwrap_or(0);
-        let repr_type = Self::calc_repr_type(n_kind_bits);
-        assert!(n_category_bits < repr_type.bits());
-        assert!(n_variant_bits <= repr_type.bits());
-        assert!(n_kind_bits <= repr_type.bits());
         Ok(Self {
             opts,
             spec,
             module,
             mod_doc,
-            n_category_bits,
-            n_variant_bits,
-            n_kind_bits,
-            repr_type,
-            variant_mask,
-            category_mask,
+            bits: Bits::calculate(spec, module)?,
         })
-    }
-
-    fn calc_n_category_bits(n_categories: usize) -> Result<usize, TbError> {
-        match n_categories {
-            0 => {
-                log::error!("at least one category must be defined");
-                CATEGORY_REQUIRED.into()
-            }
-            1 => Ok(0),
-            n => Self::calc_n_bits(n, "categories"),
-        }
-    }
-
-    fn calc_n_bits(n: usize, name: &str) -> Result<usize, TbError> {
-        if let Some(po2) = n.checked_next_power_of_two() {
-            Ok(usize::try_from(po2.trailing_zeros()).unwrap())
-        } else {
-            log::error!("too many {name}: {n}");
-            TOO_MANY_BITS.into()
-        }
-    }
-
-    fn calc_n_variant_bits(module: &ModuleSpec) -> Result<usize, TbError> {
-        let n = match module.n_errors_in_largest_category() {
-            Some(n) => n,
-            None => {
-                log::error!("at least one category must be defined");
-                return CATEGORY_REQUIRED.into();
-            }
-        };
-
-        match n {
-            0 => {
-                log::error!("at least one error must be defined");
-                ERROR_REQUIRED.into()
-            }
-            1 => Ok(1),
-            n => Self::calc_n_bits(n, "errors in largest category"),
-        }
-    }
-
-    fn calc_repr_type(n_bits: usize) -> ReprType {
-        match n_bits {
-            1..=8 => ReprType::U8,
-            9..=16 => ReprType::U16,
-            17..=32 => ReprType::U32,
-            33..=64 => ReprType::U64,
-            _ => panic!("repr_type: bad number of bits: {n_bits}"),
-        }
     }
 
     pub fn rust(&self) -> Result<TokenStream, TbError> {
@@ -174,13 +85,17 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn private_constants_tokens(&self) -> TokenStream {
-        let repr_type = self.repr_type.ident();
-        let n_kind_bits = Literal::usize_unsuffixed(self.n_kind_bits);
-        let n_category_bits = Literal::usize_unsuffixed(self.n_category_bits);
-        let n_variant_bits = Literal::usize_unsuffixed(self.n_variant_bits);
+        let repr_type = self.bits.repr_type.ident();
+        let n_kind_bits = Literal::usize_unsuffixed(self.bits.kind);
+        let n_category_bits = Literal::usize_unsuffixed(self.bits.category);
+        let n_variant_bits = Literal::usize_unsuffixed(self.bits.variant);
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
-        let variant_mask = self.u64_to_repr_type_literal(self.variant_mask).unwrap();
-        let category_mask = self.u64_to_repr_type_literal(self.category_mask).unwrap();
+        let variant_mask = self
+            .u64_to_repr_type_literal(self.bits.variant_mask)
+            .unwrap();
+        let category_mask = self
+            .u64_to_repr_type_literal(self.bits.category_mask)
+            .unwrap();
         let category_max = self
             .usize_to_repr_type_literal(self.module.category_max())
             .unwrap();
@@ -191,7 +106,7 @@ impl<'a> ModuleGenerator<'a> {
         };
         let variant_maxes_iter = self.module.categories.iter().map(variant_max);
 
-        let optional_tokens = if self.n_category_bits == 0 {
+        let optional_tokens = if self.bits.category == 0 {
             quote! {}
         } else {
             quote! {
@@ -415,19 +330,19 @@ impl<'a> ModuleGenerator<'a> {
             TokenStream::default()
         };
 
-        let err_kind_new_tokens = if self.n_category_bits == 0 {
+        let err_kind_new_tokens = if self.bits.category == 0 {
             quote! { assert!(cat.0 == #private_mod::CAT_MAX); Self(variant) }
         } else {
             quote! { Self(cat.0 << #private_mod::VAR_BITS | variant) }
         };
 
-        let cat_value_tokens = if self.n_category_bits == 0 {
+        let cat_value_tokens = if self.bits.category == 0 {
             quote! { #private_mod::CAT_MAX }
         } else {
             quote! { (self.0 & #private_mod::CAT_MASK) >> #private_mod::VAR_BITS }
         };
 
-        let from_value_tokens = if self.n_category_bits == 0 {
+        let from_value_tokens = if self.bits.category == 0 {
             quote! {
                 if value <= #private_mod::VAR_MAXES[0] {
                     Some(Self::new(#err_cat_name::new(0), value))
@@ -917,7 +832,7 @@ impl<'a> ModuleGenerator<'a> {
         }
         let err_kind_name = self.err_kind_name_ident();
         let err_kinds_mod = err_kinds_mod_ident();
-        let repr_type = self.repr_type.ident();
+        let repr_type = self.bits.repr_type.ident();
         let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
             Literal::usize_unsuffixed(self.module.categories.iter().map(|c| c.errors.len()).sum());
@@ -1027,7 +942,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn u64_to_repr_type_literal(&self, v: u64) -> Result<Literal, TryFromIntError> {
-        match self.repr_type {
+        match self.bits.repr_type {
             ReprType::U8 => {
                 let v: u8 = u8::try_from(v)?;
                 Ok(Literal::u8_unsuffixed(v))
@@ -1045,7 +960,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn usize_to_repr_type_literal(&self, v: usize) -> Result<Literal, TryFromIntError> {
-        match self.repr_type {
+        match self.bits.repr_type {
             ReprType::U8 => {
                 let v: u8 = u8::try_from(v)?;
                 Ok(Literal::u8_unsuffixed(v))
