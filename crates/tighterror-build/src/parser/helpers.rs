@@ -3,7 +3,7 @@ use crate::{
     errors::{kinds::parser::*, TbError},
     parser::kws,
 };
-use convert_case::{Case, Casing};
+use convert_case::Case;
 use regex::Regex;
 use std::collections::HashSet;
 
@@ -19,6 +19,17 @@ pub fn check_ident_chars(ident: &str, desc: &str) -> Result<(), TbError> {
     }
 }
 
+fn convert_case(s: &str, from_case: Case, to_case: Case) -> String {
+    let converter = convert_case::Converter::new()
+        .from_case(from_case)
+        .to_case(to_case);
+    converter.convert(s)
+}
+
+fn is_case(s: &str, case: Case) -> bool {
+    convert_case(s, case, case) == s
+}
+
 fn check_ident(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
     if ident.is_empty() {
         log::error!("`{desc}` cannot be an empty string");
@@ -27,10 +38,10 @@ fn check_ident(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
 
     check_ident_chars(ident, desc)?;
 
-    if !ident.is_case(case) {
+    if !is_case(ident, case) {
         log::error!(
             "`{desc}` must be specified in {case:?} case: {ident} -> {}",
-            ident.to_case(case)
+            convert_case(ident, case, case)
         );
         return BAD_IDENTIFIER_CASE.into();
     }
@@ -84,7 +95,7 @@ pub fn check_module_name(name: &str) -> Result<(), TbError> {
     if name.is_empty() {
         log::error!("module name cannot be an empty string");
         BAD_NAME.into()
-    } else if !name.is_case(Case::Snake) {
+    } else if !is_case(name, Case::Snake) {
         log::error!("module name must be specified in lower_snake_case: {name}");
         BAD_NAME.into()
     } else {
@@ -151,4 +162,25 @@ where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("module", iter)
+}
+
+#[cfg(test)]
+mod testing {
+    use super::*;
+    use convert_case::Case::*;
+
+    #[test]
+    fn test_convert_case() {
+        let cases = &[
+            // str_to_convert, from_case, to_case, expected_result
+            ("MY_ERR1", UpperSnake, UpperSnake, "MY_ERR1"),
+            ("MyErr1", UpperSnake, UpperSnake, "MYERR1"),
+            ("MyErr1", UpperCamel, UpperSnake, "MY_ERR_1"),
+            ("MY_ERR1", UpperSnake, UpperCamel, "MyErr1"),
+        ];
+
+        for c in cases {
+            assert_eq!(convert_case(c.0, c.1, c.2), c.3);
+        }
+    }
 }
