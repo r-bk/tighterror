@@ -7,13 +7,11 @@ use convert_case::{Case, Casing};
 use regex::Regex;
 use std::collections::HashSet;
 
-pub fn check_ident_chars(ident: &str, name: &str) -> Result<(), TbError> {
+pub fn check_ident_chars(ident: &str, desc: &str) -> Result<(), TbError> {
     let rg = Regex::new(r"^[A-Za-z0-9_]+$").unwrap();
     if !rg.is_match(ident) {
         log::error!(
-            "`{}` contains unsupported characters. Only [A-Za-z0-9_] are allowed: {}",
-            name,
-            ident
+            "`{desc}` contains unsupported characters. Only [A-Za-z0-9_] are allowed: {ident}",
         );
         BAD_IDENTIFIER_CHARACTERS.into()
     } else {
@@ -21,17 +19,17 @@ pub fn check_ident_chars(ident: &str, name: &str) -> Result<(), TbError> {
     }
 }
 
-fn check_ident(ident: &str, name: &str, case: Case) -> Result<(), TbError> {
+fn check_ident(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
     if ident.is_empty() {
-        log::error!("`{}` cannot be an empty string", name);
+        log::error!("`{desc}` cannot be an empty string");
         return EMPTY_IDENTIFIER.into();
     }
 
-    check_ident_chars(ident, name)?;
+    check_ident_chars(ident, desc)?;
 
     if !ident.is_case(case) {
         log::error!(
-            "`{name}` must be specified in {case:?} case: {ident} -> {}",
+            "`{desc}` must be specified in {case:?} case: {ident} -> {}",
             ident.to_case(case)
         );
         return BAD_IDENTIFIER_CASE.into();
