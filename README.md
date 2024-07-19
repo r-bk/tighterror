@@ -34,15 +34,15 @@ errors in a single Rust type.
 - [x] YAML specification
 - [x] TOML specification
 - [x] Categories
-  - [x] implicit
-  - [x] single
-  - [x] multiple
-  - [x] flat kinds
+    - [x] implicit
+    - [x] single
+    - [x] multiple
+    - [x] flat kinds
 - [x] Modules
-  - [x] implicit
-  - [x] single
-  - [x] multiple
-  - [x] separate files
+    - [x] implicit
+    - [x] single
+    - [x] multiple
+    - [x] separate files
 - [ ] Variant error types
 - [ ] Category error types
 - [ ] Flags
