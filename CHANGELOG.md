@@ -9,13 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 A backward incompatible release.
 
+### Added
+
+- add new `CodegenOptions` methods to manipulate the underlying option
+  directly. This is done because the signature of the existing methods `spec`
+  and `output` was changed (see below):
+    - `CodegenOptions::spec_option(&mut self, spec: Option<PathBuf>)`
+    - `CodegenOptions::output_option(&mut self, output: Option<PathBuf>)`
+
 ### Changed
 
-Rename "interface" traits to a shorter form without the `TightError` prefix:
+- rename "interface" traits to a shorter form without the `TightError` prefix:
+    - `TightErrorCategory` to `Category`
+    - `TightErrorKind` to `Kind`
+    - `TightError` to `Error`
 
-- `TightErrorCategory` -> `Category`
-- `TightErrorKind` -> `Kind`
-- `TightError` -> `Error`
+- use `PathBuf` for paths where previously a `String` was used.
+  This affects `CodegenOptions` methods dealing with paths in a backward
+  incompatible way:
+    - change `CodegenOptions::spec` method to receive a `impl Into<PathBuf>`
+      instead of `impl Into<Option<String>>`
+    - change `CodegenOptions::output` method to receive a `impl Into<PathBuf>`
+      instead of `impl Into<Option<String>>`
 
 ## [0.0.17], [b-0.0.17], [c-0.0.17] - 2024-06-29
 
