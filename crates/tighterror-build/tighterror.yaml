@@ -13,34 +13,34 @@ categories:
   - name: Parser
     doc: Parser errors category.
     errors:
-      - BadIdentifierCharacters: Identifier contains unsupported characters.
-      - BadIdentifierCase: Identifier is specified in an unsupported case.
-      - BadKeywordType: Specification keyword is not a String.
-      - BadModuleIdentifier: Identifier is not valid on module-level.
-      - BadName: Invalid name.
-      - BadObjectAttribute: An object attribute is invalid.
-      - BadSpecFileExtension: Specification filename extension is not supported or is missing.
-      - BadToml: TOML deserialization has failed.
-      - BadRootLevelKeyword: Specification contains an invalid root-level keyword.
-      - BadValueType: Specification value type is invalid.
-      - BadYaml: YAML deserialization has failed.
-      - EmptyIdentifier: An identifier cannot be an empty string.
-      - EmptyList: Empty list of objects is not allowed.
-      - FailedToOpenSpecFile: Specification file couldn't be opened.
-      - MissingAttribute: Specification lacks a mandatory attribute.
-      - MutuallyExclusiveKeywords: Specification contains mutually exclusive keywords.
-      - NonUniqueName: A name is not unique.
-      - SpecFileNotFound: Specification file couldn't be found.
+      - BAD_IDENTIFIER_CHARACTERS: Identifier contains unsupported characters.
+      - BAD_IDENTIFIER_CASE: Identifier is specified in an unsupported case.
+      - BAD_KEYWORD_TYPE: Specification keyword is not a String.
+      - BAD_MODULE_IDENTIFIER: Identifier is not valid on module-level.
+      - BAD_NAME: Invalid name.
+      - BAD_OBJECT_ATTRIBUTE: An object attribute is invalid.
+      - BAD_SPEC_FILE_EXTENSION: Specification filename extension is not supported or is missing.
+      - BAD_TOML: TOML deserialization has failed.
+      - BAD_ROOT_LEVEL_KEYWORD: Specification contains an invalid root-level keyword.
+      - BAD_VALUE_TYPE: Specification value type is invalid.
+      - BAD_YAML: YAML deserialization has failed.
+      - EMPTY_IDENTIFIER: An identifier cannot be an empty string.
+      - EMPTY_LIST: Empty list of objects is not allowed.
+      - FAILED_TO_OPEN_SPEC_FILE: Specification file couldn't be opened.
+      - MISSING_ATTRIBUTE: Specification lacks a mandatory attribute.
+      - MUTUALLY_EXCLUSIVE_KEYWORDS: Specification contains mutually exclusive keywords.
+      - NON_UNIQUE_NAME: A name is not unique.
+      - SPEC_FILE_NOT_FOUND: Specification file couldn't be found.
 
   - name: Coder
     doc: Coder errors category.
     errors:
-      - CategoryRequired: At least one category must be defined.
-      - ErrorRequired: At least one error must be defined.
-      - FailedToParseTokens: Generated code tokens couldn't be parsed.
-      - FailedToReadOutputFile: Output file couldn't be read.
-      - FailedToWriteOutputFile: Output file couldn't be written.
-      - RustfmtFailed: Rustfmt tool exited with an error.
-      - RustfmtNotFound: Rustfmt tool isn't found.
-      - TooManyBits: The number of required bits exceeds the largest supported type u64.
-      - OutputPathNotDirectory: Output path is not a directory.
+      - CATEGORY_REQUIRED: At least one category must be defined.
+      - ERROR_REQUIRED: At least one error must be defined.
+      - FAILED_TO_PARSE_TOKENS: Generated code tokens couldn't be parsed.
+      - FAILED_TO_READ_OUTPUT_FILE: Output file couldn't be read.
+      - FAILED_TO_WRITE_OUTPUT_FILE: Output file couldn't be written.
+      - RUSTFMT_FAILED: Rustfmt tool exited with an error.
+      - RUSTFMT_NOT_FOUND: Rustfmt tool isn't found.
+      - TOO_MANY_BITS: The number of required bits exceeds the largest supported type u64.
+      - OUTPUT_PATH_NOT_DIRECTORY: Output path is not a directory.

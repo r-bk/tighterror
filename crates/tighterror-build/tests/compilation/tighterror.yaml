@@ -3,8 +3,8 @@ module:
   result_from_err: false
   result_from_err_kind: false
   error_trait: false
-  
+
 errors:
-  - BadFile
-  - BadArg
-  - IoError
+  - BAD_FILE
+  - BAD_ARG
+  - IO_ERROR

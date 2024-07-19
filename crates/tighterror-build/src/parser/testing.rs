@@ -44,7 +44,7 @@ pub fn spec_from_err_iter(iter: impl IntoIterator<Item = ErrorSpec>) -> Spec {
 
 pub fn spec_from_module(mut module: ModuleSpec) -> Spec {
     let err = ErrorSpec {
-        name: "DummyErr".into(),
+        name: "DUMMY_ERR".into(),
         ..Default::default()
     };
 
@@ -64,7 +64,7 @@ pub fn spec_from_module(mut module: ModuleSpec) -> Spec {
 
 pub fn spec_from_main(main: MainSpec) -> Spec {
     let err = ErrorSpec {
-        name: "DummyErr".into(),
+        name: "DUMMY_ERR".into(),
         ..Default::default()
     };
 
@@ -88,7 +88,7 @@ pub fn spec_from_main(main: MainSpec) -> Spec {
 
 pub fn spec_from_category(mut cat: CategorySpec) -> Spec {
     let err = ErrorSpec {
-        name: "DummyErr".into(),
+        name: "DUMMY_ERR".into(),
         ..Default::default()
     };
     cat.errors = vec![err];

@@ -8,11 +8,11 @@ name = "General"
 doc = "General errors category."
 
 [[categories.errors]]
-name = "Timeout"
+name = "TIMEOUT"
 display = "Operation timed out."
 
 [[categories.errors]]
-name = "QueueFull"
+name = "QUEUE_FULL"
 display = "Queue is full."
 
 [[categories]]
@@ -20,5 +20,5 @@ name = "Io"
 doc = "I/O errors category."
 
 [[categories.errors]]
-name = "ConnectionRefused"
+name = "CONNECTION_REFUSED"
 display = "Outgoing network connection was refused."

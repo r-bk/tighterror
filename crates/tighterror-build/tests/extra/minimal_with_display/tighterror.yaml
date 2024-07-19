@@ -3,6 +3,6 @@ module:
   doc_from_display: true
 
 errors:
-  - BadConfFile: Configuration file is malformed.
-  - BadArg: Invalid argument.
-  - IoError: An IO error occurred.
+  - BAD_CONF_FILE: Configuration file is malformed.
+  - BAD_ARG: Invalid argument.
+  - IO_ERROR: An IO error occurred.

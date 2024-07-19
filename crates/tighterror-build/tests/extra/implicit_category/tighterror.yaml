@@ -11,9 +11,9 @@ module:
   err_cat_name: IcErrorCategory
 
 errors:
-  - FailedToOpenFile: Input file could not be open.
-  - BadInput: Input file has invalid format.
-  - name: LongDescription
+  - FAILED_TO_OPEN_FILE: Input file could not be open.
+  - BAD_INPUT: Input file has invalid format.
+  - name: LONG_DESCRIPTION
     doc: |
       This is an example for a long doc string.
 
