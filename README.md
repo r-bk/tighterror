@@ -101,8 +101,8 @@ Define errors in `tighterror.yaml` file in the root directory of your project:
 ```yaml
 ---
 errors:
-  - BadArg
-  - BadFilePath
+  - BAD_ARG
+  - BAD_FILE_PATH
 ```
 
 > [!NOTE]
