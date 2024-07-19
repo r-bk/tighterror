@@ -159,12 +159,12 @@
 //! within each category:
 //!
 //! ```text
-//!        ┌───┬───┬───┬───┬───┬───┬───┬───┐
-//!        │   │   │   │   │   │   │   │   │   0-1 2 category bits
-//!      u8│ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │   2-6 5 variant bits
-//!        │   │   │   │   │   │   │   │   │   7-7 1 reserved bit
-//!        └───┼───┴───┴───┴───┴───┼───┴───┤
-//!            │      variant      │  cat  │
+//!           ┌───┬───┬───┬───┬───┬───┬───┬───┐                      
+//!           │   │   │   │   │   │   │   │   │ (0-4) 5 variant bits
+//!         u8│ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │ (5-6) 2 category bits
+//!           │   │   │   │   │   │   │   │   │ (7-7) 1 reserved bit
+//!           └───┼───┴───┼───┴───┴───┴───┴───┤                      
+//!               │  cat  │      variant      │                      
 //! ```
 //!
 //! The number of *variant* bits is large enough to accommodate the
