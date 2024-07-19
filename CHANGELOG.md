@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.19], [b-0.0.19], [c-0.0.19] - 2024-07-19
+
+A backward incompatible release.
+
+### Changed
+
+- reorder the error kind binary representation to put the category bits higher
+  in significance order.
+
+- change the required case for error names from `UpperCamel` to `UPPER_SNAKE`.
+  This is done to make the error definitions in markup language have the same
+  casing as Rust error-kind constants have. This way grepping for an *error
+  kind* returns the error definition together with error usages.
+
 ## [0.0.18], [b-0.0.18], [c-0.0.18] - 2024-07-05
 
 A backward incompatible release.
@@ -402,3 +416,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.18]: https://github.com/r-bk/tighterror/releases/tag/v0.0.18
 [b-0.0.18]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.18
 [c-0.0.18]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.18
+[0.0.19]: https://github.com/r-bk/tighterror/releases/tag/v0.0.19
+[b-0.0.19]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.19
+[c-0.0.19]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.19
