@@ -15,7 +15,9 @@
         "idents",
         "consts",
         "unsuffixed",
-        "datetime"
+        "datetime",
+        "clippy",
+        "autopep"
     ],
     "flagWords": []
 }
