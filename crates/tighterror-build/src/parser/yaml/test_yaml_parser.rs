@@ -48,11 +48,11 @@ fn test_minimal() {
     let s = "
 ---
 errors:
-    - SingleError
+    - SINGLE_ERROR
 ";
 
     let err = ErrorSpec {
-        name: "SingleError".into(),
+        name: "SINGLE_ERROR".into(),
         ..Default::default()
     };
     let spec = spec_from_err(err);
@@ -66,11 +66,11 @@ fn test_minimal_with_display() {
     let s = "
 ---
 errors:
-    - SingleError: The single error in the test.
+    - SINGLE_ERROR: The single error in the test.
 ";
 
     let err = ErrorSpec {
-        name: "SingleError".into(),
+        name: "SINGLE_ERROR".into(),
         display: Some("The single error in the test.".into()),
         ..Default::default()
     };
@@ -85,10 +85,10 @@ fn test_minimal_explicit() {
     let s = "
 ---
 errors:
-    - name: SingleError
+    - name: SINGLE_ERROR
 ";
     let err = ErrorSpec {
-        name: "SingleError".into(),
+        name: "SINGLE_ERROR".into(),
         ..Default::default()
     };
     let spec = spec_from_err(err);
@@ -102,11 +102,11 @@ fn test_err_doc_from_display() {
 
     for good in GOOD_BOOLEANS {
         let s = format!(
-            "---\nerrors:\n  - name: TestError\n    doc_from_display: {}",
+            "---\nerrors:\n  - name: TEST_ERROR\n    doc_from_display: {}",
             good.0
         );
         let err = ErrorSpec {
-            name: "TestError".into(),
+            name: "TEST_ERROR".into(),
             oes: OverridableErrorSpec {
                 doc_from_display: Some(good.1),
             },
@@ -119,7 +119,7 @@ fn test_err_doc_from_display() {
 
     for bad in BAD_BOOLEANS {
         let s = format!(
-            "---\nerrors:\n  - name: TestError\n    doc_from_display: {}",
+            "---\nerrors:\n  - name: TEST_ERROR\n    doc_from_display: {}",
             bad
         );
 
@@ -136,9 +136,12 @@ fn test_err_display() {
         ("\"\"", ""),
         ("\"1\"", "1"),
     ] {
-        let s = format!("---\nerrors:\n  - name: TestError\n    display: {}", good.0);
+        let s = format!(
+            "---\nerrors:\n  - name: TEST_ERROR\n    display: {}",
+            good.0
+        );
         let err = ErrorSpec {
-            name: "TestError".into(),
+            name: "TEST_ERROR".into(),
             display: Some(good.1.into()),
             ..Default::default()
         };
@@ -149,7 +152,7 @@ fn test_err_display() {
 
     for bad in ["null", "1"] {
         let s = format!(
-            "---\nerrors:\n  - name: TestError\n    doc_from_display: {}",
+            "---\nerrors:\n  - name: TEST_ERROR\n    doc_from_display: {}",
             bad
         );
 
@@ -166,9 +169,9 @@ fn test_err_doc() {
         ("\"\"", ""),
         ("\"1\"", "1"),
     ] {
-        let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", good.0);
+        let s = format!("---\nerrors:\n  - name: TEST_ERROR\n    doc: {}", good.0);
         let err = ErrorSpec {
-            name: "TestError".into(),
+            name: "TEST_ERROR".into(),
             doc: Some(good.1.into()),
             ..Default::default()
         };
@@ -180,14 +183,14 @@ fn test_err_doc() {
     let s = "
 ---
 errors:
-  - name: TestError
+  - name: TEST_ERROR
     doc: |
       A multiline doc.
 
       Second line.
 ";
     let err = ErrorSpec {
-        name: "TestError".into(),
+        name: "TEST_ERROR".into(),
         doc: Some("A multiline doc.\n\nSecond line.\n".into()),
         ..Default::default()
     };
@@ -196,7 +199,7 @@ errors:
     assert_eq!(res, spec);
 
     for bad in ["null", "1"] {
-        let s = format!("---\nerrors:\n  - name: TestError\n    doc: {}", bad);
+        let s = format!("---\nerrors:\n  - name: TEST_ERROR\n    doc: {}", bad);
 
         let res = YamlParser::parse_str(&s);
         assert_eq!(res.unwrap_err().kind(), BAD_VALUE_TYPE);
@@ -215,7 +218,7 @@ fn test_err_name() {
         ("1", BAD_VALUE_TYPE),
         ("With Spaces", BAD_IDENTIFIER_CHARACTERS),
         ("With-Dashes", BAD_IDENTIFIER_CHARACTERS),
-        ("CAPITAL_LETTERS", BAD_IDENTIFIER_CASE),
+        ("UpperCamelCase", BAD_IDENTIFIER_CASE),
         ("BadChars+", BAD_IDENTIFIER_CHARACTERS),
     ];
 
@@ -238,13 +241,13 @@ fn test_err() {
     let s = "
 ---
 errors:
-    - name: TestError
+    - name: TEST_ERROR
       doc: An error doc.
       display: An error description.
       doc_from_display: false
 ";
     let err = ErrorSpec {
-        name: "TestError".into(),
+        name: "TEST_ERROR".into(),
         doc: Some("An error doc.".into()),
         display: Some("An error description.".into()),
         oes: OverridableErrorSpec {
@@ -262,29 +265,29 @@ fn test_errs() {
     let s = "
 ---
 errors:
-    - FirstErr
-    - SecondErr: With display.
-    - name: TestError
+    - FIRST_ERR
+    - SECOND_ERR: With display.
+    - name: TEST_ERROR
       doc: An error doc.
       display: An error description.
       doc_from_display: false
-    - name: Err2
+    - name: ERR2
       doc: Another error.
-    - name: Err3
+    - name: ERR3
       display: A third one.
       doc_from_display: true
 ";
     let err1 = ErrorSpec {
-        name: "FirstErr".into(),
+        name: "FIRST_ERR".into(),
         ..Default::default()
     };
     let err2 = ErrorSpec {
-        name: "SecondErr".into(),
+        name: "SECOND_ERR".into(),
         display: Some("With display.".into()),
         ..Default::default()
     };
     let err3 = ErrorSpec {
-        name: "TestError".into(),
+        name: "TEST_ERROR".into(),
         doc: Some("An error doc.".into()),
         display: Some("An error description.".into()),
         oes: OverridableErrorSpec {
@@ -292,12 +295,12 @@ errors:
         },
     };
     let err4 = ErrorSpec {
-        name: "Err2".into(),
+        name: "ERR2".into(),
         doc: Some("Another error.".into()),
         ..Default::default()
     };
     let err5 = ErrorSpec {
-        name: "Err3".into(),
+        name: "ERR3".into(),
         display: Some("A third one.".into()),
         oes: OverridableErrorSpec {
             doc_from_display: Some(true),
@@ -315,7 +318,7 @@ fn test_top_kws() {
     let s = "
 ---
 my_errors:
-    - BadError
+    - BAD_ERROR
 ";
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err(),
@@ -325,7 +328,7 @@ my_errors:
     let s = "
 ---
 true:
-    - BadError
+    - BAD_ERROR
 ";
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err(),
@@ -350,7 +353,7 @@ fn test_module_doc_from_display() {
 
     for good in GOOD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  doc_from_display: {}\n\nerrors:\n  - DUMMY_ERR",
             good.0
         );
         let module = ModuleSpec {
@@ -366,7 +369,7 @@ fn test_module_doc_from_display() {
 
     for bad in BAD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  doc_from_display: {}\n\nerrors:\n  - DUMMY_ERR",
             bad
         );
         assert_eq!(
@@ -380,7 +383,7 @@ fn test_module_doc_from_display() {
 fn test_module_name() {
     log_init();
     for good_name in ["errors", "my_errors"] {
-        let s = format!("---\nmodule:\n  name: {good_name}\nerrors:\n  - DummyErr");
+        let s = format!("---\nmodule:\n  name: {good_name}\nerrors:\n  - DUMMY_ERR");
         let module = ModuleSpec {
             name: Some(good_name.into()),
             ..Default::default()
@@ -389,7 +392,7 @@ fn test_module_name() {
     }
 
     for bad_name in ["\"\"", "My_Errors", "ERRORS"] {
-        let s = format!("---\nmodule:\n  name: {bad_name}\nerrors:\n  - DummyErr");
+        let s = format!("---\nmodule:\n  name: {bad_name}\nerrors:\n  - DUMMY_ERR");
         assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), BAD_NAME);
     }
 }
@@ -406,7 +409,7 @@ module:
     Multiline.
 
 errors:
-  - DummyErr
+  - DUMMY_ERR
 ";
     let module = ModuleSpec {
         doc: Some("Module documentation.\n\nMultiline.\n".into()),
@@ -422,7 +425,7 @@ module:
     doc: \"\"
 
 errors:
-    - DummyErr
+    - DUMMY_ERR
 ";
     let module = ModuleSpec {
         doc: Some("".into()),
@@ -445,7 +448,7 @@ module:
     Multiline.
 
 errors:
-  - DummyErr
+  - DUMMY_ERR
 ";
     let module = ModuleSpec {
         err_cat_doc: Some("Category documentation.\n\nMultiline.\n".into()),
@@ -461,7 +464,7 @@ module:
     err_cat_doc: \"\"
 
 errors:
-    - DummyErr
+    - DUMMY_ERR
 ";
     let module = ModuleSpec {
         err_cat_doc: Some("".into()),
@@ -484,7 +487,7 @@ module:
     Multiline.
 
 errors:
-  - DummyErr
+  - DUMMY_ERR
 ";
     let module = ModuleSpec {
         err_doc: Some("Error documentation.\n\nMultiline.\n".into()),
@@ -500,7 +503,7 @@ module:
     err_doc: \"\"
 
 errors:
-    - DummyErr
+    - DUMMY_ERR
 ";
     let module = ModuleSpec {
         err_doc: Some("".into()),
@@ -523,7 +526,7 @@ module:
     Multiline.
 
 errors:
-  - DummyErr
+  - DUMMY_ERR
 ";
     let module = ModuleSpec {
         err_kind_doc: Some("ErrorKind documentation.\n\nMultiline.\n".into()),
@@ -539,7 +542,7 @@ module:
     err_kind_doc: \"\"
 
 errors:
-    - DummyErr
+    - DUMMY_ERR
 ";
     let module = ModuleSpec {
         err_kind_doc: Some("".into()),
@@ -556,7 +559,7 @@ fn test_module_result_from_err() {
 
     for good in GOOD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  result_from_err: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  result_from_err: {}\n\nerrors:\n  - DUMMY_ERR",
             good.0
         );
         let module = ModuleSpec {
@@ -570,7 +573,7 @@ fn test_module_result_from_err() {
 
     for bad in BAD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  result_from_err: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  result_from_err: {}\n\nerrors:\n  - DUMMY_ERR",
             bad
         );
         assert_eq!(
@@ -586,7 +589,7 @@ fn test_module_result_from_err_kind() {
 
     for good in GOOD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  result_from_err_kind: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  result_from_err_kind: {}\n\nerrors:\n  - DUMMY_ERR",
             good.0
         );
         let module = ModuleSpec {
@@ -600,7 +603,7 @@ fn test_module_result_from_err_kind() {
 
     for bad in BAD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  result_from_err_kind: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  result_from_err_kind: {}\n\nerrors:\n  - DUMMY_ERR",
             bad
         );
         assert_eq!(
@@ -616,7 +619,7 @@ fn test_error_trait() {
 
     for good in GOOD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  error_trait: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  error_trait: {}\n\nerrors:\n  - DUMMY_ERR",
             good.0
         );
         let module = ModuleSpec {
@@ -630,7 +633,7 @@ fn test_error_trait() {
 
     for bad in BAD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  error_trait: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  error_trait: {}\n\nerrors:\n  - DUMMY_ERR",
             bad
         );
         assert_eq!(
@@ -646,7 +649,7 @@ fn test_module_flat_kinds() {
 
     for good in GOOD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  flat_kinds: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  flat_kinds: {}\n\nerrors:\n  - DUMMY_ERR",
             good.0
         );
         let module = ModuleSpec {
@@ -660,7 +663,7 @@ fn test_module_flat_kinds() {
 
     for bad in BAD_BOOLEANS {
         let s = format!(
-            "---\nmodule:\n  flat_kinds: {}\n\nerrors:\n  - DummyErr",
+            "---\nmodule:\n  flat_kinds: {}\n\nerrors:\n  - DUMMY_ERR",
             bad
         );
         assert_eq!(
@@ -682,11 +685,11 @@ module:
 categories:
   - name: Cat1
     errors:
-      - Err1: first error
+      - ERR1: first error
 
   - name: Cat2
     errors:
-      - Err1: another first error
+      - ERR1: another first error
 ";
 
     assert_eq!(YamlParser::parse_str(s), NON_UNIQUE_NAME.into());
@@ -699,11 +702,11 @@ module:
 categories:
   - name: Cat1
     errors:
-      - Err1: first error
+      - ERR1: first error
 
   - name: Cat2
     errors:
-      - Err2: another first error
+      - ERR2: another first error
 ";
 
     assert!(YamlParser::parse_str(s).is_ok());
@@ -720,10 +723,10 @@ module:
   categories:
     - name: BadCategory
       errors:
-        - BadError
+        - BAD_ERROR
 
 errors:
-  - GoodError
+  - GOOD_ERROR
 "#;
 
     assert_eq!(
@@ -737,7 +740,7 @@ module:
   name: my_errors
 
 errors:
-  - GoodError
+  - GOOD_ERROR
 "#;
 
     assert!(YamlParser::parse_str(s).is_ok());
@@ -748,7 +751,7 @@ fn test_no_std() {
     log_init();
 
     for good in GOOD_BOOLEANS {
-        let s = format!("---\nmain:\n  no_std: {}\n\nerrors:\n  - DummyErr", good.0);
+        let s = format!("---\nmain:\n  no_std: {}\n\nerrors:\n  - DUMMY_ERR", good.0);
         let main = MainSpec {
             no_std: Some(good.1),
             ..Default::default()
@@ -759,7 +762,7 @@ fn test_no_std() {
     }
 
     for bad in BAD_BOOLEANS {
-        let s = format!("---\nmain:\n  no_std: {}\n\nerrors:\n  - DummyErr", bad);
+        let s = format!("---\nmain:\n  no_std: {}\n\nerrors:\n  - DUMMY_ERR", bad);
         assert_eq!(
             YamlParser::parse_str(&s).unwrap_err().kind(),
             BAD_VALUE_TYPE
@@ -777,7 +780,7 @@ fn test_error_name() {
         };
         let spec = spec_from_module(module);
         let res = YamlParser::parse_str(&format!(
-            "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             good
         ))
         .unwrap();
@@ -786,7 +789,7 @@ fn test_error_name() {
 
     for (bad, kind) in BAD_IDENTS {
         let s = format!(
-            "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             bad
         );
         assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), kind);
@@ -794,7 +797,7 @@ fn test_error_name() {
 
     for bad in [idents::ERROR_CATEGORY, idents::ERROR_KIND] {
         let s = format!(
-            "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             bad
         );
         assert_eq!(YamlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
@@ -818,7 +821,7 @@ fn test_error_kind_name() {
         };
         let spec = spec_from_module(module);
         let res = YamlParser::parse_str(&format!(
-            "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             good
         ))
         .unwrap();
@@ -827,7 +830,7 @@ fn test_error_kind_name() {
 
     for (bad, kind) in BAD_IDENTS {
         let s = format!(
-            "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             bad
         );
         assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), kind);
@@ -835,7 +838,7 @@ fn test_error_kind_name() {
 
     for bad in [idents::ERROR, idents::ERROR_CATEGORY] {
         let s = format!(
-            "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_kind_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             bad
         );
         assert_eq!(YamlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
@@ -852,7 +855,7 @@ fn test_error_cat_name() {
         };
         let spec = spec_from_module(module);
         let res = YamlParser::parse_str(&format!(
-            "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             good
         ))
         .unwrap();
@@ -861,7 +864,7 @@ fn test_error_cat_name() {
 
     for (bad, kind) in BAD_IDENTS {
         let s = format!(
-            "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             bad
         );
         assert_eq!(YamlParser::parse_str(&s).unwrap_err().kind(), kind);
@@ -869,7 +872,7 @@ fn test_error_cat_name() {
 
     for bad in [idents::ERROR, idents::ERROR_KIND] {
         let s = format!(
-            "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DummyErr\n",
+            "\n---\nmodule:\n  err_cat_name: {}\n\nerrors:\n  - DUMMY_ERR\n",
             bad
         );
         assert_eq!(YamlParser::parse_str(&s), BAD_MODULE_IDENTIFIER.into());
@@ -880,10 +883,10 @@ fn test_error_cat_name() {
 fn test_error_list_unique_names() {
     log_init();
 
-    let s = "---\nerrors:\n  - FirstError\n  - FirstError\n  - SecondError\n";
+    let s = "---\nerrors:\n  - FIRST_ERROR\n  - FIRST_ERROR\n  - SECOND_ERROR\n";
     assert_eq!(YamlParser::parse_str(s), NON_UNIQUE_NAME.into());
 
-    let s = "---\nerrors:\n  - FirstError\n  - SecondError\n";
+    let s = "---\nerrors:\n  - FIRST_ERROR\n  - SECOND_ERROR\n";
     assert!(YamlParser::parse_str(s).is_ok());
 }
 
@@ -899,7 +902,7 @@ fn test_category_name() {
 
         let spec = spec_from_category(category);
         let res = YamlParser::parse_str(&format!(
-            "---\ncategory:\n  name: {good}\nerrors:\n  - DummyErr\n"
+            "---\ncategory:\n  name: {good}\nerrors:\n  - DUMMY_ERR\n"
         ))
         .unwrap();
         assert_eq!(spec, res);
@@ -908,7 +911,7 @@ fn test_category_name() {
     for (bad, kind) in BAD_IDENTS {
         assert_eq!(
             YamlParser::parse_str(&format!(
-                "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
+                "---\ncategory:\n  name: {bad}\nerrors:\n  - DUMMY_ERR\n"
             ))
             .unwrap_err()
             .kind(),
@@ -919,7 +922,7 @@ fn test_category_name() {
     for bad in [kws::MAIN, kws::ERRORS] {
         assert_eq!(
             YamlParser::parse_str(&format!(
-                "---\ncategory:\n  name: {bad}\nerrors:\n  - DummyErr\n"
+                "---\ncategory:\n  name: {bad}\nerrors:\n  - DUMMY_ERR\n"
             ))
             .unwrap_err()
             .kind(),
@@ -939,7 +942,7 @@ category:
     Appears on multiple lines.
 
 errors:
-  - DummyErr
+  - DUMMY_ERR
 ";
     let spec = spec_from_category(CategorySpec {
         name: IMPLICIT_CATEGORY_NAME.into(),
@@ -954,7 +957,7 @@ errors:
 category:
    doc: \"\"
 errors:
-  - DummyErr
+  - DUMMY_ERR
 ";
     let spec = spec_from_category(CategorySpec {
         name: IMPLICIT_CATEGORY_NAME.into(),
@@ -967,7 +970,7 @@ errors:
     for bad in ["1", "null"] {
         assert_eq!(
             YamlParser::parse_str(&format!(
-                "---\ncategory:\n  doc: {bad}\nerrors:\n  - DummyErr"
+                "---\ncategory:\n  doc: {bad}\nerrors:\n  - DUMMY_ERR"
             ))
             .unwrap_err()
             .kind(),
@@ -982,7 +985,7 @@ fn test_category_doc_from_display() {
 
     for good in GOOD_BOOLEANS {
         let s = format!(
-            "---\ncategory:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            "---\ncategory:\n  doc_from_display: {}\n\nerrors:\n  - DUMMY_ERR",
             good.0
         );
         let cat = CategorySpec {
@@ -999,7 +1002,7 @@ fn test_category_doc_from_display() {
 
     for bad in BAD_BOOLEANS {
         let s = format!(
-            "---\ncategory:\n  doc_from_display: {}\n\nerrors:\n  - DummyErr",
+            "---\ncategory:\n  doc_from_display: {}\n\nerrors:\n  - DUMMY_ERR",
             bad
         );
         assert_eq!(
@@ -1020,10 +1023,10 @@ category:
   doc: Custom category.
   doc_from_display: false
   errors:
-    - DummyErr
+    - DUMMY_ERR
 
 errors:
-  - DummyErr
+  - DUMMY_ERR
 ";
 
     assert_eq!(
@@ -1060,9 +1063,9 @@ categories:
     doc: Custom category.
     doc_from_display: false
     errors:
-      - DummyErr
+      - DUMMY_ERR
 errors:
-  - DummyErr2
+  - DUMMY_ERR2
 ";
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err().kind(),
@@ -1119,7 +1122,7 @@ categories:
   - doc: Category without name.
     doc_from_display: true
     errors:
-      - DummyErr
+      - DUMMY_ERR
 ";
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err().kind(),
@@ -1138,11 +1141,11 @@ categories:
     doc: First category.
     doc_from_display: false
     errors:
-      - DummyErr
+      - DUMMY_ERR
   - name: Cat2
     doc_from_display: true
     errors:
-      - DummyErr2
+      - DUMMY_ERR2
 ";
 
     let cat1 = CategorySpec {
@@ -1152,7 +1155,7 @@ categories:
             doc_from_display: Some(false),
         },
         errors: vec![ErrorSpec {
-            name: "DummyErr".into(),
+            name: "DUMMY_ERR".into(),
             ..Default::default()
         }],
     };
@@ -1163,7 +1166,7 @@ categories:
             doc_from_display: Some(true),
         },
         errors: vec![ErrorSpec {
-            name: "DummyErr2".into(),
+            name: "DUMMY_ERR2".into(),
             ..Default::default()
         }],
         ..Default::default()
@@ -1192,17 +1195,17 @@ categories:
     doc: First category.
     doc_from_display: false
     errors:
-      - DummyErr
+      - DUMMY_ERR
   - name: Cat1
     doc_from_display: true
     errors:
-      - DummyErr2
+      - DUMMY_ERR2
   - name: Cat2
     errors:
-      - DummyErr
+      - DUMMY_ERR
   - name: Cat2
     errors:
-      - DummyErr
+      - DUMMY_ERR
 ";
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err().kind(),
@@ -1307,9 +1310,9 @@ modules:
     categories:
       - name: General
         errors:
-          - MyError
+          - MY_ERROR
 errors:
-  - MyOtherError
+  - MY_OTHER_ERROR
 "#;
 
     assert_eq!(
@@ -1324,7 +1327,7 @@ modules:
     categories:
       - name: General
         errors:
-          - MyError
+          - MY_ERROR
 "#;
 
     assert!(YamlParser::parse_str(s).is_ok());
@@ -1341,7 +1344,7 @@ modules:
     categories:
       - name: General
         errors:
-          - MyError
+          - MY_ERROR
 category:
   name: OtherCategory
 "#;
@@ -1358,7 +1361,7 @@ modules:
     categories:
       - name: General
         errors:
-          - MyError
+          - MY_ERROR
 "#;
 
     assert!(YamlParser::parse_str(s).is_ok());
@@ -1375,12 +1378,12 @@ modules:
     categories:
       - name: General
         errors:
-          - MyError
+          - MY_ERROR
 
 categories:
   - name: OtherCategory
     errors:
-      - OtherError
+      - OTHER_ERROR
 "#;
 
     assert_eq!(
@@ -1393,7 +1396,7 @@ categories:
 categories:
   - name: OtherCategory
     errors:
-      - OtherError
+      - OTHER_ERROR
 "#;
 
     assert!(YamlParser::parse_str(s).is_ok());
@@ -1410,7 +1413,7 @@ modules:
     categories:
       - name: General
         errors:
-          - MyError
+          - MY_ERROR
 module:
   name: my_module
 "#;
@@ -1427,7 +1430,7 @@ modules:
     categories:
       - name: General
         errors:
-          - MyError
+          - MY_ERROR
 "#;
 
     assert!(YamlParser::parse_str(s).is_ok());
@@ -1446,13 +1449,13 @@ modules:
         doc: First category.
         doc_from_display: false
         errors:
-          - DummyErr
+          - DUMMY_ERR
   - name: my_errors
     categories:
       - name: Cat2
         doc: Second category.
         errors:
-          - AnotherErr
+          - ANOTHER_ERR
 "#;
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err().kind(),
@@ -1468,13 +1471,13 @@ modules:
         doc: First category.
         doc_from_display: false
         errors:
-          - DummyErr
+          - DUMMY_ERR
   - name: your_errors
     categories:
       - name: Cat2
         doc: Second category.
         errors:
-          - AnotherErr
+          - ANOTHER_ERR
 "#;
     assert!(YamlParser::parse_str(s).is_ok());
 }

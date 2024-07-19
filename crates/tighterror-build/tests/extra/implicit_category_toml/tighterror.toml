@@ -11,15 +11,15 @@ err_kind_name = "IcErrorKind"
 err_cat_name = "IcErrorCategory"
 
 [[errors]]
-name = "FailedToOpenFile"
+name = "FAILED_TO_OPEN_FILE"
 display = "Input file could not be open."
 
 [[errors]]
-name = "BadInput"
+name = "BAD_INPUT"
 display = "Input file has invalid format."
 
 [[errors]]
-name = "LongDescription"
+name = "LONG_DESCRIPTION"
 doc = """
 This is an example for a long doc string.
 

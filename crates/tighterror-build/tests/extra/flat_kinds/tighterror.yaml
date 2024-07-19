@@ -7,10 +7,10 @@ categories:
   - name: General
     doc: General errors category.
     errors:
-      - Timeout: Operation timed out.
-      - QueueFull: Queue is full.
+      - TIMEOUT: Operation timed out.
+      - QUEUE_FULL: Queue is full.
 
   - name: Io
     doc: I/O errors category.
     errors:
-      - ConnectionRefused: Outgoing network connection was refused.
+      - CONNECTION_REFUSED: Outgoing network connection was refused.

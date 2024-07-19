@@ -15,19 +15,19 @@ categories:
   - name: Parsing
     doc: Parsing errors category.
     errors:
-      - BadToken: Decoded an invalid token.
-      - QueueFull: Parsing queue is full.
+      - BAD_TOKEN: Decoded an invalid token.
+      - QUEUE_FULL: Parsing queue is full.
 
   - name: Processing
     doc: Processing errors category.
     errors:
-      - OutOfMemory: Memory pool is empty.
-      - QueueFull: Processing queue is full.
+      - OUT_OF_MEMORY: Memory pool is empty.
+      - QUEUE_FULL: Processing queue is full.
 
   - name: General
     doc: General errors category.
     errors:
-      - name: BadArg
+      - name: BAD_ARG
         display: Invalid argument received.
         doc: |
           An invalid argument was received.
@@ -44,4 +44,4 @@ categories:
           # const BAD_ARG: u32 = 0;
           let e: Error = BAD_ARG.into();
           ```
-      - Timeout: Operation timed out.
+      - TIMEOUT: Operation timed out.

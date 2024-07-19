@@ -84,7 +84,7 @@ fn check_name(name: &str, desc: &str, case: Case) -> Result<(), TbError> {
 }
 
 pub fn check_error_name(name: &str) -> Result<(), TbError> {
-    check_name(name, "ErrorObject::name", Case::UpperCamel)
+    check_name(name, "ErrorObject::name", Case::UpperSnake)
 }
 
 pub fn check_category_name(name: &str) -> Result<(), TbError> {

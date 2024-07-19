@@ -2,6 +2,6 @@
 main:
   no_std: true
 errors:
-  - BadFile
-  - BadArg
-  - IoError
+  - BAD_FILE
+  - BAD_ARG
+  - IO_ERROR

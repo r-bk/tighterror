@@ -8,7 +8,7 @@ name = "Parser"
 doc = "Parser errors category."
 
 [[modules.categories.errors]]
-name = "BadFile"
+name = "BAD_FILE"
 display = "Configuration file is malformed."
 
 [[modules.categories]]
@@ -16,11 +16,11 @@ name = "Processor"
 doc = "Processor errors category."
 
 [[modules.categories.errors]]
-name = "BadFile"
+name = "BAD_FILE"
 display = "Processor file is malformed or missing."
 
 [[modules.categories.errors]]
-name = "BadState"
+name = "BAD_STATE"
 display = "Internal error, state mismatch."
 
 [[modules]]
@@ -42,11 +42,11 @@ name = "Parsing"
 doc = "Parsing errors category."
 
 [[modules.categories.errors]]
-name = "BadToken"
+name = "BAD_TOKEN"
 display = "Decoded an invalid token."
 
 [[modules.categories.errors]]
-name = "QueueFull"
+name = "QUEUE_FULL"
 display = "Parsing queue is full."
 
 [[modules.categories]]
@@ -54,11 +54,11 @@ name = "Processing"
 doc = "Processing errors category."
 
 [[modules.categories.errors]]
-name = "OutOfMemory"
+name = "OUT_OF_MEMORY"
 display = "Memory pool is empty."
 
 [[modules.categories.errors]]
-name = "QueueFull"
+name = "QUEUE_FULL"
 display = "Processing queue is full."
 
 [[modules.categories]]
@@ -66,7 +66,7 @@ name = "General"
 doc = "General errors category."
 
 [[modules.categories.errors]]
-name = "BadArg"
+name = "BAD_ARG"
 display = "Invalid argument received."
 doc = """
 An invalid argument was received.
@@ -86,5 +86,5 @@ let e: Error = BAD_ARG.into();
 """
 
 [[modules.categories.errors]]
-name = "Timeout"
+name = "TIMEOUT"
 display = "Operation timed out."
