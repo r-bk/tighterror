@@ -21,7 +21,7 @@ pub fn check_ident_chars(ident: &str, name: &str) -> Result<(), TbError> {
     }
 }
 
-fn check_ident(ident: &str, name: &str) -> Result<(), TbError> {
+fn check_ident(ident: &str, name: &str, case: Case) -> Result<(), TbError> {
     if ident.is_empty() {
         log::error!("`{}` cannot be an empty string", name);
         return EMPTY_IDENTIFIER.into();
@@ -29,12 +29,10 @@ fn check_ident(ident: &str, name: &str) -> Result<(), TbError> {
 
     check_ident_chars(ident, name)?;
 
-    if !ident.is_case(Case::UpperCamel) {
+    if !ident.is_case(case) {
         log::error!(
-            "`{}` must be specified in UpperCamel case: {} -> {}",
-            name,
-            ident,
-            ident.to_case(Case::UpperCamel)
+            "`{name}` must be specified in {case:?} case: {ident} -> {}",
+            ident.to_case(case)
         );
         return BAD_IDENTIFIER_CASE.into();
     }
@@ -43,7 +41,7 @@ fn check_ident(ident: &str, name: &str) -> Result<(), TbError> {
 }
 
 pub fn check_module_ident(ident: &str, kw: &str) -> Result<(), TbError> {
-    check_ident(ident, kw)?;
+    check_ident(ident, kw, Case::UpperCamel)?;
     if kw == kws::ERR_NAME && ident == idents::ERROR {
         return Ok(());
     }
@@ -62,7 +60,7 @@ pub fn check_module_ident(ident: &str, kw: &str) -> Result<(), TbError> {
 }
 
 pub fn check_name(name: &str) -> Result<(), TbError> {
-    check_ident(name, kws::NAME)?;
+    check_ident(name, kws::NAME, Case::UpperCamel)?;
     if kws::is_any_kw(name) {
         // double check, in case any logic above changes
         log::error!(
