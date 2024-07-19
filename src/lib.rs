@@ -72,8 +72,8 @@
 //! ```yaml
 //! ---
 //! errors:
-//!   - BadFile
-//!   - BadArg
+//!   - BAD_FILE
+//!   - BAD_ARG
 //! ```
 //!
 //! The specification file is translated to Rust using a dedicated command
@@ -217,9 +217,8 @@
 //!
 //! * `name` - string (required)
 //!
-//!   Defines the *error kind* name. Must be a string in UpperCamelCase.
-//!   This string becomes an *error kind* constant after conversion to
-//!   UPPER_SNAKE_CASE.<br><br>
+//!   Defines the *error kind* name. Must be a string in UPPER_SNAKE_CASE.
+//!   This string becomes the *error kind* constant.<br><br>
 //!
 //! * `display` - string (optional)
 //!
@@ -254,7 +253,7 @@
 //!
 //! ```yaml
 //! errors:
-//!   - name: BadPath
+//!   - name: BAD_PATH
 //!     display: Path is malformed.
 //!     doc: Returned when a path value has an invalid structure.
 //!     doc_from_display: false
@@ -264,7 +263,7 @@
 //!
 //! ```toml
 //! [[errors]]
-//! name = "BadPath"
+//! name = "BAD_PATH"
 //! display = "Path is malformed."
 //! doc = "Returned when a path value has an invalid structure."
 //! doc_from_display = false
@@ -305,10 +304,10 @@
 //! ```yaml
 //! ---
 //! errors:
-//!   - name: MissingAttribute
+//!   - name: MISSING_ATTRIBUTE
 //!     display: An object attribute is missing.
 //!     doc_from_display: true
-//!   - name: Timeout
+//!   - name: TIMEOUT
 //!     display: Operation timed out.
 //!     doc_from_display: true
 //! ```
@@ -327,8 +326,8 @@
 //! ```yaml
 //! ---
 //! errors:
-//!   - MissingAttribute
-//!   - Timeout
+//!   - MISSING_ATTRIBUTE
+//!   - TIMEOUT
 //! ```
 //!
 //! **Name-Display Notation**
@@ -341,8 +340,8 @@
 //! ```yaml
 //! ---
 //! errors:
-//!   - MissingAttribute: An object attribute is missing.
-//!   - Timeout: Operation timed out.
+//!   - MISSING_ATTRIBUTE: An object attribute is missing.
+//!   - TIMEOUT: Operation timed out.
 //! ```
 //!
 //! ### TOML Error List
@@ -351,12 +350,12 @@
 //!
 //! ```toml
 //! [[errors]]
-//! name = "MissingAttribute"
+//! name = "MISSING_ATTRIBUTE"
 //! display = "An object attribute is missing."
 //! doc_from_display = true
 //!
 //! [[errors]]
-//! name = "Timeout"
+//! name = "TIMEOUT"
 //! display = "Operation timed out."
 //! doc_from_display = true
 //! ```
@@ -365,8 +364,8 @@
 //!
 //! ```toml
 //! errors = [
-//!     { name = "MissingAttribute", display = "An object attribute is missing.", doc_from_display = true },
-//!     { name = "Timeout", display = "Operation timed out.", doc_from_display = true }
+//!     { name = "MISSING_ATTRIBUTE", display = "An object attribute is missing.", doc_from_display = true },
+//!     { name = "TIMEOUT", display = "Operation timed out.", doc_from_display = true }
 //! ]
 //! ```
 //!
@@ -375,7 +374,7 @@
 //! *Name-only* shorthand notation is available in TOML as follows:
 //!
 //! ```toml
-//! errors = ["MissingAttribute", "Timeout"]
+//! errors = ["MISSING_ATTRIBUTE", "TIMEOUT"]
 //! ```
 //!
 //! ## Category Object
@@ -449,8 +448,8 @@
 //! ```yaml
 //! ---
 //! errors:
-//!   - MissingAttribute: An object attribute is missing.
-//!   - Timeout: Operation timed out.
+//!   - MISSING_ATTRIBUTE: An object attribute is missing.
+//!   - TIMEOUT: Operation timed out.
 //! ```
 //!
 //! A specification with a single category with a custom name. Note, the
@@ -463,8 +462,8 @@
 //!   doc_from_display: true
 //!
 //! errors:
-//!   - MissingAttribute: An object attribute is missing.
-//!   - Timeout: Operation timed out.
+//!   - MISSING_ATTRIBUTE: An object attribute is missing.
+//!   - TIMEOUT: Operation timed out.
 //! ```
 //!
 //! A TOML specification with a single category with a custom name and
@@ -476,11 +475,11 @@
 //! doc_from_display = true
 //!
 //! [[errors]]
-//! name = "MissingAttribute"
+//! name = "MISSING_ATTRIBUTE"
 //! display = "An object attribute is missing."
 //!
 //! [[errors]]
-//! name = "Timeout"
+//! name = "TIMEOUT"
 //! display = "Operation timed out"
 //! ```
 //!
@@ -518,14 +517,14 @@
 //!   - name: Parsing
 //!     doc_from_display: true
 //!     errors:
-//!       - MissingAttribute: An object attribute is missing.
-//!       - InvalidAttribute: An object contains an invalid attribute.
+//!       - MISSING_ATTRIBUTE: An object attribute is missing.
+//!       - INVALID_ATTRIBUTE: An object contains an invalid attribute.
 //!
 //!   - name: CodeGeneration
 //!     doc_from_display: true
 //!     errors:
-//!       - InvalidName: An object has an invalid name.
-//!       - InvalidPath: A file path is invalid.
+//!       - INVALID_NAME: An object has an invalid name.
+//!       - INVALID_PATH: A file path is invalid.
 //! ```
 //!
 //! An equivalent two-category TOML example.
@@ -536,11 +535,11 @@
 //! doc_from_display = true
 //!
 //! [[categories.errors]]
-//! name = "MissingAttribute"
+//! name = "MISSING_ATTRIBUTE"
 //! display = "An object attribute is missing."
 //!
 //! [[categories.errors]]
-//! name = "InvalidAttribute"
+//! name = "INVALID_ATTRIBUTE"
 //! display = "An object contains an invalid attribute."
 //!
 //! [[categories]]
@@ -548,11 +547,11 @@
 //! doc_from_display = true
 //!
 //! [[categories.errors]]
-//! name = "InvalidName"
+//! name = "INVALID_NAME"
 //! display = "An object has an invalid name."
 //!
 //! [[categories.errors]]
-//! name = "InvalidPath"
+//! name = "INVALID_PATH"
 //! display = "A file path is invalid."
 //! ```
 //!
@@ -612,8 +611,8 @@
 //!   module:
 //!     doc_from_display: true
 //!   errors:
-//!     - MissingAttribute: An object attribute is missing.
-//!     - Timeout: Operation timed out.
+//!     - MISSING_ATTRIBUTE: An object attribute is missing.
+//!     - TIMEOUT: Operation timed out.
 //!   ```
 //!   <br>
 //!
@@ -714,10 +713,10 @@
 //!   categories:
 //!     - name: Foo
 //!       errors:
-//!         - Err
+//!         - ERR
 //!     - name: Baz
 //!       errors:
-//!         - Err
+//!         - ERR
 //!   ```
 //!   The error kind constants' paths are `kinds::foo::ERR` and
 //!   `kinds::baz::ERR`. The category-specific sub-modules `foo` and
@@ -740,10 +739,10 @@
 //!   categories:
 //!     - name: Foo
 //!       errors:
-//!         - Err
+//!         - ERR
 //!     - name: Baz
 //!       errors:
-//!         - AnotherErr
+//!         - ANOTHER_ERR
 //!   ```
 //!
 //!   Default: `false`<br><br>
@@ -804,14 +803,14 @@
 //!     categories:
 //!       - name: General
 //!         errors:
-//!           - BadArg: An argument is invalid.
-//!           - Timeout: Operation timed out.
+//!           - BAD_ARG: An argument is invalid.
+//!           - TIMEOUT: Operation timed out.
 //!   - name: parser_errors
 //!     categories:
 //!       - name: General
 //!         errors:
-//!           - BadFileFormat: Input file is malformed.
-//!           - BadObjectAttribute: An object attribute is invalid.
+//!           - BAD_FILE_FORMAT: Input file is malformed.
+//!           - BAD_OBJECT_ATTRIBUTE: An object attribute is invalid.
 //! ```
 //!
 //! **TOML**
@@ -827,11 +826,11 @@
 //! name = "General"
 //!
 //! [[modules.categories.errors]]
-//! name = "BadArg"
+//! name = "BAD_ARG"
 //! display = "An argument is invalid."
 //!
 //! [[modules.categories.errors]]
-//! name = "Timeout"
+//! name = "TIMEOUT"
 //! display = "Operation timed out."
 //!
 //! [[modules]]
@@ -841,11 +840,11 @@
 //! name = "General"
 //!
 //! [[modules.categories.errors]]
-//! name = "BadFileFormat"
+//! name = "BAD_FILE_FORMAT"
 //! display = "Input file is malformed."
 //!
 //! [[modules.categories.errors]]
-//! name = "BadObjectAttribute"
+//! name = "BAD_OBJECT_ATTRIBUTE"
 //! display = "An object attribute is invalid."
 //! ```
 //!
