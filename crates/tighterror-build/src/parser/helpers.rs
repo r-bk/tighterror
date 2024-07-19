@@ -57,8 +57,8 @@ pub fn check_module_ident(ident: &str, kw: &str) -> Result<(), TbError> {
     }
 }
 
-pub fn check_name(name: &str) -> Result<(), TbError> {
-    check_ident(name, kws::NAME, Case::UpperCamel)?;
+fn check_name(name: &str, desc: &str) -> Result<(), TbError> {
+    check_ident(name, desc, Case::UpperCamel)?;
     if kws::is_any_kw(name) {
         // double check, in case any logic above changes
         log::error!(
@@ -70,6 +70,14 @@ pub fn check_name(name: &str) -> Result<(), TbError> {
     } else {
         Ok(())
     }
+}
+
+pub fn check_error_name(name: &str) -> Result<(), TbError> {
+    check_name(name, "ErrorObject::name")
+}
+
+pub fn check_category_name(name: &str) -> Result<(), TbError> {
+    check_name(name, "CategoryObject::name")
 }
 
 pub fn check_module_name(name: &str) -> Result<(), TbError> {

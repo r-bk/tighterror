@@ -363,7 +363,7 @@ pub struct ErrorParser;
 
 impl ErrorParser {
     fn string(s: String) -> Result<ErrorSpec, TbError> {
-        check_name(&s)?;
+        check_error_name(&s)?;
         Ok(ErrorSpec {
             name: s,
             ..Default::default()
@@ -392,7 +392,7 @@ impl ErrorParser {
             }
         }
 
-        check_name(&err_spec.name)?;
+        check_error_name(&err_spec.name)?;
 
         Ok(err_spec)
     }
@@ -429,7 +429,7 @@ impl CategoryParser {
 
         if let Some(v) = t.remove(kws::NAME) {
             let name = v2string(v, kws::NAME)?;
-            check_name(&name)?;
+            check_category_name(&name)?;
             cat_spec.name = name;
         }
 
