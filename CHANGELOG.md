@@ -271,7 +271,7 @@ This release makes `tighterror` self-hosted in `tighterror-build`.
 
 ### Added
 
-- implement `PaertialEq` for the `Error` struct
+- implement `PartialEq` for the `Error` struct
 - explicitly forbid `unsafe` code in all crates
 
 ### Changed
