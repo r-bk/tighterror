@@ -77,16 +77,14 @@ in a given *tighterror* instantiation.
 
 The following diagram shows an example layout of *error kind*. This layout
 can represent up to 4 categories with a maximum of 32 errors in each category.
-Note that usually not all categories are of the same length, hence the number of
-reserved bits varies among categories.
 
 ```text
-             ┌───┬───┬───┬───┬───┬───┬───┬───┐
-             │   │   │   │   │   │   │   │   │   0-1 2 category bits
-           u8│ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │   2-6 5 variant bits
-             │   │   │   │   │   │   │   │   │   7-7 1 reserved bits
-             └───┼───┴───┴───┴───┴───┼───┴───┤
-                 │      variant      │  cat  │
+            ┌───┬───┬───┬───┬───┬───┬───┬───┐                      
+            │   │   │   │   │   │   │   │   │ (0-4) 5 variant bits 
+          u8│ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │ (5-6) 2 category bits
+            │   │   │   │   │   │   │   │   │ (7-7) 1 reserved bit 
+            └───┼───┴───┼───┴───┴───┴───┴───┤                      
+                │  cat  │      variant      │                      
 ```
 
 By default **tighterror** chooses the smallest underlying type that is big
