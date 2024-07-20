@@ -207,7 +207,7 @@
 //!
 //! An *error object* specifies a single *error kind*.
 //!
-//! Note that *error object* is never defined standalone. It must be defined as
+//! *Error object* is never defined standalone. It must be defined as
 //! an item in an [*error list*](#error-list).
 //!
 //! An *error object* comprises the following attributes:
@@ -487,10 +487,10 @@
 //! It allows definition of one or more categories, each with its own set of
 //! errors.
 //!
-//! Note that when a *category object* is defined as an item in a
-//! *category list* the `name` and `errors` attributes are mandatory.
+//! When a *category object* is defined as an item in a *category list* the
+//! `name` and `errors` attributes are mandatory.
 //!
-//! Also note that `category` and `categories` keywords are mutually exclusive,
+//! `category` and `categories` keywords are mutually exclusive,
 //! as well as root-level `errors` and `categories` keywords. `category` and
 //! root-level `errors` keywords are used only for a single-category
 //! specification.
@@ -564,7 +564,7 @@
 //! specification of a single module. Definition as an item in *module list*
 //! allows specification of multiple modules.
 //!
-//! Note that when *module object* appears as an item in a *module list* its
+//! When *module object* appears as an item in a *module list* its
 //! `name` and `categories` attributes are mandatory. Conversely, when defined
 //! under the `module` attribute, `categories` is forbidden and `name`
 //! has a default value. Hence, the whole `module` section is optional.
@@ -781,11 +781,11 @@
 //! a specification file. It allows definition of one or more modules, each
 //! with its own set of categories and errors.
 //!
-//! Note that when a *module object* is defined as an item in a *module list*
-//! its `name` and `categories` attributes are mandatory.
+//! When a *module object* is defined as an item in a *module list* its `name`
+//! and `categories` attributes are mandatory.
 //!
-//! Also note that the root-level keywords `errors`, `category`, `categories`
-//! and `module` are mutually exclusive with `modules`.
+//! The root-level keywords `errors`, `category`, `categories` and `module` are
+//! mutually exclusive with `modules`.
 //!
 //! ### Module List Examples
 //!
@@ -935,8 +935,8 @@
 //! cargo install cargo-tighterror
 //! ```
 //!
-//! Note that the plugin needs to be periodically upgraded to follow
-//! releases of [`tighterror-build`].
+//! The plugin needs to be periodically upgraded to follow releases of
+//! [`tighterror-build`].
 //!
 //! The plugin is the recommended way to process *tighterror* specification
 //! files and generate code. It allows a project to generate code in pre-build
@@ -969,8 +969,8 @@
 //!   name `tighterror.yaml` or `tighterror.toml` and is present in the
 //!   current working directory.
 //!
-//!   Note that the file extension `.yaml` or `.toml` is mandatory in
-//!   custom filenames.<br><br>
+//!   The file extension `.yaml` or `.toml` is mandatory in custom filenames.
+//!   <br><br>
 //!
 //! * `-o, --output <PATH>` (optional)
 //!
