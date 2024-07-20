@@ -868,9 +868,8 @@
 //!   Defines the output path.
 //!
 //!   This can be either an absolute path, a relative path, or a hyphen `-`.
-//!   A relative path is calculated relative to the directory containing the
-//!   specification file. Hyphen `-` forces the output to be written to
-//!   `stdout`.
+//!   A relative path is relative to the location of the specification file.
+//!   Hyphen `-` forces the output to be written to `stdout`.
 //!
 //!   If the path points to an existing directory the behavior depends
 //!   on [*separate files* mode](#separate-files-mode):
@@ -978,8 +977,7 @@
 //!   Defines the output path.
 //!
 //!   This can be either an absolute path, a relative path, or a hyphen `-`.
-//!   A relative path is calculated relative to the directory containing the
-//!   specification file.
+//!   A relative path is relative to the location of the specification file.
 //!
 //!   This argument overrides the [`MainObject::output`](#main-object-output)
 //!   attribute defined in the specification file.
