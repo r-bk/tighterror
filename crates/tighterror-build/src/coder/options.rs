@@ -75,11 +75,13 @@ impl CodegenOptions {
     /// Sets the output path.
     ///
     /// This can be either an absolute path, a relative path, or hyphen `-`.
-    /// A relative path is calculated relative to the directory containing
-    /// the specification file.
+    /// A relative path is relative to the location of the specification file.
     ///
-    /// If the path points to an existing directory the output is written to
-    /// file `tighterror.rs` under that directory.
+    /// If the path points to an existing directory the behavior depends on
+    /// *separate files* mode. If *separate files* is disabled the output is
+    /// written into file `tighterror.rs` under the directory.
+    /// See [`separate_files`](Self::separate_files) for the case when the mode
+    /// is enabled.
     ///
     /// If the value is a hyphen `-`, or output path is not set at all, the
     /// output is written to `stdout`.
@@ -162,9 +164,9 @@ impl CodegenOptions {
     /// Enables the *separate files* mode.
     ///
     /// When enabled every module in specification is written to a separate
-    /// file. The [output](Self::output) option must point to an
+    /// file. The [`output`](Self::output) option must point to an
     /// existing directory. The module files, named after the modules
-    /// with addition of the `.rs` suffix, are written under that directory.
+    /// with addition of the `.rs` suffix, are written under the directory.
     ///
     /// For example, assuming `output` equals `./src` and there
     /// are two modules named `errors` and `internal_errors`, the modules will
