@@ -442,3 +442,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.20]: https://github.com/r-bk/tighterror/releases/tag/v0.0.20
 [b-0.0.20]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.20
 [c-0.0.20]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.20
+[0.0.21]: https://github.com/r-bk/tighterror/releases/tag/v0.0.21
+[b-0.0.21]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.21
+[c-0.0.21]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.21
