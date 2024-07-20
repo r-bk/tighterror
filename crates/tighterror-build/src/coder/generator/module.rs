@@ -188,14 +188,14 @@ impl<'a> ModuleGenerator<'a> {
     fn private_category_error_names(&self, c: &CategorySpec) -> TokenStream {
         let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
         let const_iter = c.errors.iter().map(|e| {
-            let ident = e.ident_name();
-            let const_ident = format_ident!("{}", ident);
+            let name = e.name.as_str();
+            let const_ident = format_ident!("{}", name);
             quote! {
-                const #const_ident: &str = #ident
+                const #const_ident: &str = #name
             }
         });
         let arr_iter = c.errors.iter().map(|e| {
-            let const_ident = format_ident!("{}", e.ident_name());
+            let const_ident = format_ident!("{}", e.name);
             quote! { #const_ident }
         });
         let n_errors = Literal::usize_unsuffixed(c.errors.len());
@@ -232,14 +232,14 @@ impl<'a> ModuleGenerator<'a> {
     fn private_category_error_display(&self, c: &CategorySpec) -> TokenStream {
         let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
         let const_iter = c.errors.iter().map(|e| {
-            let const_ident = format_ident!("{}", e.ident_name());
+            let const_ident = format_ident!("{}", e.name);
             let display = self.module.err_kind_display(c, e);
             quote! {
                 const #const_ident: &str = #display
             }
         });
         let arr_iter = c.errors.iter().map(|e| {
-            let const_ident = format_ident!("{}", e.ident_name());
+            let const_ident = format_ident!("{}", e.name);
             quote! { #const_ident }
         });
         let n_errors = Literal::usize_unsuffixed(c.errors.len());
@@ -592,7 +592,7 @@ impl<'a> ModuleGenerator<'a> {
         for (i, e) in c.errors.iter().enumerate() {
             let cat_ident = format_ident!("{}", c.ident_name());
             let err_value = self.usize_to_repr_type_literal(i).unwrap();
-            let err_ident = format_ident!("{}", e.ident_name());
+            let err_ident = format_ident!("{}", e.name);
             let err_doc = doc_tokens(self.module.err_kind_const_doc(c, e));
             tokens = quote! {
                 #tokens
@@ -757,12 +757,12 @@ impl<'a> ModuleGenerator<'a> {
         let err_kinds_mod = err_kinds_mod_ident();
         let iter = self.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
-                let ident_name = e.ident_name();
+                let name = e.name.as_str();
                 let add_cat_mod = !self.module.flat_kinds();
                 let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
-                    assert_eq!(#ident.name(), #ident_name);
-                    assert_eq!(tighterror::Kind::name(&#ident), #ident_name);
+                    assert_eq!(#ident.name(), #name);
+                    assert_eq!(tighterror::Kind::name(&#ident), #name);
                 }
             });
             quote! {
@@ -785,11 +785,11 @@ impl<'a> ModuleGenerator<'a> {
         let err_kinds_mod = err_kinds_mod_ident();
         let iter = self.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
-                let ident_name = e.ident_name();
+                let name = e.name.as_str();
                 let add_cat_mod = !self.module.flat_kinds();
                 let ident = self.err_const_tokens(c, e, add_cat_mod);
                 quote! {
-                    assert_eq!(format!("{}", #ident), #ident_name);
+                    assert_eq!(format!("{}", #ident), #name);
                 }
             });
             quote! {
@@ -908,9 +908,9 @@ impl<'a> ModuleGenerator<'a> {
                 let add_cat_mod = !self.module.flat_kinds();
                 let err_ident = self.err_const_tokens(c, e, add_cat_mod);
                 let display = if let Some(ref d) = e.display {
-                    d.clone()
+                    d.as_str()
                 } else {
-                    e.ident_name()
+                    e.name.as_str()
                 };
                 quote! {
                     assert_eq!(format!("{}", #err_name::from(#err_ident)), #display);
@@ -997,7 +997,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn err_const_tokens(&self, c: &CategorySpec, e: &ErrorSpec, add_cat_mod: bool) -> TokenStream {
-        let err_ident = format_ident!("{}", e.ident_name());
+        let err_ident = format_ident!("{}", e.name);
         let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
         if add_cat_mod {
             quote! {
