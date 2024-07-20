@@ -121,8 +121,7 @@ impl CodegenOptions {
     ///
     /// When enabled a module unit-test is included in the generated code.
     ///
-    /// Note that in `no_std` environments test cases that require `std` are
-    /// excluded.
+    /// In `no_std` environments test cases that require `std` are excluded.
     ///
     /// # Examples
     /// ```rust
@@ -173,8 +172,8 @@ impl CodegenOptions {
     /// be written to `./src/errors.rs` and `./src/internal_errors.rs`
     /// respectively.
     ///
-    /// Note that if the output is written to `stdout` the *separate files*
-    /// mode is implicitly disabled.
+    /// If the output is written to `stdout` the *separate files* mode is
+    /// implicitly disabled.
     pub fn separate_files(&mut self, separate_files: impl Into<Option<bool>>) -> &mut Self {
         self.separate_files = separate_files.into();
         self
