@@ -67,7 +67,7 @@
 //!
 //! The concrete types are auto-generated from a specification file defined in
 //! the user project. The specification file is written in one of the supported
-//! markup languages. For example, `tighterror.yaml`:
+//! markup languages, YAML or TOML. For example, `tighterror.yaml`:
 //!
 //! ```yaml
 //! ---
@@ -105,8 +105,9 @@
 //!
 //! pub mod kinds {
 //! #   use super::*;
-//!     pub const BAD_FILE: ErrorKind = ErrorKind::new(categories::GENERAL, 0);
-//!     pub const BAD_ARG: ErrorKind = ErrorKind::new(categories::GENERAL, 1);
+//! #   use super::categories::*;
+//!     pub const BAD_FILE: ErrorKind = ErrorKind::new(GENERAL, 0);
+//!     pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 1);
 //! }
 //! # } // mod _doc
 //! ```
@@ -167,10 +168,6 @@
 //!               │  cat  │      variant      │                      
 //! ```
 //!
-//! The number of *variant* bits is large enough to accommodate the
-//! largest *category*. Therefore some categories may have more *reserved*
-//! bits than others, assuming not all categories are of the same length.
-//!
 //! When there is only a single *error category* the number of *category* bits
 //! is 0.
 //!
@@ -179,8 +176,8 @@
 //! types are `u8`, `u16`, `u32` and `u64`.
 //!
 //! Note that the layout of *error kind* is packed and may change
-//! during project's lifetime. For example, addition of a new *error category*
-//! may lead to a left-shift of *variant* bits, thus changing the numeric
+//! during project's lifetime. For example, addition of a new *error variant*
+//! may lead to a left-shift of *category* bits, thus changing the numeric
 //! value of all *error kinds* of the project, and possibly changing the
 //! underlying Rust type to a wider unsigned integer.
 //! Consequently, *error kinds* should be matched only using named constants
@@ -224,8 +221,7 @@
 //!
 //!   Defines the *error kind's* display string. This string is used in
 //!   `std::fmt::Display` implementation to display the *error kind*.<br>
-//!   When undefined the *error kind's* UPPER_SNAKE_CASE `name` is used
-//!   as display string.<br><br>
+//!   When undefined the `name` is used as display string.<br><br>
 //!
 //! * `doc` - string (optional)
 //!
@@ -240,9 +236,8 @@
 //!   The `display` attribute must be explicitly set for this to take effect.<br>
 //!
 //!   This attribute can be set on a higher level in
-//!   [category specification](#category-doc-from-display) to affect all
-//!   errors in the category, or in
-//!   [module specification](#module-doc-from-display)
+//!   [category object](#category-doc-from-display) to affect all
+//!   errors in the category, or in [module object](#module-doc-from-display)
 //!   to affect all errors in the module.
 //!   Values defined on lower levels win.<br>
 //!   Default: `false`<br>
@@ -314,14 +309,13 @@
 //!
 //! **Name-Only Notation**
 //!
-//! *Error object* has only a single mandatory attribute, the `name`.
+//! *Error object* has only a single mandatory attribute - `name`.
 //! This allows a short *name-only* notation, where every element
 //! of the list is an error name specified without the `name` keyword.
 //!
 //! This notation doesn't allow specification of attributes other than `name`.
-//! Therefore they receive default values. In particular, an *error kind*
-//! constant has no doc comment and is displayed as UPPER_SNAKE_CASE of the
-//! name.
+//! Therefore they receive default values. In particular, in this notation
+//! an *error kind* constant has no doc comment and is displayed by its `name`.
 //!
 //! ```yaml
 //! ---
