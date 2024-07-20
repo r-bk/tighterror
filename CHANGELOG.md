@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.21], [b-0.0.21], [c-0.0.21] - 2024-07-20
+
+A small cleanup release - align documentation and add small code cleanups.
+
+### Changed
+
+- cleanup documentation
+    - UPPER_SNAKE error name casing in examples
+    - rephrase *separate files* mode documentation
+
+- ensure category name casing conversions use `UpperCamel` case as the source
+  case instead of letting `convert_case` crate guess it
+
 ## [0.0.20], [b-0.0.20], [c-0.0.20] - 2024-07-19
 
 ### Changed
