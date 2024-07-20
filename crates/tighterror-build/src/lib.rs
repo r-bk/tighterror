@@ -133,6 +133,8 @@ pub const DEFAULT_SPEC_PATH_YAML: &str = "tighterror.yaml";
 #[cfg_attr(docsrs, doc(cfg(feature = "toml")))]
 pub const DEFAULT_SPEC_PATH_TOML: &str = "tighterror.toml";
 
+mod common;
+
 mod coder;
 pub use coder::*;
 
