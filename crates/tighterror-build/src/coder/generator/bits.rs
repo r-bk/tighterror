@@ -28,12 +28,11 @@ impl Bits {
         assert!(n_variant_bits > 0);
 
         let n_kind_bits = n_category_bits + n_variant_bits;
-        let repr_type = ReprType::from_n_bits(n_kind_bits).map_err(|e| {
+        let repr_type = ReprType::from_n_bits(n_kind_bits).inspect_err(|_| {
             let ltn = ReprType::largest_type_name();
             log::error!(
                 "not enough bits in largest supported underlying type {ltn}: {n_kind_bits}"
             );
-            e
         })?;
 
         assert!(n_category_bits < repr_type.bits());
