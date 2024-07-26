@@ -441,13 +441,6 @@ impl CategoryParser {
     }
 
     fn table(&self, mut t: Table) -> Result<CategorySpec, TbError> {
-        for k in t.keys() {
-            if !kws::is_cat_kw(k) {
-                log::error!("invalid CategoryObject attribute: {}", k);
-                return BAD_OBJECT_ATTRIBUTE.into();
-            }
-        }
-
         let mut cat_spec = CategorySpec::default();
 
         if let Some(v) = t.remove(kws::NAME) {
@@ -473,6 +466,11 @@ impl CategoryParser {
                 return BAD_OBJECT_ATTRIBUTE.into();
             }
             cat_spec.errors = ErrorsParser::value(v)?;
+        }
+
+        if let Some((k, _)) = t.into_iter().next() {
+            log::error!("invalid CategoryObject attribute: {}", k);
+            return BAD_OBJECT_ATTRIBUTE.into();
         }
 
         match self.0 {
