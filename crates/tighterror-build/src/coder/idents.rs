@@ -7,9 +7,11 @@ pub const ERROR_DISPLAYS_MOD: &str = "_d";
 pub const PRIVATE_MOD: &str = "_p";
 pub const CATEGORY_CONSTS_MOD: &str = "category";
 pub const ERROR_KINDS_MOD: &str = "kind";
+pub const VARIANTS_MOD: &str = "variant";
+pub const TYPES_MOD: &str = "types"; // singular `type` is rust-reserved
 pub const TESTS_MOD: &str = "test";
 
-const ROOT_LEVEL: [&str; 10] = [
+const ROOT_LEVEL: [&str; 11] = [
     ERROR,
     ERROR_CATEGORY,
     ERROR_KIND,
@@ -19,6 +21,7 @@ const ROOT_LEVEL: [&str; 10] = [
     PRIVATE_MOD,
     CATEGORY_CONSTS_MOD,
     ERROR_KINDS_MOD,
+    VARIANTS_MOD,
     TESTS_MOD,
 ];
 

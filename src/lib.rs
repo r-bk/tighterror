@@ -1322,3 +1322,6 @@ pub use error::*;
 
 mod location;
 pub use location::*;
+
+mod variant_type;
+pub use variant_type::*;

@@ -37,6 +37,10 @@ modules:
           - QUEUE_FULL: Processing queue is full.
           - name: WITHOUT_DISPLAY
             doc: An error without display string.
+            variant_type: true
+          - name: WITHOUT_DOC
+            display: An error without doc string.
+            variant_type: true
 
       - name: General
         doc: General errors category.
@@ -59,3 +63,48 @@ modules:
               let e: Error = BAD_ARG.into();
               ```
           - TIMEOUT: Operation timed out.
+
+  - name: flat_kinds_mod
+    flat_kinds: true
+    doc_from_display: true
+    variant_type: true
+    categories:
+      - name: CatOne
+        doc: "Category #1"
+        errors:
+          - CAT_ONE_ERR_ONE: "CatOne error #1"
+          - CAT_ONE_ERR_TWO: "CatOne error #2"
+          - name: CAT_ONE_WITHOUT_DISPLAY
+            doc: A CatOne error without display string.
+          - name: CAT_ONE_WITHOUT_DOC
+            display: An error without doc string.
+      - name: CatTwo
+        doc: "Category #2"
+        errors:
+          - CAT_TWO_ERR_ONE: "CatTwo error #1"
+          - CAT_TWO_ERR_TWO: "CatTwo error #2"
+          - name: CAT_TWO_WITHOUT_DISPLAY
+            doc: A CatTwo error without display string.
+            variant_type: CatTwoSpecial
+
+  - name: flat_kinds_mod_without_display
+    flat_kinds: true
+    variant_type: true
+    categories:
+      - name: CatOne
+        doc: "Category #1"
+        errors:
+          - name: CAT_ONE_ERR_ONE
+            doc: "CatOne error #1"
+          - name: CAT_ONE_ERR_TWO
+            doc: "CatOne error #2"
+      - name: CatTwo
+        doc: "Category #2"
+        errors:
+          - name: CAT_TWO_ERR_ONE
+            doc: "CatTwo error #1"
+          - name: CAT_TWO_ERR_TWO
+            doc: "CatTwo error #2"
+          - name: CAT_TWO_CUSTOM_NAME
+            doc: A CatTwo error without display string.
+            variant_type: CatTwoCustomVariantTypeName

@@ -3,7 +3,7 @@ use crate::{
     common::casing,
     errors::{kind::parser::*, TbError},
     parser::kws,
-    spec::ModuleSpec,
+    spec::{ErrorSpec, ModuleSpec},
 };
 use convert_case::Case;
 use regex::Regex;
@@ -87,6 +87,10 @@ pub fn check_category_name(name: &str) -> Result<(), TbError> {
     check_name(name, "CategoryObject::name", Case::UpperCamel)
 }
 
+pub fn check_variant_type_name(name: &str) -> Result<(), TbError> {
+    check_name(name, "ErrorObject::variant_type", Case::UpperCamel)
+}
+
 pub fn check_module_name(name: &str) -> Result<(), TbError> {
     if name.is_empty() {
         log::error!("module name cannot be an empty string");
@@ -162,6 +166,7 @@ where
 
 pub fn check_name_collisions(m: &ModuleSpec) -> Result<(), TbError> {
     check_struct_names_collision(m)?;
+    check_variant_type_names_collision(m)?;
     Ok(())
 }
 
@@ -180,5 +185,46 @@ pub fn check_struct_names_collision(m: &ModuleSpec) -> Result<(), TbError> {
         log::error!("error category name equals error kind name: {err_cat_name}");
         return NAME_COLLISION.into();
     }
+    Ok(())
+}
+
+fn check_variant_type_names_collision(m: &ModuleSpec) -> Result<(), TbError> {
+    for c in &m.categories {
+        for e in &c.errors {
+            check_variant_type_names_collision_impl(m, e)?;
+        }
+    }
+    Ok(())
+}
+
+fn check_variant_type_names_collision_impl(m: &ModuleSpec, e: &ErrorSpec) -> Result<(), TbError> {
+    let name = e.variant_type_name();
+
+    if name == m.err_name() {
+        log::error!(
+            "{} equals error type name: {} {}",
+            kws::ERR_NAME,
+            e.name,
+            name
+        );
+        return NAME_COLLISION.into();
+    } else if name == m.err_cat_name() {
+        log::error!(
+            "{} equals error category name: {} {}",
+            kws::ERR_CAT_NAME,
+            e.name,
+            name
+        );
+        return NAME_COLLISION.into();
+    } else if name == m.err_kind_name() {
+        log::error!(
+            "{} equals error kind name: {} {}",
+            kws::ERR_KIND_NAME,
+            e.name,
+            name
+        );
+        return NAME_COLLISION.into();
+    }
+
     Ok(())
 }

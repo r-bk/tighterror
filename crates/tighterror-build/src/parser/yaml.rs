@@ -285,6 +285,10 @@ impl ModuleParser {
             mod_spec.flat_kinds = Some(v2bool(v, kws::FLAT_KINDS)?);
         }
 
+        if let Some(v) = m.remove(kws::VARIANT_TYPE) {
+            mod_spec.oes.variant_type = Some(v2bool(v, kws::VARIANT_TYPE)?);
+        }
+
         if let Some((k, _)) = m.into_iter().next() {
             let key = v2key(k)?;
             error!("invalid ModuleObject attribute: {}", key);
@@ -476,6 +480,24 @@ impl ErrorParser {
             err_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?);
         }
 
+        if let Some(v) = m.remove(kws::VARIANT_TYPE) {
+            match v {
+                Value::Bool(b) => err_spec.oes.variant_type = Some(b),
+                Value::String(s) => {
+                    check_variant_type_name(&s)?;
+                    err_spec.oes.variant_type = Some(true);
+                    err_spec.variant_type_name = Some(s);
+                }
+                _ => {
+                    error!(
+                        "ErrorObject::{} must be a String or a Bool: deserialized {v:?}",
+                        kws::VARIANT_TYPE
+                    );
+                    return BAD_VALUE_TYPE.into();
+                }
+            }
+        }
+
         if let Some((k, _)) = m.into_iter().next() {
             let key = v2key(k)?;
             error!("invalid ErrorObject attribute: {}", key);
@@ -533,6 +555,10 @@ impl CategoryParser {
                 return BAD_OBJECT_ATTRIBUTE.into();
             }
             cat_spec.errors = ErrorListParser::value(v)?;
+        }
+
+        if let Some(v) = m.remove(kws::VARIANT_TYPE) {
+            cat_spec.oes.variant_type = Some(v2bool(v, kws::VARIANT_TYPE)?);
         }
 
         if let Some((k, _)) = m.into_iter().next() {
