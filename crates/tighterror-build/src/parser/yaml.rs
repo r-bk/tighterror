@@ -172,22 +172,21 @@ impl MainParser {
         }
     }
 
-    fn mapping(m: Mapping) -> Result<MainSpec, TbError> {
+    fn mapping(mut m: Mapping) -> Result<MainSpec, TbError> {
         let mut main_spec = MainSpec::default();
 
-        for (k, v) in m.into_iter() {
+        if let Some(v) = m.remove(kws::OUTPUT) {
+            main_spec.output = Some(v2string(v, kws::OUTPUT)?.into());
+        }
+
+        if let Some(v) = m.remove(kws::NO_STD) {
+            main_spec.no_std = Some(v2bool(v, kws::NO_STD)?);
+        }
+
+        if let Some((k, _)) = m.into_iter().next() {
             let key = v2key(k)?;
-
-            if !kws::is_main_kw(&key) {
-                error!("invalid MainObject attribute: {}", key);
-                return BAD_OBJECT_ATTRIBUTE.into();
-            }
-
-            match key.as_str() {
-                kws::OUTPUT => main_spec.output = Some(v2string(v, kws::OUTPUT)?.into()),
-                kws::NO_STD => main_spec.no_std = Some(v2bool(v, kws::NO_STD)?),
-                _ => panic!("internal error: unhandled MainObject attribute: {}", key),
-            }
+            error!("invalid MainObject attribute: {}", key);
+            return BAD_OBJECT_ATTRIBUTE.into();
         }
 
         Ok(main_spec)
@@ -213,61 +212,82 @@ impl ModuleParser {
         }
     }
 
-    fn mapping(self, m: Mapping) -> Result<ModuleSpec, TbError> {
+    fn mapping(self, mut m: Mapping) -> Result<ModuleSpec, TbError> {
         let mut mod_spec = ModuleSpec::default();
 
-        for (k, v) in m.into_iter() {
-            let key = v2key(k)?;
+        if let Some(v) = m.remove(kws::NAME) {
+            mod_spec.name = Some(v2string(v, kws::NAME)?);
+        }
 
-            if !kws::is_mod_kw(&key) {
-                error!("invalid ModuleObject attribute: {}", key);
+        if let Some(v) = m.remove(kws::CATEGORIES) {
+            if let ParseMode::Single = self.0 {
+                error!(
+                    "CategoriesList is not allowed in root-level `{}` attribute",
+                    kws::MODULE
+                );
                 return BAD_OBJECT_ATTRIBUTE.into();
             }
+            mod_spec.categories = CategoriesParser::value(v)?;
+        }
 
-            match key.as_str() {
-                kws::NAME => mod_spec.name = Some(v2string(v, kws::NAME)?),
-                kws::CATEGORIES => {
-                    if let ParseMode::Single = self.0 {
-                        error!(
-                            "CategoriesList is not allowed in root-level `{}` attribute",
-                            kws::MODULE
-                        );
-                        return BAD_OBJECT_ATTRIBUTE.into();
-                    }
-                    mod_spec.categories = CategoriesParser::value(v)?;
-                }
-                kws::DOC_FROM_DISPLAY => {
-                    mod_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
-                }
-                kws::ERR_CAT_DOC => mod_spec.err_cat_doc = Some(v2string(v, kws::ERR_CAT_DOC)?),
-                kws::ERR_KIND_DOC => mod_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?),
-                kws::ERR_DOC => mod_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?),
-                kws::DOC => mod_spec.doc = Some(v2string(v, kws::DOC)?),
-                kws::RESULT_FROM_ERR => {
-                    mod_spec.result_from_err = Some(v2bool(v, kws::RESULT_FROM_ERR)?)
-                }
-                kws::RESULT_FROM_ERR_KIND => {
-                    mod_spec.result_from_err_kind = Some(v2bool(v, kws::RESULT_FROM_ERR_KIND)?)
-                }
-                kws::ERROR_TRAIT => mod_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?),
-                kws::ERR_NAME => {
-                    let err_name = v2string(v, kws::ERR_NAME)?;
-                    check_module_ident(&err_name, kws::ERR_NAME)?;
-                    mod_spec.err_name = Some(err_name);
-                }
-                kws::ERR_KIND_NAME => {
-                    let err_kind_name = v2string(v, kws::ERR_KIND_NAME)?;
-                    check_module_ident(&err_kind_name, kws::ERR_KIND_NAME)?;
-                    mod_spec.err_kind_name = Some(err_kind_name);
-                }
-                kws::ERR_CAT_NAME => {
-                    let err_cat_name = v2string(v, kws::ERR_CAT_NAME)?;
-                    check_module_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
-                    mod_spec.err_cat_name = Some(err_cat_name);
-                }
-                kws::FLAT_KINDS => mod_spec.flat_kinds = Some(v2bool(v, kws::FLAT_KINDS)?),
-                _ => panic!("internal error: unhandled ModuleObject attribute: {}", key),
-            }
+        if let Some(v) = m.remove(kws::DOC_FROM_DISPLAY) {
+            mod_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?);
+        }
+
+        if let Some(v) = m.remove(kws::ERR_CAT_DOC) {
+            mod_spec.err_cat_doc = Some(v2string(v, kws::ERR_CAT_DOC)?);
+        }
+
+        if let Some(v) = m.remove(kws::ERR_KIND_DOC) {
+            mod_spec.err_kind_doc = Some(v2string(v, kws::ERR_KIND_DOC)?);
+        }
+
+        if let Some(v) = m.remove(kws::ERR_DOC) {
+            mod_spec.err_doc = Some(v2string(v, kws::ERR_DOC)?);
+        }
+
+        if let Some(v) = m.remove(kws::DOC) {
+            mod_spec.doc = Some(v2string(v, kws::DOC)?);
+        }
+
+        if let Some(v) = m.remove(kws::RESULT_FROM_ERR) {
+            mod_spec.result_from_err = Some(v2bool(v, kws::RESULT_FROM_ERR)?);
+        }
+
+        if let Some(v) = m.remove(kws::RESULT_FROM_ERR_KIND) {
+            mod_spec.result_from_err_kind = Some(v2bool(v, kws::RESULT_FROM_ERR_KIND)?);
+        }
+
+        if let Some(v) = m.remove(kws::ERROR_TRAIT) {
+            mod_spec.error_trait = Some(v2bool(v, kws::ERROR_TRAIT)?);
+        }
+
+        if let Some(v) = m.remove(kws::ERR_NAME) {
+            let err_name = v2string(v, kws::ERR_NAME)?;
+            check_module_ident(&err_name, kws::ERR_NAME)?;
+            mod_spec.err_name = Some(err_name);
+        }
+
+        if let Some(v) = m.remove(kws::ERR_KIND_NAME) {
+            let err_kind_name = v2string(v, kws::ERR_KIND_NAME)?;
+            check_module_ident(&err_kind_name, kws::ERR_KIND_NAME)?;
+            mod_spec.err_kind_name = Some(err_kind_name);
+        }
+
+        if let Some(v) = m.remove(kws::ERR_CAT_NAME) {
+            let err_cat_name = v2string(v, kws::ERR_CAT_NAME)?;
+            check_module_ident(&err_cat_name, kws::ERR_CAT_NAME)?;
+            mod_spec.err_cat_name = Some(err_cat_name);
+        }
+
+        if let Some(v) = m.remove(kws::FLAT_KINDS) {
+            mod_spec.flat_kinds = Some(v2bool(v, kws::FLAT_KINDS)?);
+        }
+
+        if let Some((k, _)) = m.into_iter().next() {
+            let key = v2key(k)?;
+            error!("invalid ModuleObject attribute: {}", key);
+            return BAD_OBJECT_ATTRIBUTE.into();
         }
 
         if let Some(ref n) = mod_spec.name {
@@ -436,26 +456,29 @@ impl ErrorParser {
         })
     }
 
-    fn long_mapping(m: Mapping) -> Result<ErrorSpec, TbError> {
+    fn long_mapping(mut m: Mapping) -> Result<ErrorSpec, TbError> {
         let mut err_spec = ErrorSpec::default();
 
-        for (k, v) in m.into_iter() {
+        if let Some(v) = m.remove(kws::NAME) {
+            err_spec.name = v2string(v, kws::NAME)?;
+        }
+
+        if let Some(v) = m.remove(kws::DISPLAY) {
+            err_spec.display = Some(v2string(v, kws::DISPLAY)?);
+        }
+
+        if let Some(v) = m.remove(kws::DOC) {
+            err_spec.doc = Some(v2string(v, kws::DOC)?);
+        }
+
+        if let Some(v) = m.remove(kws::DOC_FROM_DISPLAY) {
+            err_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?);
+        }
+
+        if let Some((k, _)) = m.into_iter().next() {
             let key = v2key(k)?;
-
-            if !kws::is_err_kw(&key) {
-                error!("invalid ErrorObject attribute: {}", key);
-                return BAD_OBJECT_ATTRIBUTE.into();
-            }
-
-            match key.as_str() {
-                kws::NAME => err_spec.name = v2string(v, kws::NAME)?,
-                kws::DISPLAY => err_spec.display = Some(v2string(v, kws::DISPLAY)?),
-                kws::DOC => err_spec.doc = Some(v2string(v, kws::DOC)?),
-                kws::DOC_FROM_DISPLAY => {
-                    err_spec.oes.doc_from_display = Some(v2bool(v, kws::DOC_FROM_DISPLAY)?)
-                }
-                _ => panic!("internal error: unhandled ErrorObject attribute: {}", key),
-            }
+            error!("invalid ErrorObject attribute: {}", key);
+            return BAD_OBJECT_ATTRIBUTE.into();
         }
 
         check_error_name(&err_spec.name)?;
