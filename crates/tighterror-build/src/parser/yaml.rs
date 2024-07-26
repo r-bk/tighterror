@@ -507,21 +507,6 @@ impl CategoryParser {
     }
 
     fn mapping(&self, mut m: Mapping) -> Result<CategorySpec, TbError> {
-        for k in m.keys() {
-            match k {
-                Value::String(s) => {
-                    if !kws::is_cat_kw(s) {
-                        error!("invalid CategoryObject attribute: {}", s);
-                        return BAD_OBJECT_ATTRIBUTE.into();
-                    }
-                }
-                ov => {
-                    error!("a Mapping key must be a String: deserialized {:?}", ov);
-                    return BAD_VALUE_TYPE.into();
-                }
-            }
-        }
-
         let mut cat_spec = CategorySpec::default();
 
         if let Some(v) = m.remove(kws::NAME) {
@@ -547,6 +532,12 @@ impl CategoryParser {
                 return BAD_OBJECT_ATTRIBUTE.into();
             }
             cat_spec.errors = ErrorsParser::value(v)?;
+        }
+
+        if let Some((k, _)) = m.into_iter().next() {
+            let key = v2key(k)?;
+            error!("invalid CategoryObject attribute: {}", key);
+            return BAD_OBJECT_ATTRIBUTE.into();
         }
 
         match self.0 {

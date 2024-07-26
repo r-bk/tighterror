@@ -21,8 +21,6 @@ pub const CATEGORY: &str = "category";
 pub const CATEGORIES: &str = "categories";
 pub const FLAT_KINDS: &str = "flat_kinds";
 
-pub const CAT_KWS: [&str; 4] = [NAME, DOC, DOC_FROM_DISPLAY, ERRORS];
-
 pub const ROOT_KWS: [&str; 6] = [MAIN, ERRORS, MODULE, MODULES, CATEGORY, CATEGORIES];
 pub const REQUIRED_ROOT_KWS: [&str; 3] = [ERRORS, CATEGORIES, MODULES];
 pub const MUTUALLY_EXCLUSIVE_ROOT_KWS: [(&str, &str); 6] = [
@@ -71,8 +69,4 @@ pub fn is_any_kw(s: &str) -> bool {
 #[inline]
 pub fn is_root_kw(s: &str) -> bool {
     contains(&ROOT_KWS, s)
-}
-
-pub fn is_cat_kw(s: &str) -> bool {
-    contains(&CAT_KWS, s)
 }
