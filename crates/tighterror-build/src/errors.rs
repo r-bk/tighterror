@@ -309,29 +309,31 @@ mod _n {
 }
 
 mod _d {
-    mod parser {
-        const BAD_IDENTIFIER_CHARACTERS: &str = "Identifier contains unsupported characters.";
-        const BAD_IDENTIFIER_CASE: &str = "Identifier is specified in an unsupported case.";
-        const BAD_KEYWORD_TYPE: &str = "Specification keyword is not a String.";
-        const BAD_MODULE_IDENTIFIER: &str = "Identifier is not valid on module-level.";
-        const BAD_NAME: &str = "Invalid name.";
-        const BAD_OBJECT_ATTRIBUTE: &str = "An object attribute is invalid.";
-        const BAD_SPEC_FILE_EXTENSION: &str =
+    pub(crate) mod parser {
+        pub(crate) const BAD_IDENTIFIER_CHARACTERS: &str =
+            "Identifier contains unsupported characters.";
+        pub(crate) const BAD_IDENTIFIER_CASE: &str =
+            "Identifier is specified in an unsupported case.";
+        pub(crate) const BAD_KEYWORD_TYPE: &str = "Specification keyword is not a String.";
+        pub(crate) const BAD_MODULE_IDENTIFIER: &str = "Identifier is not valid on module-level.";
+        pub(crate) const BAD_NAME: &str = "Invalid name.";
+        pub(crate) const BAD_OBJECT_ATTRIBUTE: &str = "An object attribute is invalid.";
+        pub(crate) const BAD_SPEC_FILE_EXTENSION: &str =
             "Specification filename extension is not supported or is missing.";
-        const BAD_TOML: &str = "TOML deserialization has failed.";
-        const BAD_ROOT_LEVEL_KEYWORD: &str =
+        pub(crate) const BAD_TOML: &str = "TOML deserialization has failed.";
+        pub(crate) const BAD_ROOT_LEVEL_KEYWORD: &str =
             "Specification contains an invalid root-level keyword.";
-        const BAD_VALUE_TYPE: &str = "Specification value type is invalid.";
-        const BAD_YAML: &str = "YAML deserialization has failed.";
-        const EMPTY_IDENTIFIER: &str = "An identifier cannot be an empty string.";
-        const EMPTY_LIST: &str = "Empty list of objects is not allowed.";
-        const FAILED_TO_OPEN_SPEC_FILE: &str = "Specification file couldn't be opened.";
-        const MISSING_ATTRIBUTE: &str = "Specification lacks a mandatory attribute.";
-        const MUTUALLY_EXCLUSIVE_KEYWORDS: &str =
+        pub(crate) const BAD_VALUE_TYPE: &str = "Specification value type is invalid.";
+        pub(crate) const BAD_YAML: &str = "YAML deserialization has failed.";
+        pub(crate) const EMPTY_IDENTIFIER: &str = "An identifier cannot be an empty string.";
+        pub(crate) const EMPTY_LIST: &str = "Empty list of objects is not allowed.";
+        pub(crate) const FAILED_TO_OPEN_SPEC_FILE: &str = "Specification file couldn't be opened.";
+        pub(crate) const MISSING_ATTRIBUTE: &str = "Specification lacks a mandatory attribute.";
+        pub(crate) const MUTUALLY_EXCLUSIVE_KEYWORDS: &str =
             "Specification contains mutually exclusive keywords.";
-        const NON_UNIQUE_NAME: &str = "A name is not unique.";
-        const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
-        const NAME_COLLISION: &str = "Collision of names between different items.";
+        pub(crate) const NON_UNIQUE_NAME: &str = "A name is not unique.";
+        pub(crate) const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
+        pub(crate) const NAME_COLLISION: &str = "Collision of names between different items.";
         pub static A: [&str; 19] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
@@ -355,17 +357,17 @@ mod _d {
         ];
     }
 
-    mod coder {
-        const CATEGORY_REQUIRED: &str = "At least one category must be defined.";
-        const ERROR_REQUIRED: &str = "At least one error must be defined.";
-        const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
-        const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
-        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
-        const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
-        const RUSTFMT_NOT_FOUND: &str = "Rustfmt tool isn't found.";
-        const TOO_MANY_BITS: &str =
+    pub(crate) mod coder {
+        pub(crate) const CATEGORY_REQUIRED: &str = "At least one category must be defined.";
+        pub(crate) const ERROR_REQUIRED: &str = "At least one error must be defined.";
+        pub(crate) const FAILED_TO_PARSE_TOKENS: &str = "Generated code tokens couldn't be parsed.";
+        pub(crate) const FAILED_TO_READ_OUTPUT_FILE: &str = "Output file couldn't be read.";
+        pub(crate) const FAILED_TO_WRITE_OUTPUT_FILE: &str = "Output file couldn't be written.";
+        pub(crate) const RUSTFMT_FAILED: &str = "Rustfmt tool exited with an error.";
+        pub(crate) const RUSTFMT_NOT_FOUND: &str = "Rustfmt tool isn't found.";
+        pub(crate) const TOO_MANY_BITS: &str =
             "The number of required bits exceeds the largest supported type u64.";
-        const OUTPUT_PATH_NOT_DIRECTORY: &str = "Output path is not a directory.";
+        pub(crate) const OUTPUT_PATH_NOT_DIRECTORY: &str = "Output path is not a directory.";
         pub static A: [&str; 9] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
@@ -394,6 +396,7 @@ mod _p {
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
+
     impl<'a> core::fmt::Debug for Ident<'a> {
         #[inline]
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

@@ -20,6 +20,7 @@ pub const MODULES: &str = "modules";
 pub const CATEGORY: &str = "category";
 pub const CATEGORIES: &str = "categories";
 pub const FLAT_KINDS: &str = "flat_kinds";
+pub const VARIANT_TYPE: &str = "variant_type";
 
 pub const ROOT_KWS: [&str; 6] = [MAIN, ERRORS, MODULE, MODULES, CATEGORY, CATEGORIES];
 pub const REQUIRED_ROOT_KWS: [&str; 3] = [ERRORS, CATEGORIES, MODULES];
@@ -31,7 +32,7 @@ pub const MUTUALLY_EXCLUSIVE_ROOT_KWS: [(&str, &str); 6] = [
     (CATEGORIES, MODULES),
     (MODULE, MODULES),
 ];
-pub const ALL_KWS: [&str; 22] = [
+pub const ALL_KWS: [&str; 23] = [
     ERR_CAT_DOC,
     DISPLAY,
     DOC,
@@ -54,6 +55,7 @@ pub const ALL_KWS: [&str; 22] = [
     CATEGORY,
     CATEGORIES,
     FLAT_KINDS,
+    VARIANT_TYPE,
 ];
 
 #[inline]

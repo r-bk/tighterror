@@ -144,6 +144,36 @@ impl ModuleSpec {
     pub fn flat_kinds(&self) -> bool {
         self.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS)
     }
+
+    pub fn has_variant_types(&self) -> bool {
+        self.categories
+            .iter()
+            .any(|c| self.cat_has_variant_types(c))
+    }
+
+    pub fn has_display_variant_types(&self) -> bool {
+        self.categories
+            .iter()
+            .any(|c| self.cat_has_display_variant_types(c))
+    }
+
+    pub fn cat_has_variant_types(&self, c: &CategorySpec) -> bool {
+        c.errors.iter().any(|e| self.err_has_variant_type(c, e))
+    }
+
+    pub fn cat_has_display_variant_types(&self, c: &CategorySpec) -> bool {
+        c.errors
+            .iter()
+            .any(|e| e.display.is_some() && self.err_has_variant_type(c, e))
+    }
+
+    pub fn err_has_variant_type(&self, c: &CategorySpec, e: &ErrorSpec) -> bool {
+        e.oes
+            .variant_type
+            .or(c.oes.variant_type)
+            .or(self.oes.variant_type)
+            .unwrap_or(DEFAULT_VARIANT_TYPE)
+    }
 }
 
 pub struct ModuleSpecErrorIter<'a> {

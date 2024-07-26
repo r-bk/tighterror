@@ -42,6 +42,7 @@ impl<'a> ModuleGenerator<'a> {
         let error_tokens = self.error_tokens();
         let category_constants = self.category_constants_tokens();
         let error_kind_constants = self.error_kind_constants_tokens();
+        let variants_module = self.variants_module_tokens();
         let test = self.test_tokens();
         Ok(quote! {
             #module_doc
@@ -51,6 +52,7 @@ impl<'a> ModuleGenerator<'a> {
             #private_modules
             #category_constants
             #error_kind_constants
+            #variants_module
             #test
         })
     }
@@ -237,7 +239,7 @@ impl<'a> ModuleGenerator<'a> {
             let const_ident = format_ident!("{}", e.name);
             if let Some(ref display) = e.display {
                 quote! {
-                    const #const_ident: &str = #display
+                    pub(crate) const #const_ident: &str = #display
                 }
             } else {
                 quote! {
@@ -258,7 +260,7 @@ impl<'a> ModuleGenerator<'a> {
         };
 
         quote! {
-            mod #cat_mod_ident {
+            pub(crate) mod #cat_mod_ident {
                 #names_mod_import
 
                 #(#const_iter);* ;
@@ -648,6 +650,228 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
+    fn needs_variants_module(&self) -> bool {
+        self.module.has_variant_types()
+    }
+
+    fn variants_module_tokens(&self) -> TokenStream {
+        if !self.needs_variants_module() {
+            return TokenStream::default();
+        }
+
+        let variant_types_mod_tokens = self.variant_types_module_tokens();
+        let variants_mod = variants_mod_ident();
+        quote! {
+            #[doc = " Error variant types and constants."]
+            pub mod #variants_mod {
+                #variant_types_mod_tokens
+            }
+        }
+    }
+
+    fn variant_types_module_tokens(&self) -> TokenStream {
+        let mut tokens = TokenStream::default();
+
+        if !self.module.has_variant_types() {
+            return tokens;
+        }
+
+        let kinds_mod = error_kinds_mod_ident();
+        let private_mod = private_mod_ident();
+        let category_names_mod = category_names_mod_ident();
+        let categories_mod = categories_mod_ident();
+        let display_mod = error_displays_mod_ident();
+        let error_names_mod = error_names_mod_ident();
+        let err_kind_name = self.err_kind_name_ident();
+        let err_name = self.err_name_ident();
+        let cat_name = self.err_cat_name_ident();
+        let use_display_mod = if self.module.has_display_variant_types() {
+            quote! { #display_mod, }
+        } else {
+            TokenStream::default()
+        };
+        let use_tokens = quote! {
+            super::{
+                #use_display_mod #private_mod, #category_names_mod,
+                #error_names_mod,
+                #categories_mod, #kinds_mod, #err_kind_name,
+                #err_name, #cat_name
+            }
+        };
+        if self.module.flat_kinds() {
+            tokens = quote! { use super::#use_tokens; };
+        }
+
+        for c in &self.module.categories {
+            if !self.module.cat_has_variant_types(c) {
+                continue;
+            }
+
+            let cvt = self.category_variant_types_tokens(c);
+            if self.module.flat_kinds() {
+                tokens = quote! {
+                    #tokens
+                    #cvt
+                };
+            } else {
+                let cat_mod_ident = format_ident!("{}", c.module_name());
+                let cat_mod_doc = doc_tokens(&format!("{} category error variant types.", c.name));
+
+                tokens = quote! {
+                    #tokens
+
+                    #cat_mod_doc
+                    pub mod #cat_mod_ident {
+                        use super::super::#use_tokens;
+                        #cvt
+                    }
+                };
+            }
+        }
+
+        let types_mod = types_mod_ident();
+        quote! {
+            #[doc = " Error variant types."]
+            pub mod #types_mod {
+                #tokens
+            }
+        }
+    }
+
+    fn category_variant_types_tokens(&self, c: &CategorySpec) -> TokenStream {
+        let mut tokens = TokenStream::default();
+
+        for e in &c.errors {
+            if !self.module.err_has_variant_type(c, e) {
+                continue;
+            }
+            let evt = self.error_variant_type_tokens(c, e);
+            tokens = quote! {
+                #tokens
+                #evt
+            };
+        }
+
+        tokens
+    }
+
+    fn error_variant_type_tokens(&self, c: &CategorySpec, e: &ErrorSpec) -> TokenStream {
+        let display_mod = error_displays_mod_ident();
+        let kinds_mod = error_kinds_mod_ident();
+        let private_mod = private_mod_ident();
+        let category_names_mod = category_names_mod_ident();
+        let categories_mod = categories_mod_ident();
+        let error_names_mod = error_names_mod_ident();
+        let cat_const_ident = format_ident!("{}", c.ident_name());
+        let err_kind_name_ident = self.err_kind_name_ident();
+        let err_name_ident = self.err_name_ident();
+        let cat_mod = format_ident!("{}", c.module_name());
+        let cat_name_ident = self.err_cat_name_ident();
+        let err_ident = format_ident!("{}", e.name);
+        let err_kind_const_ident = format_ident!("{}", e.name);
+        let var_type_name = e.variant_type_name();
+        let var_type_ident = format_ident!("{}", var_type_name);
+        let err_doc = doc_tokens(self.module.err_kind_const_doc(c, e));
+        let display = if e.display.is_some() {
+            quote! { #display_mod::#cat_mod::#err_ident }
+        } else {
+            quote! { <Self as tighterror::VariantType>::NAME }
+        };
+        let error_trait = if self.module.error_trait(self.spec.main.no_std) {
+            quote! { impl std::error::Error for #var_type_ident {} }
+        } else {
+            TokenStream::default()
+        };
+        let err_kind_tokens = if self.module.flat_kinds() {
+            quote! { #kinds_mod::#err_kind_const_ident }
+        } else {
+            quote! { #kinds_mod::#cat_mod::#err_kind_const_ident }
+        };
+        quote! {
+            #err_doc
+            #[derive(Clone, Copy)]
+            #[non_exhaustive]
+            pub struct #var_type_ident;
+
+            impl #var_type_ident {
+                #[doc = " Returns the struct name."]
+                #[inline]
+                pub fn name(&self) -> &'static str {
+                    <#var_type_ident as tighterror::VariantType>::NAME
+                }
+
+                #[doc = " Returns the error kind constant."]
+                #[inline]
+                pub fn kind(&self) -> #err_kind_name_ident {
+                    <#var_type_ident as tighterror::VariantType>::KIND
+                }
+
+                #[doc = " Returns the error category constant."]
+                #[inline]
+                pub fn category(&self) -> #cat_name_ident {
+                    <#var_type_ident as tighterror::VariantType>::CATEGORY
+                }
+            }
+
+            impl core::fmt::Display for #var_type_ident {
+                #[inline]
+                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                    f.pad(#display)
+                }
+            }
+
+            impl core::fmt::Debug for #var_type_ident {
+                #[inline]
+                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                    f.debug_struct(#var_type_name)
+                        .field("cat", &#private_mod::Ident(#category_names_mod::#cat_const_ident))
+                        .field("var", &#private_mod::Ident(#error_names_mod::#cat_mod::#err_ident))
+                        .finish()
+                }
+            }
+
+            impl tighterror::VariantType for #var_type_ident {
+                type R = #private_mod::R;
+                type Category = #cat_name_ident;
+                type Kind = #err_kind_name_ident;
+
+                const CATEGORY: Self::Category = #categories_mod::#cat_const_ident;
+                const KIND: Self::Kind = #err_kind_tokens;
+                const NAME: &'static str = #var_type_name;
+            }
+
+            impl core::convert::From<#var_type_ident> for #err_kind_name_ident {
+                #[inline]
+                fn from(_: #var_type_ident) -> #err_kind_name_ident {
+                    <#var_type_ident as tighterror::VariantType>::KIND
+                }
+            }
+
+            impl core::convert::From<#var_type_ident> for #err_name_ident {
+                #[inline]
+                fn from(_: #var_type_ident) -> Self {
+                    <#var_type_ident as tighterror::VariantType>::KIND.into()
+                }
+            }
+
+            impl<T> core::convert::From<#var_type_ident> for core::result::Result<T, #err_name_ident> {
+                #[inline]
+                fn from(_: #var_type_ident) -> Self {
+                    <#var_type_ident as tighterror::VariantType>::KIND.into()
+                }
+            }
+
+            impl<T> core::convert::From<#var_type_ident> for core::result::Result<T, #var_type_ident> {
+                #[inline]
+                fn from(v: #var_type_ident) -> Self {
+                    Err(v)
+                }
+            }
+
+            #error_trait
+        }
+    }
+
     fn test_tokens(&self) -> TokenStream {
         let tests_mod = tests_mod_ident();
         if self.opts.test {
@@ -676,6 +900,10 @@ impl<'a> ModuleGenerator<'a> {
         let ut_err_kind_category = self.ut_err_kind_category();
         let ut_err_kind_from_value = self.ut_err_kind_from_value();
         let ut_err_display = self.ut_err_display();
+        let ut_variant_types_display = self.ut_variant_types_display();
+        let ut_variant_types_to_kind = self.ut_variant_types_to_kind();
+        let ut_variant_types_to_error = self.ut_variant_types_to_error();
+        let ut_variant_types_to_result = self.ut_variant_types_to_result();
 
         quote! {
             #ut_category_name
@@ -689,6 +917,10 @@ impl<'a> ModuleGenerator<'a> {
             #ut_err_kind_category
             #ut_err_kind_from_value
             #ut_err_display
+            #ut_variant_types_display
+            #ut_variant_types_to_kind
+            #ut_variant_types_to_error
+            #ut_variant_types_to_result
         }
     }
 
@@ -947,6 +1179,152 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
+    fn ut_variant_types_display(&self) -> TokenStream {
+        if !self.module.has_variant_types() {
+            return TokenStream::default();
+        }
+
+        let iter = self.module.categories.iter().map(|c| {
+            let err_iter = c.errors.iter().map(|e| {
+                if !self.module.err_has_variant_type(c, e) {
+                    return TokenStream::default();
+                }
+                let add_cat_mod = !self.module.flat_kinds();
+                let var_type_ident = self.err_var_type_tokens(c, e, add_cat_mod);
+                let display = if let Some(ref d) = e.display {
+                    d.clone()
+                } else {
+                    e.variant_type_name()
+                };
+                quote! {
+                    assert_eq!(format!("{}", #var_type_ident), #display);
+                }
+            });
+            quote! {
+                #(#err_iter)*
+            }
+        });
+
+        let variants_mod = variants_mod_ident();
+        let types_mod = types_mod_ident();
+        quote! {
+            #[test]
+            fn test_variant_types_display() {
+                use #variants_mod::#types_mod::*;
+                #(#iter)*
+            }
+        }
+    }
+
+    fn ut_variant_types_to_kind(&self) -> TokenStream {
+        if !self.module.has_variant_types() {
+            return TokenStream::default();
+        }
+
+        let err_kinds_mod = error_kinds_mod_ident();
+        let err_kind_name = self.err_kind_name_ident();
+
+        let iter = self.module.categories.iter().map(|c| {
+            let err_iter = c.errors.iter().map(|e| {
+                if !self.module.err_has_variant_type(c, e) {
+                    return TokenStream::default();
+                }
+                let add_cat_mod = !self.module.flat_kinds();
+                let err_ident = self.err_const_tokens(c, e, add_cat_mod);
+                let var_type_ident = self.err_var_type_tokens(c, e, add_cat_mod);
+                quote! {
+                    assert_eq!(#err_kind_name::from(#var_type_ident), #err_kinds_mod::#err_ident);
+                }
+            });
+            quote! {
+                #(#err_iter)*
+            }
+        });
+
+        let variants_mod = variants_mod_ident();
+        let types_mod = types_mod_ident();
+        quote! {
+            #[test]
+            fn test_variant_types_to_kind() {
+                use #variants_mod::#types_mod::*;
+                #(#iter)*
+            }
+        }
+    }
+
+    fn ut_variant_types_to_error(&self) -> TokenStream {
+        if !self.module.has_variant_types() {
+            return TokenStream::default();
+        }
+
+        let err_kinds_mod = error_kinds_mod_ident();
+        let err_name = self.err_name_ident();
+
+        let iter = self.module.categories.iter().map(|c| {
+            let err_iter = c.errors.iter().map(|e| {
+                if !self.module.err_has_variant_type(c, e) {
+                    return TokenStream::default();
+                }
+                let add_cat_mod = !self.module.flat_kinds();
+                let err_ident = self.err_const_tokens(c, e, add_cat_mod);
+                let var_type_ident = self.err_var_type_tokens(c, e, add_cat_mod);
+                quote! {
+                    assert_eq!(#err_name::from(#var_type_ident).kind(), #err_kinds_mod::#err_ident);
+                }
+            });
+            quote! {
+                #(#err_iter)*
+            }
+        });
+
+        let variants_mod = variants_mod_ident();
+        let types_mod = types_mod_ident();
+        quote! {
+            #[test]
+            fn test_variant_types_to_error() {
+                use #variants_mod::#types_mod::*;
+                #(#iter)*
+            }
+        }
+    }
+
+    fn ut_variant_types_to_result(&self) -> TokenStream {
+        if !self.module.has_variant_types() {
+            return TokenStream::default();
+        }
+
+        let err_kinds_mod = error_kinds_mod_ident();
+        let err_name = self.err_name_ident();
+
+        let iter = self.module.categories.iter().map(|c| {
+            let err_iter = c.errors.iter().map(|e| {
+                if !self.module.err_has_variant_type(c, e) {
+                    return TokenStream::default();
+                }
+                let add_cat_mod = !self.module.flat_kinds();
+                let err_ident = self.err_const_tokens(c, e, add_cat_mod);
+                let var_type_ident = self.err_var_type_tokens(c, e, add_cat_mod);
+                quote! {
+                    let res: Result<(), #err_name> = #var_type_ident.into();
+                    assert_eq!(res.unwrap_err().kind(), #err_kinds_mod::#err_ident);
+                }
+            });
+            quote! {
+                #(#err_iter)*
+            }
+        });
+
+        let variants_mod = variants_mod_ident();
+        let types_mod = types_mod_ident();
+        quote! {
+            #[test]
+            fn test_variant_types_to_result() {
+                use #variants_mod::#types_mod::*;
+                #(#iter)*
+            }
+        }
+    }
+
     fn err_cat_name_ident(&self) -> Ident {
         format_ident!("{}", self.module.err_cat_name())
     }
@@ -1024,6 +1402,25 @@ impl<'a> ModuleGenerator<'a> {
         } else {
             quote! {
                 #err_ident
+            }
+        }
+    }
+
+    fn err_var_type_tokens(
+        &self,
+        c: &CategorySpec,
+        e: &ErrorSpec,
+        add_cat_mod: bool,
+    ) -> TokenStream {
+        let var_type_ident = format_ident!("{}", e.variant_type_name());
+        let cat_mod_ident = format_ident!("{}", c.module_name());
+        if add_cat_mod {
+            quote! {
+                #cat_mod_ident::#var_type_ident
+            }
+        } else {
+            quote! {
+                #var_type_ident
             }
         }
     }

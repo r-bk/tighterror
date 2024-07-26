@@ -27,6 +27,7 @@ fn add_newlines(file: String) -> String {
         r"^[[:space:]]*const fn",
         r"^[[:space:]]*pub fn",
         r"^[[:space:]]*#\[.*\]$",
+        r"^[[:space:]]*impl",
     ])
     .unwrap();
     let rg_post = RegexSet::new([

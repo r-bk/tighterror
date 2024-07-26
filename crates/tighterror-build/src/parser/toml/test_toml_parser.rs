@@ -105,6 +105,7 @@ fn test_err_doc_from_display() {
             name: "TEST_ERROR".into(),
             oes: OverridableErrorSpec {
                 doc_from_display: Some(good.1),
+                ..Default::default()
             },
             ..Default::default()
         };
@@ -250,7 +251,9 @@ errors = [
         display: Some("An error description.".into()),
         oes: OverridableErrorSpec {
             doc_from_display: Some(false),
+            ..Default::default()
         },
+        ..Default::default()
     };
     let spec = spec_from_err(err);
 
@@ -312,7 +315,9 @@ doc_from_display = true
         display: Some("An error description.".into()),
         oes: OverridableErrorSpec {
             doc_from_display: Some(false),
+            ..Default::default()
         },
+        ..Default::default()
     };
     let err4 = ErrorSpec {
         name: "ERR2".into(),
@@ -324,6 +329,7 @@ doc_from_display = true
         display: Some("A third one.".into()),
         oes: OverridableErrorSpec {
             doc_from_display: Some(true),
+            ..Default::default()
         },
         ..Default::default()
     };
@@ -368,6 +374,7 @@ fn test_module_doc_from_display() {
         let module = ModuleSpec {
             oes: OverridableErrorSpec {
                 doc_from_display: Some(good.1),
+                ..Default::default()
             },
             ..Default::default()
         };
@@ -973,6 +980,7 @@ fn test_category_doc_from_display() {
             name: IMPLICIT_CATEGORY_NAME.into(),
             oes: OverridableErrorSpec {
                 doc_from_display: Some(good.1),
+                ..Default::default()
             },
             ..Default::default()
         };
@@ -1120,6 +1128,7 @@ errors = ["DUMMY_ERR2"]
         doc: Some("First category.".into()),
         oes: OverridableErrorSpec {
             doc_from_display: Some(false),
+            ..Default::default()
         },
         errors: vec![ErrorSpec {
             name: "DUMMY_ERR".into(),
@@ -1131,6 +1140,7 @@ errors = ["DUMMY_ERR2"]
         name: "Cat2".into(),
         oes: OverridableErrorSpec {
             doc_from_display: Some(true),
+            ..Default::default()
         },
         errors: vec![ErrorSpec {
             name: "DUMMY_ERR2".into(),
@@ -1441,4 +1451,117 @@ doc = "Second category."
 errors = ["ANOTHER_ERR"]
 "#;
     assert!(TomlParser::parse_str(s).is_ok());
+}
+
+#[test]
+fn test_error_variant_type() {
+    log_init();
+
+    let s = r#"
+[[errors]]
+name = "MY_ERR"
+variant_type = "MyErr"
+"#;
+
+    let err = ErrorSpec {
+        name: "MY_ERR".into(),
+        oes: OverridableErrorSpec {
+            variant_type: Some(true),
+            ..Default::default()
+        },
+        variant_type_name: Some("MyErr".into()),
+        ..Default::default()
+    };
+    let spec = spec_from_err(err);
+    let res = TomlParser::parse_str(s).unwrap();
+    assert_eq!(res, spec);
+
+    for val in [true, false] {
+        let s = format!("[[errors]]\nname = \"MY_ERR\"\nvariant_type = {val}");
+        let err = ErrorSpec {
+            name: "MY_ERR".into(),
+            oes: OverridableErrorSpec {
+                variant_type: Some(val),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let spec = spec_from_err(err);
+        let res = TomlParser::parse_str(&s).unwrap();
+        assert_eq!(res, spec);
+    }
+}
+
+#[test]
+fn test_error_variant_type_bad_name() {
+    log_init();
+
+    let test_cases = &[
+        ("MY_ERR", BAD_IDENTIFIER_CHARACTERS),
+        ("my_err", BAD_IDENTIFIER_CHARACTERS),
+        ("myErr", BAD_IDENTIFIER_CASE),
+        ("myerr", BAD_IDENTIFIER_CASE),
+    ];
+
+    for tc in test_cases {
+        let s = format!("[[errors]]\nname = \"MY_ERR\"\nvariant_type = \"{}\"", tc.0);
+        assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), tc.1);
+    }
+}
+
+#[test]
+fn test_category_variant_type() {
+    log_init();
+
+    for val in [true, false] {
+        let s = format!("[category]\nvariant_type = {val}\n[[errors]]\nname = \"DUMMY_ERR\"");
+        let cat = CategorySpec {
+            name: "General".into(),
+            oes: OverridableErrorSpec {
+                variant_type: Some(val),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let spec = spec_from_category(cat);
+        let res = TomlParser::parse_str(&s).unwrap();
+        assert_eq!(res, spec);
+    }
+
+    for bad in BAD_BOOLEANS {
+        let s = format!(
+            "[category]\nvariant_type = {}\n[[errors]]\nname = \"DUMMY_ERR\"",
+            bad.0
+        );
+        let res = TomlParser::parse_str(&s);
+        assert_eq!(res.unwrap_err().kind(), bad.1);
+    }
+}
+
+#[test]
+fn test_module_variant_type() {
+    log_init();
+
+    for val in [true, false] {
+        let s = format!("[module]\nvariant_type = {val}\n[[errors]]\nname = \"DUMMY_ERR\"");
+        let module = ModuleSpec {
+            oes: OverridableErrorSpec {
+                variant_type: Some(val),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let spec = spec_from_module(module);
+        let res = TomlParser::parse_str(&s).unwrap();
+        assert_eq!(res, spec);
+    }
+
+    for bad in BAD_BOOLEANS {
+        let s = format!(
+            "[module]\nvariant_type = {}\n[[errors]]\nname = \"DUMMY_ERR\"",
+            bad.0
+        );
+        let res = TomlParser::parse_str(&s);
+        assert_eq!(res.unwrap_err().kind(), bad.1);
+    }
 }

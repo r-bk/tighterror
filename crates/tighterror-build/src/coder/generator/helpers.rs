@@ -73,3 +73,11 @@ pub fn tests_mod_ident() -> Ident {
 pub fn categories_mod_ident() -> Ident {
     format_ident!("{}", idents::CATEGORY_CONSTS_MOD)
 }
+
+pub fn variants_mod_ident() -> Ident {
+    format_ident!("{}", idents::VARIANTS_MOD)
+}
+
+pub fn types_mod_ident() -> Ident {
+    format_ident!("{}", idents::TYPES_MOD)
+}
