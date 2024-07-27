@@ -213,7 +213,7 @@ impl ModuleParser {
         if let Some(v) = t.remove(kws::CATEGORIES) {
             if let ParseMode::Single = self.0 {
                 log::error!(
-                    "CategoriesList is not allowed in root-level `{}` attribute",
+                    "CategoryList is not allowed in root-level `{}` attribute",
                     kws::MODULE
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();
@@ -288,11 +288,11 @@ impl ModuleParser {
         if let ParseMode::List = self.0 {
             if let Some(ref name) = mod_spec.name {
                 if mod_spec.categories.is_empty() {
-                    log::error!("CategoriesList is missing: module = {name}");
+                    log::error!("CategoryList is missing: module = {name}");
                     return MISSING_ATTRIBUTE.into();
                 }
             } else {
-                log::error!("ModuleObject name is mandatory in ModulesList");
+                log::error!("ModuleObject name is mandatory in ModuleList");
                 return MISSING_ATTRIBUTE.into();
             }
         }
@@ -311,7 +311,7 @@ impl ModulesParser {
         match v {
             Value::Array(a) => Self::array(a),
             ref ov => {
-                log::error!("ModulesList must be an Array: deserialized {:?}", ov);
+                log::error!("ModuleList must be an Array: deserialized {:?}", ov);
                 BAD_VALUE_TYPE.into()
             }
         }
@@ -324,7 +324,7 @@ impl ModulesParser {
             modules.push(mp.value(v)?);
         }
         if modules.is_empty() {
-            log::error!("Empty ModulesList is not allowed");
+            log::error!("Empty ModuleList is not allowed");
             return EMPTY_LIST.into();
         }
         check_module_name_uniqueness(modules.iter().map(|m| m.name()))?;
@@ -368,7 +368,7 @@ impl ErrorsParser {
             }
         }
         if errors.is_empty() {
-            log::error!("Empty ErrorsList is not allowed");
+            log::error!("Empty ErrorList is not allowed");
             return EMPTY_LIST.into();
         }
         check_error_name_uniqueness(errors.iter().map(|e| e.name.as_str()))?;
@@ -460,7 +460,7 @@ impl CategoryParser {
         if let Some(v) = t.remove(kws::ERRORS) {
             if matches!(self.0, ParseMode::Single) {
                 log::error!(
-                    "ErrorsList is not allowed in root-level '{}' attribute",
+                    "ErrorList is not allowed in root-level '{}' attribute",
                     kws::CATEGORY
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();
@@ -481,11 +481,11 @@ impl CategoryParser {
             }
             ParseMode::List => {
                 if cat_spec.name.is_empty() {
-                    log::error!("CategoryObject name is mandatory in CategoriesList");
+                    log::error!("CategoryObject name is mandatory in CategoryList");
                     return MISSING_ATTRIBUTE.into();
                 }
                 if cat_spec.errors.is_empty() {
-                    log::error!("ErrorsList not found: category_name = {}", cat_spec.name);
+                    log::error!("ErrorList not found: category_name = {}", cat_spec.name);
                     return MISSING_ATTRIBUTE.into();
                 }
             }
@@ -525,7 +525,7 @@ impl CategoriesParser {
                 }
                 ov => {
                     log::error!(
-                        "CategoryObject in CategoriesList must be a Table: deserialized {:?}",
+                        "CategoryObject in CategoryList must be a Table: deserialized {:?}",
                         ov
                     );
                     return BAD_VALUE_TYPE.into();
@@ -533,7 +533,7 @@ impl CategoriesParser {
             }
         }
         if categories.is_empty() {
-            log::error!("Empty CategoriesList is not allowed");
+            log::error!("Empty CategoryList is not allowed");
             return EMPTY_LIST.into();
         }
         check_category_name_uniqueness(categories.iter().map(|c| c.name.as_str()))?;
