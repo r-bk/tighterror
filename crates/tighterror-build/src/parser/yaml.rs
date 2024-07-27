@@ -60,7 +60,7 @@ impl YamlParser {
         }
 
         if let Some(v) = m.remove(kws::MODULES) {
-            spec.modules = ModulesParser::value(v)?;
+            spec.modules = ModuleListParser::value(v)?;
         }
 
         if let Some(v) = m.remove(kws::MODULE) {
@@ -80,7 +80,7 @@ impl YamlParser {
         }
 
         if let Some(v) = m.remove(kws::CATEGORIES) {
-            let categories = CategoriesParser::value(v)?;
+            let categories = CategoryListParser::value(v)?;
             if let Some(m) = spec.modules.first_mut() {
                 m.categories = categories;
             } else {
@@ -90,7 +90,7 @@ impl YamlParser {
         }
 
         if let Some(v) = m.remove(kws::ERRORS) {
-            let errors = ErrorsParser::value(v)?;
+            let errors = ErrorListParser::value(v)?;
             if let Some(m) = spec.modules.first_mut() {
                 if let Some(c) = m.categories.first_mut() {
                     c.errors = errors;
@@ -227,7 +227,7 @@ impl ModuleParser {
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();
             }
-            mod_spec.categories = CategoriesParser::value(v)?;
+            mod_spec.categories = CategoryListParser::value(v)?;
         }
 
         if let Some(v) = m.remove(kws::DOC_FROM_DISPLAY) {
@@ -313,9 +313,9 @@ impl ModuleParser {
 // ----------------------------------------------------------------------------
 
 #[derive(Debug)]
-struct ModulesParser;
+struct ModuleListParser;
 
-impl ModulesParser {
+impl ModuleListParser {
     fn value(v: Value) -> Result<Vec<ModuleSpec>, TbError> {
         match v {
             Value::Sequence(s) => Self::sequence(s),
@@ -344,9 +344,9 @@ impl ModulesParser {
 // ----------------------------------------------------------------------------
 
 #[derive(Debug)]
-struct ErrorsParser;
+struct ErrorListParser;
 
-impl ErrorsParser {
+impl ErrorListParser {
     fn value(v: Value) -> Result<Vec<ErrorSpec>, TbError> {
         match v {
             Value::Sequence(s) => Self::sequence(s),
@@ -531,7 +531,7 @@ impl CategoryParser {
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();
             }
-            cat_spec.errors = ErrorsParser::value(v)?;
+            cat_spec.errors = ErrorListParser::value(v)?;
         }
 
         if let Some((k, _)) = m.into_iter().next() {
@@ -565,9 +565,9 @@ impl CategoryParser {
 // ----------------------------------------------------------------------------
 
 #[derive(Debug)]
-struct CategoriesParser;
+struct CategoryListParser;
 
-impl CategoriesParser {
+impl CategoryListParser {
     fn value(v: Value) -> Result<Vec<CategorySpec>, TbError> {
         match v {
             Value::Sequence(s) => Self::sequence(s),
