@@ -222,7 +222,7 @@ impl ModuleParser {
         if let Some(v) = m.remove(kws::CATEGORIES) {
             if let ParseMode::Single = self.0 {
                 error!(
-                    "CategoriesList is not allowed in root-level `{}` attribute",
+                    "CategoryList is not allowed in root-level `{}` attribute",
                     kws::MODULE
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();
@@ -297,11 +297,11 @@ impl ModuleParser {
         if let ParseMode::List = self.0 {
             if let Some(ref name) = mod_spec.name {
                 if mod_spec.categories.is_empty() {
-                    error!("CategoriesList is missing: module = {name}");
+                    error!("CategoryList is missing: module = {name}");
                     return MISSING_ATTRIBUTE.into();
                 }
             } else {
-                error!("ModuleObject name is mandatory in ModulesList");
+                error!("ModuleObject name is mandatory in ModuleList");
                 return MISSING_ATTRIBUTE.into();
             }
         }
@@ -320,7 +320,7 @@ impl ModulesParser {
         match v {
             Value::Sequence(s) => Self::sequence(s),
             ref ov => {
-                error!("ModulesList must be a Sequence: deserialized {:?}", ov);
+                error!("ModuleList must be a Sequence: deserialized {:?}", ov);
                 BAD_VALUE_TYPE.into()
             }
         }
@@ -333,7 +333,7 @@ impl ModulesParser {
             modules.push(mp.value(v)?);
         }
         if modules.is_empty() {
-            error!("Empty ModulesList is not allowed");
+            error!("Empty ModuleList is not allowed");
             return EMPTY_LIST.into();
         }
         check_module_name_uniqueness(modules.iter().map(|m| m.name()))?;
@@ -351,7 +351,7 @@ impl ErrorsParser {
         match v {
             Value::Sequence(s) => Self::sequence(s),
             ref ov => {
-                error!("ErrorsList must be a Sequence: deserialized {:?}", ov);
+                error!("ErrorList must be a Sequence: deserialized {:?}", ov);
                 BAD_VALUE_TYPE.into()
             }
         }
@@ -365,7 +365,7 @@ impl ErrorsParser {
                 Value::Mapping(m) => errors.push(ErrorParser::mapping(m)?),
                 ov => {
                     error!(
-                        "ErrorObject in ErrorsList must be a String or a Mapping: deserialized {:?}",
+                        "ErrorObject in ErrorList must be a String or a Mapping: deserialized {:?}",
                         ov
                     );
                     return BAD_VALUE_TYPE.into();
@@ -373,7 +373,7 @@ impl ErrorsParser {
             }
         }
         if errors.is_empty() {
-            error!("Empty ErrorsList is not allowed");
+            error!("Empty ErrorList is not allowed");
             return EMPTY_LIST.into();
         }
         check_error_name_uniqueness(errors.iter().map(|e| e.name.as_str()))?;
@@ -526,7 +526,7 @@ impl CategoryParser {
         if let Some(v) = m.remove(kws::ERRORS) {
             if matches!(self.0, ParseMode::Single) {
                 error!(
-                    "ErrorsList is not allowed in root-level '{}' attribute",
+                    "ErrorList is not allowed in root-level '{}' attribute",
                     kws::CATEGORY
                 );
                 return BAD_OBJECT_ATTRIBUTE.into();
@@ -548,11 +548,11 @@ impl CategoryParser {
             }
             ParseMode::List => {
                 if cat_spec.name.is_empty() {
-                    error!("CategoryObject name is mandatory in CategoriesList");
+                    error!("CategoryObject name is mandatory in CategoryList");
                     return MISSING_ATTRIBUTE.into();
                 }
                 if cat_spec.errors.is_empty() {
-                    error!("ErrorsList not found: category_name = {}", cat_spec.name);
+                    error!("ErrorList not found: category_name = {}", cat_spec.name);
                     return MISSING_ATTRIBUTE.into();
                 }
             }
@@ -572,7 +572,7 @@ impl CategoriesParser {
         match v {
             Value::Sequence(s) => Self::sequence(s),
             ref ov => {
-                error!("CategoriesList must be a Sequence: deserialized {:?}", ov);
+                error!("CategoryList must be a Sequence: deserialized {:?}", ov);
                 BAD_VALUE_TYPE.into()
             }
         }
@@ -589,7 +589,7 @@ impl CategoriesParser {
                 }
                 ov => {
                     error!(
-                        "CategoryObject in CategoriesList must be a Mapping: deserialized {:?}",
+                        "CategoryObject in CategoryList must be a Mapping: deserialized {:?}",
                         ov
                     );
                     return BAD_VALUE_TYPE.into();
@@ -597,7 +597,7 @@ impl CategoriesParser {
             }
         }
         if categories.is_empty() {
-            error!("Empty CategoriesList is not allowed");
+            error!("Empty CategoryList is not allowed");
             return EMPTY_LIST.into();
         }
         check_category_name_uniqueness(categories.iter().map(|c| c.name.as_str()))?;
