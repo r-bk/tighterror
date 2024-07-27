@@ -624,7 +624,7 @@ fn v2key(v: Value) -> Result<String, TbError> {
         Value::String(s) => s,
         ov => {
             error!("a Mapping key must be a String: deserialized {:?}", ov);
-            return BAD_VALUE_TYPE.into();
+            return BAD_KEYWORD_TYPE.into();
         }
     };
 
