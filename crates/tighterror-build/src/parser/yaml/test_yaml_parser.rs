@@ -18,7 +18,7 @@ const GOOD_BOOLEANS: [(&str, bool); 4] = [
     ("False", false),
 ];
 const BAD_BOOLEANS: [&str; 5] = ["yes", "tr ue", "1", "on", "null"];
-const BAD_IDENTS: [(&str, TbErrorKind); 7] = [
+const BAD_IDENTS: [(&str, TbErrorKind); 8] = [
     ("notUpperCamelCase", BAD_IDENTIFIER_CASE),
     ("With Spaces", BAD_IDENTIFIER_CHARACTERS),
     ("\"\"", EMPTY_IDENTIFIER),
@@ -26,6 +26,7 @@ const BAD_IDENTS: [(&str, TbErrorKind); 7] = [
     ("\" PaddedWithSpaces  \"", BAD_IDENTIFIER_CHARACTERS),
     ("Disallowed-Character-", BAD_IDENTIFIER_CHARACTERS),
     ("null", BAD_VALUE_TYPE),
+    ("With_Underscore", BAD_IDENTIFIER_CHARACTERS),
 ];
 
 #[test]
