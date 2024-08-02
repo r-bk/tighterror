@@ -24,6 +24,7 @@ mod testing {
             ("MyErr1", UpperSnake, UpperSnake, "MYERR1"),
             ("MyErr1", UpperCamel, UpperSnake, "MY_ERR_1"),
             ("MY_ERR1", UpperSnake, UpperCamel, "MyErr1"),
+            ("MY_ERR", UpperCamel, UpperCamel, "My_err"),
         ];
 
         for c in cases {
