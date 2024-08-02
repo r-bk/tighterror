@@ -22,7 +22,7 @@ const BAD_BOOLEANS: [(&str, TbErrorKind); 8] = [
     ("False", BAD_TOML),
     ("no", BAD_TOML),
 ];
-const BAD_IDENTS: [(&str, TbErrorKind); 7] = [
+const BAD_IDENTS: [(&str, TbErrorKind); 8] = [
     ("\"notUpperCamelCase\"", BAD_IDENTIFIER_CASE),
     ("\"With Spaces\"", BAD_IDENTIFIER_CHARACTERS),
     ("\"\"", EMPTY_IDENTIFIER),
@@ -30,6 +30,7 @@ const BAD_IDENTS: [(&str, TbErrorKind); 7] = [
     ("\" PaddedWithSpaces  \"", BAD_IDENTIFIER_CHARACTERS),
     ("\"Disallowed-Character-\"", BAD_IDENTIFIER_CHARACTERS),
     ("\"null\"", BAD_IDENTIFIER_CASE),
+    ("\"With_Underscore\"", BAD_IDENTIFIER_CHARACTERS),
 ];
 
 #[test]

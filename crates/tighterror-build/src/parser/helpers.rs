@@ -8,11 +8,16 @@ use convert_case::Case;
 use regex::Regex;
 use std::collections::HashSet;
 
-pub fn check_ident_chars(ident: &str, desc: &str) -> Result<(), TbError> {
-    let rg = Regex::new(r"^[A-Za-z0-9_]+$").unwrap();
+fn check_ident_chars(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
+    let rgs = match case {
+        Case::Pascal | Case::UpperCamel => r"^[A-Za-z0-9]+$",
+        _ => r"^[A-Za-z0-9_]+$",
+    };
+    let rg = Regex::new(rgs).unwrap();
     if !rg.is_match(ident) {
         log::error!(
-            "`{desc}` contains unsupported characters. Only [A-Za-z0-9_] are allowed: {ident}",
+            "`{desc}` contains unsupported characters. \
+            Only {rgs} is allowed with {case:?} case: {ident}",
         );
         BAD_IDENTIFIER_CHARACTERS.into()
     } else {
@@ -26,7 +31,7 @@ fn check_ident(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
         return EMPTY_IDENTIFIER.into();
     }
 
-    check_ident_chars(ident, desc)?;
+    check_ident_chars(ident, desc, case)?;
 
     if !casing::is_case(ident, case) {
         log::error!(
