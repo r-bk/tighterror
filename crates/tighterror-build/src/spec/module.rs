@@ -92,13 +92,6 @@ impl ModuleSpec {
         }
     }
 
-    pub fn err_kind_display<'e>(&self, _c: &CategorySpec, e: &'e ErrorSpec) -> &'e str {
-        if let Some(dsp) = e.display.as_ref() {
-            return dsp.as_str();
-        }
-        e.name.as_str()
-    }
-
     pub fn err_kind_doc(&self) -> &str {
         self.err_kind_doc
             .as_deref()
