@@ -1,12 +1,4 @@
-use super::{
-    definitions::{
-        DEFAULT_CATEGORY_STRUCT_DOC, DEFAULT_DOC_FROM_DISPLAY, DEFAULT_ERROR_KIND_CONST_DOC,
-        DEFAULT_ERROR_KIND_STRUCT_DOC, DEFAULT_ERROR_STRUCT_DOC, DEFAULT_ERROR_TRAIT,
-        DEFAULT_ERR_INTO_RESULT, DEFAULT_ERR_KIND_INTO_RESULT, DEFAULT_FLAT_KINDS,
-        DEFAULT_GENERAL_CAT_DOC, DEFAULT_MODULE_DOC,
-    },
-    idents, CategorySpec, ErrorSpec, OverridableErrorSpec,
-};
+use super::{definitions::*, idents, CategorySpec, ErrorSpec, OverridableErrorSpec};
 
 pub const IMPLICIT_MODULE_NAME: &str = "errors";
 
