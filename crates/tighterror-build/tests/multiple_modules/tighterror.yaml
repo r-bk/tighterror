@@ -35,6 +35,8 @@ modules:
         errors:
           - OUT_OF_MEMORY: Memory pool is empty.
           - QUEUE_FULL: Processing queue is full.
+          - name: WITHOUT_DISPLAY
+            doc: An error without display string.
 
       - name: General
         doc: General errors category.

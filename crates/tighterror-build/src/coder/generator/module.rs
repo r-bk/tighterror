@@ -191,7 +191,7 @@ impl<'a> ModuleGenerator<'a> {
             let name = e.name.as_str();
             let const_ident = format_ident!("{}", name);
             quote! {
-                const #const_ident: &str = #name
+                pub(crate) const #const_ident: &str = #name
             }
         });
         let arr_iter = c.errors.iter().map(|e| {
@@ -200,7 +200,7 @@ impl<'a> ModuleGenerator<'a> {
         });
         let n_errors = Literal::usize_unsuffixed(c.errors.len());
         quote! {
-            mod #cat_mod_ident {
+            pub(crate) mod #cat_mod_ident {
                 #(#const_iter);* ;
 
                 pub static A: [&str; #n_errors] = [
@@ -231,11 +231,18 @@ impl<'a> ModuleGenerator<'a> {
 
     fn private_category_error_display(&self, c: &CategorySpec) -> TokenStream {
         let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+        let error_names_mod = error_names_mod_ident();
+        let add_names_mod_import = c.errors.iter().any(|e| e.display.is_none());
         let const_iter = c.errors.iter().map(|e| {
             let const_ident = format_ident!("{}", e.name);
-            let display = self.module.err_kind_display(c, e);
-            quote! {
-                const #const_ident: &str = #display
+            if let Some(ref display) = e.display {
+                quote! {
+                    const #const_ident: &str = #display
+                }
+            } else {
+                quote! {
+                    const #const_ident: &str = #error_names_mod::#cat_mod_ident::#const_ident
+                }
             }
         });
         let arr_iter = c.errors.iter().map(|e| {
@@ -243,8 +250,17 @@ impl<'a> ModuleGenerator<'a> {
             quote! { #const_ident }
         });
         let n_errors = Literal::usize_unsuffixed(c.errors.len());
+
+        let names_mod_import = if add_names_mod_import {
+            quote! { use super::super::#error_names_mod; }
+        } else {
+            TokenStream::default()
+        };
+
         quote! {
             mod #cat_mod_ident {
+                #names_mod_import
+
                 #(#const_iter);* ;
 
                 pub static A: [&str; #n_errors] = [

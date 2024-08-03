@@ -239,25 +239,25 @@ mod _cn {
 }
 
 mod _n {
-    mod parser {
-        const BAD_IDENTIFIER_CHARACTERS: &str = "BAD_IDENTIFIER_CHARACTERS";
-        const BAD_IDENTIFIER_CASE: &str = "BAD_IDENTIFIER_CASE";
-        const BAD_KEYWORD_TYPE: &str = "BAD_KEYWORD_TYPE";
-        const BAD_MODULE_IDENTIFIER: &str = "BAD_MODULE_IDENTIFIER";
-        const BAD_NAME: &str = "BAD_NAME";
-        const BAD_OBJECT_ATTRIBUTE: &str = "BAD_OBJECT_ATTRIBUTE";
-        const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
-        const BAD_TOML: &str = "BAD_TOML";
-        const BAD_ROOT_LEVEL_KEYWORD: &str = "BAD_ROOT_LEVEL_KEYWORD";
-        const BAD_VALUE_TYPE: &str = "BAD_VALUE_TYPE";
-        const BAD_YAML: &str = "BAD_YAML";
-        const EMPTY_IDENTIFIER: &str = "EMPTY_IDENTIFIER";
-        const EMPTY_LIST: &str = "EMPTY_LIST";
-        const FAILED_TO_OPEN_SPEC_FILE: &str = "FAILED_TO_OPEN_SPEC_FILE";
-        const MISSING_ATTRIBUTE: &str = "MISSING_ATTRIBUTE";
-        const MUTUALLY_EXCLUSIVE_KEYWORDS: &str = "MUTUALLY_EXCLUSIVE_KEYWORDS";
-        const NON_UNIQUE_NAME: &str = "NON_UNIQUE_NAME";
-        const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
+    pub(crate) mod parser {
+        pub(crate) const BAD_IDENTIFIER_CHARACTERS: &str = "BAD_IDENTIFIER_CHARACTERS";
+        pub(crate) const BAD_IDENTIFIER_CASE: &str = "BAD_IDENTIFIER_CASE";
+        pub(crate) const BAD_KEYWORD_TYPE: &str = "BAD_KEYWORD_TYPE";
+        pub(crate) const BAD_MODULE_IDENTIFIER: &str = "BAD_MODULE_IDENTIFIER";
+        pub(crate) const BAD_NAME: &str = "BAD_NAME";
+        pub(crate) const BAD_OBJECT_ATTRIBUTE: &str = "BAD_OBJECT_ATTRIBUTE";
+        pub(crate) const BAD_SPEC_FILE_EXTENSION: &str = "BAD_SPEC_FILE_EXTENSION";
+        pub(crate) const BAD_TOML: &str = "BAD_TOML";
+        pub(crate) const BAD_ROOT_LEVEL_KEYWORD: &str = "BAD_ROOT_LEVEL_KEYWORD";
+        pub(crate) const BAD_VALUE_TYPE: &str = "BAD_VALUE_TYPE";
+        pub(crate) const BAD_YAML: &str = "BAD_YAML";
+        pub(crate) const EMPTY_IDENTIFIER: &str = "EMPTY_IDENTIFIER";
+        pub(crate) const EMPTY_LIST: &str = "EMPTY_LIST";
+        pub(crate) const FAILED_TO_OPEN_SPEC_FILE: &str = "FAILED_TO_OPEN_SPEC_FILE";
+        pub(crate) const MISSING_ATTRIBUTE: &str = "MISSING_ATTRIBUTE";
+        pub(crate) const MUTUALLY_EXCLUSIVE_KEYWORDS: &str = "MUTUALLY_EXCLUSIVE_KEYWORDS";
+        pub(crate) const NON_UNIQUE_NAME: &str = "NON_UNIQUE_NAME";
+        pub(crate) const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
         pub static A: [&str; 18] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
@@ -280,16 +280,16 @@ mod _n {
         ];
     }
 
-    mod coder {
-        const CATEGORY_REQUIRED: &str = "CATEGORY_REQUIRED";
-        const ERROR_REQUIRED: &str = "ERROR_REQUIRED";
-        const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
-        const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
-        const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
-        const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
-        const RUSTFMT_NOT_FOUND: &str = "RUSTFMT_NOT_FOUND";
-        const TOO_MANY_BITS: &str = "TOO_MANY_BITS";
-        const OUTPUT_PATH_NOT_DIRECTORY: &str = "OUTPUT_PATH_NOT_DIRECTORY";
+    pub(crate) mod coder {
+        pub(crate) const CATEGORY_REQUIRED: &str = "CATEGORY_REQUIRED";
+        pub(crate) const ERROR_REQUIRED: &str = "ERROR_REQUIRED";
+        pub(crate) const FAILED_TO_PARSE_TOKENS: &str = "FAILED_TO_PARSE_TOKENS";
+        pub(crate) const FAILED_TO_READ_OUTPUT_FILE: &str = "FAILED_TO_READ_OUTPUT_FILE";
+        pub(crate) const FAILED_TO_WRITE_OUTPUT_FILE: &str = "FAILED_TO_WRITE_OUTPUT_FILE";
+        pub(crate) const RUSTFMT_FAILED: &str = "RUSTFMT_FAILED";
+        pub(crate) const RUSTFMT_NOT_FOUND: &str = "RUSTFMT_NOT_FOUND";
+        pub(crate) const TOO_MANY_BITS: &str = "TOO_MANY_BITS";
+        pub(crate) const OUTPUT_PATH_NOT_DIRECTORY: &str = "OUTPUT_PATH_NOT_DIRECTORY";
         pub static A: [&str; 9] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
