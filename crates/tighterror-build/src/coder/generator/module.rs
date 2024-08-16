@@ -593,11 +593,12 @@ impl<'a> ModuleGenerator<'a> {
             }
         }
 
+        let categories_mod = categories_mod_ident();
         quote! {
             #[doc = " Error kind constants."]
             pub mod #err_kinds_mod {
                 use super::#err_kind_name as EK;
-                use super::categories as c;
+                use super::#categories_mod as c;
                 #tokens
             }
         }
@@ -637,9 +638,10 @@ impl<'a> ModuleGenerator<'a> {
             };
         }
 
+        let categories_mod = categories_mod_ident();
         quote! {
             #[doc = " Error category constants."]
-            pub mod categories {
+            pub mod #categories_mod {
                 use super::#err_cat_name as C;
                 #tokens
             }
