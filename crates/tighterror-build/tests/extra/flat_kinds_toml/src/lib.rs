@@ -15,6 +15,6 @@ mod tests {
 
     #[test]
     fn test_error_kinds_are_under_kinds_module() {
-        assert_ne!(errors::kinds::TIMEOUT, errors::kinds::CONNECTION_REFUSED);
+        assert_ne!(errors::kind::TIMEOUT, errors::kind::CONNECTION_REFUSED);
     }
 }

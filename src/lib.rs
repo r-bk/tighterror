@@ -86,7 +86,7 @@
 //!
 //! This creates a module with all the concrete Rust types and
 //! corresponding trait implementations. The error categories and kinds are
-//! placed in the `categories` and `kinds` sub-modules respectively:
+//! placed in the `category` and `kind` sub-modules respectively:
 //!
 //! ```rust
 //! # mod _doc {
@@ -98,14 +98,14 @@
 //! #    }
 //! # }
 //! # impl ErrorCategory { pub const fn new(v: u8) -> Self { Self(v) } }
-//! pub mod categories {
+//! pub mod category {
 //! #   use super::*;
 //!     pub const GENERAL: ErrorCategory = ErrorCategory::new(0);
 //! }
 //!
-//! pub mod kinds {
+//! pub mod kind {
 //! #   use super::*;
-//! #   use super::categories::*;
+//! #   use super::category::*;
 //!     pub const BAD_FILE: ErrorKind = ErrorKind::new(GENERAL, 0);
 //!     pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 1);
 //! }
@@ -623,7 +623,7 @@
 //!     err_cat_doc: |
 //!       Error category type.
 //!
-//!       See the [categories] module for category constants.
+//!       See the [category] module for category constants.
 //!   ```
 //!   <br>
 //!
@@ -649,7 +649,7 @@
 //!     err_doc: |
 //!       Error type.
 //!
-//!       See the [kinds] module for error kind constants.
+//!       See the [kind] module for error kind constants.
 //!   ```
 //!   <br>
 //!
@@ -666,7 +666,7 @@
 //!     err_kind_doc: |
 //!       Error kind type.
 //!
-//!       See the [kinds] module for error kind constants.
+//!       See the [kind] module for error kind constants.
 //!   ```
 //!   <br>
 //!
@@ -697,8 +697,8 @@
 //!
 //! * `flat_kinds` - bool (optional)
 //!
-//!   Puts the error kind constants directly under the `kinds` sub-module
-//!   instead of under `kinds::<category-module-name>` sub-sub-module.
+//!   Puts the error kind constants directly under the `kind` sub-module
+//!   instead of under `kind::<category-module-name>` sub-sub-module.
 //!
 //!   By default error kind constants are placed in a category-specific
 //!   sub-module. For example:
@@ -712,8 +712,8 @@
 //!       errors:
 //!         - ERR
 //!   ```
-//!   The error kind constants' paths are `kinds::foo::ERR` and
-//!   `kinds::baz::ERR`. The category-specific sub-modules `foo` and
+//!   The error kind constants' paths are `kind::foo::ERR` and
+//!   `kind::baz::ERR`. The category-specific sub-modules `foo` and
 //!   `baz` are required because by default error names are required to be
 //!   unique on category level only.
 //!
@@ -722,7 +722,7 @@
 //!   has no practical function and just makes the paths longer.
 //!
 //!   The `flat_kinds` attribute forces *tighterror* to put the constants
-//!   directly under the `kinds` sub-module, e.g., `kinds::ERR`.
+//!   directly under the `kind` sub-module, e.g., `kind::ERR`.
 //!   Enabling this option requires the error names to be unique
 //!   on module level (and not only on category level).
 //!

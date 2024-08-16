@@ -399,7 +399,7 @@ mod _p {
 }
 
 /// Error category constants.
-pub mod categories {
+pub mod category {
     use super::TbErrorCategory as C;
 
     /// Parser errors category.
@@ -410,8 +410,8 @@ pub mod categories {
 }
 
 /// Error kind constants.
-pub mod kinds {
-    use super::categories as c;
+pub mod kind {
+    use super::category as c;
     use super::TbErrorKind as EK;
 
     /// Parser category error kind constants.

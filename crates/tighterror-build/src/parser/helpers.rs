@@ -1,7 +1,7 @@
 use crate::{
     coder::idents,
     common::casing,
-    errors::{kinds::parser::*, TbError},
+    errors::{kind::parser::*, TbError},
     parser::kws,
 };
 use convert_case::Case;
