@@ -1,5 +1,5 @@
 use crate::{
-    errors::{kinds::parser::*, TbError},
+    errors::{kind::parser::*, TbError},
     parser::{helpers::*, kws, ParseMode},
     spec::{
         definitions::DEFAULT_FLAT_KINDS, CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec,

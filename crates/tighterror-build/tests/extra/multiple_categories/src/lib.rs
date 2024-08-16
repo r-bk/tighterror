@@ -16,8 +16,8 @@ mod tests {
     #[test]
     fn test_kind_constants_are_placed_in_different_modules() {
         assert_ne!(
-            errors::kinds::parsing::QUEUE_FULL,
-            errors::kinds::processing::QUEUE_FULL
+            errors::kind::parsing::QUEUE_FULL,
+            errors::kind::processing::QUEUE_FULL
         );
     }
 }

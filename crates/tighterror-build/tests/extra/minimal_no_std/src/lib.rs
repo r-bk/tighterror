@@ -15,11 +15,11 @@ mod tests {
 
     #[test]
     fn test_result_from_err() {
-        let _res: Result<(), Error> = Error::from(kinds::general::BAD_FILE).into();
+        let _res: Result<(), Error> = Error::from(kind::general::BAD_FILE).into();
     }
 
     #[test]
     fn test_result_from_err_kind() {
-        let _res: Result<(), Error> = kinds::general::BAD_FILE.into();
+        let _res: Result<(), Error> = kind::general::BAD_FILE.into();
     }
 }

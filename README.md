@@ -152,13 +152,13 @@ impl tighterror::Category for ErrorCategory { ... }
 impl tighterror::Kind for ErrorKind { ... }
 impl tighterror::Error for Error { ... }
 
-pub mod categories {
+pub mod category {
    use super::ErrorCategory;
    pub const GENERAL: ErrorCategory = ErrorCategory::new(0);
 }
 
-pub mod kinds {
-   use super::categories::*;
+pub mod kind {
+   use super::category::*;
    use super::ErrorKind;
    pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 0);
    pub const BAD_FILE_PATH: ErrorKind = ErrorKind::new(GENERAL, 1);

@@ -1,6 +1,6 @@
 use crate::{
     coder::idents,
-    errors::{kinds::parser::*, TbErrorKind},
+    errors::{kind::parser::*, TbErrorKind},
     parser::{
         testing::{
             log_init, spec_from_category, spec_from_err, spec_from_err_iter, spec_from_main,
