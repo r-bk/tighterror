@@ -20,7 +20,7 @@ impl CategorySpec {
         casing::convert_case(&self.name, UpperCamel, UpperSnake)
     }
 
-    pub fn kinds_module_name(&self) -> String {
+    pub fn module_name(&self) -> String {
         casing::convert_case(&self.name, UpperCamel, Snake)
     }
 
