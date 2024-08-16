@@ -173,7 +173,7 @@ impl<'a> ModuleGenerator<'a> {
             .iter()
             .map(|c| self.private_category_error_names(c));
         let cat_arr_iter = self.module.categories.iter().map(|c| {
-            let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+            let cat_mod_ident = format_ident!("{}", c.module_name());
             quote! { &#cat_mod_ident::A }
         });
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
@@ -186,7 +186,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn private_category_error_names(&self, c: &CategorySpec) -> TokenStream {
-        let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+        let cat_mod_ident = format_ident!("{}", c.module_name());
         let const_iter = c.errors.iter().map(|e| {
             let name = e.name.as_str();
             let const_ident = format_ident!("{}", name);
@@ -217,7 +217,7 @@ impl<'a> ModuleGenerator<'a> {
             .iter()
             .map(|c| self.private_category_error_display(c));
         let cat_arr_iter = self.module.categories.iter().map(|c| {
-            let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+            let cat_mod_ident = format_ident!("{}", c.module_name());
             quote! { &#cat_mod_ident::A }
         });
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
@@ -230,7 +230,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn private_category_error_display(&self, c: &CategorySpec) -> TokenStream {
-        let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+        let cat_mod_ident = format_ident!("{}", c.module_name());
         let error_names_mod = error_names_mod_ident();
         let add_names_mod_import = c.errors.iter().any(|e| e.display.is_none());
         let const_iter = c.errors.iter().map(|e| {
@@ -578,7 +578,7 @@ impl<'a> ModuleGenerator<'a> {
                     #cat_tokens
                 };
             } else {
-                let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+                let cat_mod_ident = format_ident!("{}", c.module_name());
                 let cat_mod_doc = doc_tokens(&format!("{} category error kind constants.", c.name));
                 tokens = quote! {
                     #tokens
@@ -1014,7 +1014,7 @@ impl<'a> ModuleGenerator<'a> {
 
     fn err_const_tokens(&self, c: &CategorySpec, e: &ErrorSpec, add_cat_mod: bool) -> TokenStream {
         let err_ident = format_ident!("{}", e.name);
-        let cat_mod_ident = format_ident!("{}", c.kinds_module_name());
+        let cat_mod_ident = format_ident!("{}", c.module_name());
         if add_cat_mod {
             quote! {
                 #cat_mod_ident::#err_ident
