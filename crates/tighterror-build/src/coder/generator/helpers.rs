@@ -62,7 +62,7 @@ pub fn private_mod_ident() -> Ident {
     format_ident!("{}", idents::PRIVATE_MOD)
 }
 
-pub fn err_kinds_mod_ident() -> Ident {
+pub fn error_kinds_mod_ident() -> Ident {
     format_ident!("{}", idents::ERROR_KINDS_MOD)
 }
 

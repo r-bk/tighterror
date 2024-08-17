@@ -567,7 +567,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn error_kind_constants_tokens(&self) -> TokenStream {
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let err_kind_name = self.err_kind_name_ident();
         let mut tokens = TokenStream::default();
         for c in &self.module.categories {
@@ -772,7 +772,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_err_kind_name(&self) -> TokenStream {
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let iter = self.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let name = e.name.as_str();
@@ -800,7 +800,7 @@ impl<'a> ModuleGenerator<'a> {
         if self.spec.main.no_std() {
             return TokenStream::default();
         }
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let iter = self.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let name = e.name.as_str();
@@ -828,7 +828,7 @@ impl<'a> ModuleGenerator<'a> {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
             Literal::usize_unsuffixed(self.module.categories.iter().map(|c| c.errors.len()).sum());
@@ -849,7 +849,7 @@ impl<'a> ModuleGenerator<'a> {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let repr_type = self.bits.repr_type.ident();
         let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
@@ -868,7 +868,7 @@ impl<'a> ModuleGenerator<'a> {
 
     fn ut_err_kind_category(&self) -> TokenStream {
         let categories_mod = categories_mod_ident();
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let iter = self.module.categories.iter().map(|c| {
             let err_iter = c.errors.iter().map(|e| {
                 let add_cat_mod = !self.module.flat_kinds();
@@ -893,7 +893,7 @@ impl<'a> ModuleGenerator<'a> {
 
     fn ut_err_kind_from_value(&self) -> TokenStream {
         let err_kind_name = self.err_kind_name_ident();
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let iter = self.module.categories.iter().map(|c| {
             let err_iter = c.errors.iter().map(|e| {
                 let add_cat_mod = !self.module.flat_kinds();
@@ -920,7 +920,7 @@ impl<'a> ModuleGenerator<'a> {
             return TokenStream::default();
         }
         let err_name = self.err_name_ident();
-        let err_kinds_mod = err_kinds_mod_ident();
+        let err_kinds_mod = error_kinds_mod_ident();
         let iter = self.module.categories.iter().map(|c| {
             let err_iter = c.errors.iter().map(|e| {
                 let add_cat_mod = !self.module.flat_kinds();
