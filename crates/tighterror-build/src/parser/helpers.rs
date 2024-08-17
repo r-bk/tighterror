@@ -3,6 +3,7 @@ use crate::{
     common::casing,
     errors::{kind::parser::*, TbError},
     parser::kws,
+    spec::ModuleSpec,
 };
 use convert_case::Case;
 use regex::Regex;
@@ -157,4 +158,27 @@ where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("module", iter)
+}
+
+pub fn check_name_collisions(m: &ModuleSpec) -> Result<(), TbError> {
+    check_struct_names_collision(m)?;
+    Ok(())
+}
+
+pub fn check_struct_names_collision(m: &ModuleSpec) -> Result<(), TbError> {
+    let err_name = m.err_name();
+    let err_cat_name = m.err_cat_name();
+    let err_kind_name = m.err_kind_name();
+
+    if err_name == err_cat_name {
+        log::error!("error name equals error category name: {err_name}");
+        return NAME_COLLISION.into();
+    } else if err_name == err_kind_name {
+        log::error!("error name equals error kind name: {err_name}");
+        return NAME_COLLISION.into();
+    } else if err_cat_name == err_kind_name {
+        log::error!("error category name equals error kind name: {err_cat_name}");
+        return NAME_COLLISION.into();
+    }
+    Ok(())
 }

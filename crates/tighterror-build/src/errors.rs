@@ -258,7 +258,8 @@ mod _n {
         pub(crate) const MUTUALLY_EXCLUSIVE_KEYWORDS: &str = "MUTUALLY_EXCLUSIVE_KEYWORDS";
         pub(crate) const NON_UNIQUE_NAME: &str = "NON_UNIQUE_NAME";
         pub(crate) const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
-        pub static A: [&str; 18] = [
+        pub(crate) const NAME_COLLISION: &str = "NAME_COLLISION";
+        pub static A: [&str; 19] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
             BAD_KEYWORD_TYPE,
@@ -277,6 +278,7 @@ mod _n {
             MUTUALLY_EXCLUSIVE_KEYWORDS,
             NON_UNIQUE_NAME,
             SPEC_FILE_NOT_FOUND,
+            NAME_COLLISION,
         ];
     }
 
@@ -329,7 +331,8 @@ mod _d {
             "Specification contains mutually exclusive keywords.";
         const NON_UNIQUE_NAME: &str = "A name is not unique.";
         const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
-        pub static A: [&str; 18] = [
+        const NAME_COLLISION: &str = "Collision of names between different items.";
+        pub static A: [&str; 19] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
             BAD_KEYWORD_TYPE,
@@ -348,6 +351,7 @@ mod _d {
             MUTUALLY_EXCLUSIVE_KEYWORDS,
             NON_UNIQUE_NAME,
             SPEC_FILE_NOT_FOUND,
+            NAME_COLLISION,
         ];
     }
 
@@ -384,7 +388,7 @@ mod _p {
     pub const CAT_BITS: usize = 1;
     pub const CAT_MAX: R = 1;
     pub const VAR_MASK: R = 31;
-    pub static VAR_MAXES: [R; 2] = [17, 8];
+    pub static VAR_MAXES: [R; 2] = [18, 8];
     pub const CAT_MASK: R = 32;
     pub const VAR_BITS: usize = 5;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
@@ -472,6 +476,9 @@ pub mod kind {
 
         /// Specification file couldn't be found.
         pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::PARSER, 17);
+
+        /// Collision of names between different items.
+        pub const NAME_COLLISION: EK = EK::new(c::PARSER, 18);
     }
 
     /// Coder category error kind constants.
