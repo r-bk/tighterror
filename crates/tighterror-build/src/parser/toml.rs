@@ -109,6 +109,7 @@ impl TomlParser {
             if m.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS) {
                 check_module_error_name_uniqueness(m.errors_iter().map(|e| e.name.as_str()))?;
             }
+            check_name_collisions(m)?;
         }
 
         Ok(spec)

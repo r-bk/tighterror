@@ -31,6 +31,7 @@ categories:
       - MUTUALLY_EXCLUSIVE_KEYWORDS: Specification contains mutually exclusive keywords.
       - NON_UNIQUE_NAME: A name is not unique.
       - SPEC_FILE_NOT_FOUND: Specification file couldn't be found.
+      - NAME_COLLISION: Collision of names between different items.
 
   - name: Coder
     doc: Coder errors category.
