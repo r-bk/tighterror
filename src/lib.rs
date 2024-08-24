@@ -20,6 +20,7 @@
 //! # Table Of Contents
 //!
 //! 1. [High-Level Overview](#high-level-overview)
+//!     * [Variant Types](#variant-types)
 //! 1. [Implementation Details](#implementation-details)
 //! 1. [Specification File Reference](#specification-file-reference)
 //!     * [Filename](#filename)
@@ -143,6 +144,59 @@
 //! # }
 //! ```
 //!
+//! ### Variant Types
+//!
+//! There are many cases when a function has only a single error condition.
+//! Returning an `Error` from such function may be excessive because it causes
+//! a caller to handle a non-exhaustive list of errors (because an Error can
+//! contain any of the error kinds defined in a module).
+//!
+//! Enabling a *variant type* on such error causes creation of a dedicated
+//! error type (a ZST) to be used as the error type of the function.
+//! This way a caller of the function needs to handle a single error condition,
+//! making error handling simpler.
+//!
+//! Like *error kind*, *variant type* is convertible to `Error`, `ErrorKind`,
+//! and `Result<T, Error>`. Hence, it is seamless to propagate through layers
+//! of abstraction using the `?` operator.
+//!
+//! When at least one *variant type* is enabled *tighterror* creates a submodule
+//! `variant::types` that contains per-category modules (subject to
+//! `flat_kinds` module setting) with their corresponding variant types.
+//!
+//! ```yaml
+//! ---
+//! errors:
+//!   - name: OPERATION_TIMEOUT
+//!     variant_type: true
+//! ```
+//!
+//! ```rust
+//! pub mod kind {
+//!     pub mod general {
+//!         // Error kind constants defined here.
+//!         // ...
+//!         // pub const OPERATION_TIMEOUT: ErrorKind = ErrorKind::new(GENERAL, 0);
+//!     }
+//! }
+//!
+//! pub mod variant {
+//!     pub mod types {
+//!         // Variant types defined here.
+//!         pub mod general {
+//!             #[non_exhaustive]
+//!             pub struct OperationTimeout;
+//!
+//!             // impl tighterror::VariantType for OperationTimeout  { /* ... */ }
+//!             // impl Debug for OperationTimeout { /* ... */ }
+//!             // impl Display for OperationTimeout { /* ... */ }
+//!             // impl OperationTimeout { /* ... */ }
+//!             // impl std::error::Error for OperationTimeout {}
+//!         }
+//!     }
+//! }
+//! ```
+//!
 //! [newtype]: https://doc.rust-lang.org/rust-by-example/generics/new_types.html
 //!
 //!
@@ -240,7 +294,28 @@
 //!   errors in the category, or in [module object](#module-doc-from-display)
 //!   to affect all errors in the module.
 //!   Values defined on lower levels win.<br>
-//!   Default: `false`<br>
+//!   Default: `false`<br><br>
+//!
+//! * `variant_type` - bool|string (optional)<a name="err-obj-variant-type"></a>
+//!
+//!   Enables creation of a Variant Type for this error.
+//!
+//!   When specified as a boolean `true|false` it enables/disables creation
+//!   of a Variant Type for this error. When enabled the name of the Variant
+//!   Type is derived by converting the error name case from UPPER_SNAKE to
+//!   UpperCamel, e.g., `OPERATION_TIMEOUT` becomes `OperationTimeout`.
+//!
+//!   To customize the Variant Type name it is possible to specify this
+//!   attribute as a string. In this case the value of the attribute becomes
+//!   the name of the Variant Type. It must be a valid Rust struct name
+//!   specified in UpperCamel case.
+//!
+//!   This attribute can be enabled on a higher level in
+//!   [category object](#category-variant-type) or in
+//!   [module object](#module-variant-type).
+//!   Values defined on lower levels win.
+//!
+//!   Default: `false`<br><br>
 //!
 //! ### Error Object Examples
 //!
@@ -433,6 +508,18 @@
 //!   a *category object* is defined as a standalone root-level attribute
 //!   (see below) this attribute is forbidden, and the error list must be
 //!   defined as a root-level attribute.<br><br>
+//!
+//! * `variant_type` - bool (optional)<a name="category-variant-type"></a>
+//!
+//!   Sets a default value for the [`variant_type`](#err-obj-variant-type)
+//!   *error object* attribute. This affects errors belonging to this category
+//!   only. The value is used for all errors that do not define this property
+//!   explicitly as part of *error object* specification.
+//!
+//!   Customization of Variant Type name is possible only in the *error object*
+//!   specification.
+//!
+//!   Default: `false`<br><br>
 //!
 //! ### Category Object Examples
 //!
@@ -752,6 +839,20 @@
 //!    When enabled an implementation of [From] trait is added
 //!    to create a `Result<T, Error>` from `ErrorKind`.<br>
 //!    Default: `true`<br><br>
+//!
+//! * `variant_type` - bool (optional)<a name="module-variant-type"></a>
+//!
+//!   Sets a default value for the [`variant_type`](#err-obj-variant-type)
+//!   *error object* attribute. This affects errors belonging to all categories
+//!   in this module. The value is used for all categories and errors that do
+//!   not define this property explicitly as part of
+//!   [category object](#category-variant-type) or
+//!   [error object](#err-obj-variant-type) specification.
+//!
+//!   Customization of Variant Type name is possible only in the *error object*
+//!   specification.
+//!
+//!   Default: `false`<br><br>
 //!
 //! ### Module Object Examples
 //!
