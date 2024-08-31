@@ -7,6 +7,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.22], [b-0.0.22], [c-0.0.22] - 2024-08-31
+
+A backward incompatible and relatively big release that adds support for
+Variant Types.
+
+### Added
+
+- add support for Variant Types.
+
+  Variant Types are ZSTs generated for enabled error kinds. They simplify
+  error handling in functions that have a single error condition.
+  In such functions returning an `Error` is excessive because this makes a
+  caller handle a not exhaustive list of errors. Returning a ZST instead
+  simplifies error handling because a caller needs to handle only a single
+  error.
+
+### Changed
+
+- disallow underscore `_` in `UpperCamel` case identifiers
+- use singular names for public modules, e.g., `kinds` became `kind`
+
 ## [0.0.21], [b-0.0.21], [c-0.0.21] - 2024-07-20
 
 A small cleanup release - align documentation and add small code cleanups.
@@ -445,3 +466,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.21]: https://github.com/r-bk/tighterror/releases/tag/v0.0.21
 [b-0.0.21]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.21
 [c-0.0.21]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.21
+[0.0.22]: https://github.com/r-bk/tighterror/releases/tag/v0.0.22
+[b-0.0.22]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.22
+[c-0.0.22]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.22
