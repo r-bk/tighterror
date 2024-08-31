@@ -43,7 +43,7 @@ errors in a single Rust type.
     - [x] single
     - [x] multiple
     - [x] separate files
-- [ ] Variant error types
+- [x] Variant error types
 - [ ] Category error types
 - [ ] Flags
 - [ ] Location
