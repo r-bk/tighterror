@@ -1501,10 +1501,23 @@ fn test_error_variant_type_bad_name() {
         ("my_err", BAD_IDENTIFIER_CHARACTERS),
         ("myErr", BAD_IDENTIFIER_CASE),
         ("myerr", BAD_IDENTIFIER_CASE),
+        ("CustomErr", NAME_COLLISION),
+        ("CustomErrCat", NAME_COLLISION),
+        ("CustomErrKind", NAME_COLLISION),
     ];
 
+    let pfx = r#"
+[module]
+err_name = "CustomErr"
+err_cat_name = "CustomErrCat"
+err_kind_name = "CustomErrKind"
+"#;
+
     for tc in test_cases {
-        let s = format!("[[errors]]\nname = \"MY_ERR\"\nvariant_type = \"{}\"", tc.0);
+        let s = format!(
+            "{pfx}\n[[errors]]\nname = \"MY_ERR\"\nvariant_type = \"{}\"",
+            tc.0
+        );
         assert_eq!(TomlParser::parse_str(&s).unwrap_err().kind(), tc.1);
     }
 }
