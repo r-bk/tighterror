@@ -202,7 +202,7 @@ fn check_variant_type_names_collision_impl(m: &ModuleSpec, e: &ErrorSpec) -> Res
 
     if name == m.err_name() {
         log::error!(
-            "{} equals error type name: {} {}",
+            "variant type name equals module's error type name `{}`: {} {}",
             kws::ERR_NAME,
             e.name,
             name
@@ -210,7 +210,7 @@ fn check_variant_type_names_collision_impl(m: &ModuleSpec, e: &ErrorSpec) -> Res
         return NAME_COLLISION.into();
     } else if name == m.err_cat_name() {
         log::error!(
-            "{} equals error category name: {} {}",
+            "variant type name equals module's error category name `{}`: {} {}",
             kws::ERR_CAT_NAME,
             e.name,
             name
@@ -218,7 +218,7 @@ fn check_variant_type_names_collision_impl(m: &ModuleSpec, e: &ErrorSpec) -> Res
         return NAME_COLLISION.into();
     } else if name == m.err_kind_name() {
         log::error!(
-            "{} equals error kind name: {} {}",
+            "variant type name equals module's error kind name `{}`: {} {}",
             kws::ERR_KIND_NAME,
             e.name,
             name
