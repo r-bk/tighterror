@@ -143,6 +143,13 @@ where
     check_name_uniqueness("error", iter)
 }
 
+pub fn check_variant_type_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    check_name_uniqueness("variant type", iter)
+}
+
 pub fn check_category_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
@@ -155,6 +162,13 @@ where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("<flat_kinds> module error", iter)
+}
+
+pub fn check_module_variant_type_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    check_name_uniqueness("<flat_kinds> module variant type", iter)
 }
 
 pub fn check_module_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>

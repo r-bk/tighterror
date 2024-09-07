@@ -108,6 +108,13 @@ impl YamlParser {
         for m in &spec.modules {
             if m.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS) {
                 check_module_error_name_uniqueness(m.errors_iter().map(|e| e.name.as_str()))?;
+                let variant_type_names = m
+                    .errors_iter()
+                    .map(|e| e.variant_type_name())
+                    .collect::<Vec<String>>();
+                check_module_variant_type_name_uniqueness(
+                    variant_type_names.iter().map(|s| s.as_str()),
+                )?;
             }
             check_name_collisions(m)?;
         }
@@ -382,6 +389,11 @@ impl ErrorListParser {
             return EMPTY_LIST.into();
         }
         check_error_name_uniqueness(errors.iter().map(|e| e.name.as_str()))?;
+        let variant_type_names = errors
+            .iter()
+            .map(|e| e.variant_type_name())
+            .collect::<Vec<String>>();
+        check_variant_type_name_uniqueness(variant_type_names.iter().map(|s| s.as_str()))?;
         Ok(errors)
     }
 }

@@ -1504,6 +1504,7 @@ fn test_error_variant_type_bad_name() {
         ("CustomErr", NAME_COLLISION),
         ("CustomErrCat", NAME_COLLISION),
         ("CustomErrKind", NAME_COLLISION),
+        ("ExistingErr", NON_UNIQUE_NAME),
     ];
 
     let pfx = r#"
@@ -1511,6 +1512,10 @@ fn test_error_variant_type_bad_name() {
 err_name = "CustomErr"
 err_cat_name = "CustomErrCat"
 err_kind_name = "CustomErrKind"
+
+[[errors]]
+name = "EXISTING_ERR"
+variant_type = "ExistingErr"
 "#;
 
     for tc in test_cases {
@@ -1577,4 +1582,38 @@ fn test_module_variant_type() {
         let res = TomlParser::parse_str(&s);
         assert_eq!(res.unwrap_err().kind(), bad.1);
     }
+}
+
+#[test]
+fn test_module_variant_type_uniqueness() {
+    log_init();
+
+    let s = r#"
+[module]
+variant_type = true
+flat_kinds = true
+
+[[categories]]
+name = "CatOne"
+
+[[categories.errors]]
+name = "CAT_ONE_ERR_ONE"
+variant_type = "ErrOne"
+
+[[categories.errors]]
+name = "CAT_ONE_ERR_TWO"
+
+[[categories]]
+name = "CatTwo"
+
+[[categories.errors]]
+name = "CAT_TWO_ERR_ONE"
+variant_type = "ErrOne"
+
+[[categories.errors]]
+name = "CAT_TWO_ERR_TWO"
+"#;
+
+    let res = TomlParser::parse_str(s);
+    assert_eq!(res.unwrap_err().kind(), NON_UNIQUE_NAME);
 }
