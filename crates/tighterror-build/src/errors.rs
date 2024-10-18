@@ -397,7 +397,7 @@ mod _p {
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
 
-    impl<'a> core::fmt::Debug for Ident<'a> {
+    impl core::fmt::Debug for Ident<'_> {
         #[inline]
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             f.pad(self.0)
