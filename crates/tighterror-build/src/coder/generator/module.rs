@@ -1,8 +1,8 @@
 use crate::{
+    FrozenOptions,
     coder::generator::{bits::Bits, helpers::*, repr_type::ReprType},
     errors::TbError,
     spec::{CategorySpec, ErrorSpec, ModuleSpec, Spec},
-    FrozenOptions,
 };
 use proc_macro2::{Ident, Literal, TokenStream};
 use quote::{format_ident, quote};

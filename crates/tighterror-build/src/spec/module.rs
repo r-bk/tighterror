@@ -1,4 +1,4 @@
-use super::{definitions::*, idents, CategorySpec, ErrorSpec, OverridableErrorSpec};
+use super::{CategorySpec, ErrorSpec, OverridableErrorSpec, definitions::*, idents};
 
 pub const IMPLICIT_MODULE_NAME: &str = "errors";
 

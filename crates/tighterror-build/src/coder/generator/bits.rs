@@ -1,6 +1,6 @@
 use crate::{
     coder::generator::repr_type::ReprType,
-    errors::{kind::coder::*, TbError},
+    errors::{TbError, kind::coder::*},
     spec::{ModuleSpec, Spec},
 };
 

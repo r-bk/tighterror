@@ -1,7 +1,7 @@
 use crate::{
     coder::idents,
     common::casing,
-    errors::{kind::parser::*, TbError},
+    errors::{TbError, kind::parser::*},
     parser::kws,
     spec::{ErrorSpec, ModuleSpec},
 };
