@@ -15,11 +15,13 @@ fn _handle_multiline_doc(doc: &str) -> String {
         for line in doc.lines() {
             s.push_str(&format!(" * {}\n", line));
         }
+        s.push(' ');
         s
     }
 }
 
 fn _doc_tokens(doc: &str, outer: bool) -> TokenStream {
+    let doc = doc.trim_end_matches(['\r', '\n']);
     if doc.is_empty() {
         quote! {}
     } else {
