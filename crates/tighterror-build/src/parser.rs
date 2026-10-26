@@ -1,5 +1,5 @@
 use crate::{
-    errors::{kind::parser::*, TbError},
+    errors::{TbError, kind::parser::*},
     spec::Spec,
 };
 use std::{

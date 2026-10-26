@@ -1,9 +1,9 @@
 use crate::{
-    errors::{kind::parser::*, TbError},
-    parser::{helpers::*, kws, ParseMode},
+    errors::{TbError, kind::parser::*},
+    parser::{ParseMode, helpers::*, kws},
     spec::{
-        definitions::DEFAULT_FLAT_KINDS, CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec,
-        IMPLICIT_CATEGORY_NAME,
+        CategorySpec, ErrorSpec, IMPLICIT_CATEGORY_NAME, MainSpec, ModuleSpec, Spec,
+        definitions::DEFAULT_FLAT_KINDS,
     },
 };
 use log::error;

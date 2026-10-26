@@ -2,7 +2,7 @@
 name = "tighterror-build"
 version = "0.0.22"
 authors = ["Rafael Buchbinder <rafi@rbk.io>"]
-edition = "2021"
+edition = "2024"
 rust-version = "1.99.1"
 description = "The tighterror code generation library."
 license = "MIT OR Apache-2.0"

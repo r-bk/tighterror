@@ -418,13 +418,13 @@ pub mod category {
 
 /// Error kind constants.
 pub mod kind {
-    use super::category as c;
     use super::TbErrorKind as EK;
+    use super::category as c;
 
     /// Parser category error kind constants.
     pub mod parser {
-        use super::c;
         use super::EK;
+        use super::c;
 
         /// Identifier contains unsupported characters.
         pub const BAD_IDENTIFIER_CHARACTERS: EK = EK::new(c::PARSER, 0);
@@ -486,8 +486,8 @@ pub mod kind {
 
     /// Coder category error kind constants.
     pub mod coder {
-        use super::c;
         use super::EK;
+        use super::c;
 
         /// At least one category must be defined.
         pub const CATEGORY_REQUIRED: EK = EK::new(c::CODER, 0);

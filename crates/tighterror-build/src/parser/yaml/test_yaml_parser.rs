@@ -8,7 +8,7 @@ use crate::{
         },
         yaml::*,
     },
-    spec::{ErrorSpec, OverridableErrorSpec, IMPLICIT_CATEGORY_NAME},
+    spec::{ErrorSpec, IMPLICIT_CATEGORY_NAME, OverridableErrorSpec},
 };
 
 const GOOD_BOOLEANS: [(&str, bool); 4] = [

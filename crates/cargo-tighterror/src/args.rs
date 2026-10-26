@@ -40,11 +40,7 @@ impl Args {
 
     #[inline]
     fn bool_to_opt(v: bool) -> Option<bool> {
-        if v {
-            Some(v)
-        } else {
-            None
-        }
+        if v { Some(v) } else { None }
     }
 
     pub fn test(&self) -> Option<bool> {

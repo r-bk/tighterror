@@ -1,7 +1,7 @@
 use crate::{
     errors::{
-        kind::coder::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
         TbError,
+        kind::coder::{FAILED_TO_READ_OUTPUT_FILE, FAILED_TO_WRITE_OUTPUT_FILE},
     },
     parser,
     spec::definitions::STDOUT_PATH,

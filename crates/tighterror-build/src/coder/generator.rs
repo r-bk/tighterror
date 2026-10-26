@@ -1,5 +1,5 @@
 use crate::{
-    coder::{formatter::pretty, FrozenOptions, ALL_MODULES},
+    coder::{ALL_MODULES, FrozenOptions, formatter::pretty},
     errors::TbError,
     spec::Spec,
 };
