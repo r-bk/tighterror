@@ -836,9 +836,9 @@
 //!
 //! * `result_from_err_kind` - bool (optional)
 //!
-//!    When enabled an implementation of [From] trait is added
-//!    to create a `Result<T, Error>` from `ErrorKind`.<br>
-//!    Default: `true`<br><br>
+//!   When enabled an implementation of [From] trait is added
+//!   to create a `Result<T, Error>` from `ErrorKind`.<br>
+//!   Default: `true`<br><br>
 //!
 //! * `variant_type` - bool (optional)<a name="module-variant-type"></a>
 //!
