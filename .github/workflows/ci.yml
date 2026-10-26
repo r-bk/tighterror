@@ -21,7 +21,7 @@ jobs:
         rust:
           - stable
           - beta
-          - 1.76.0  # MSRV
+          - 1.99.1  # MSRV
         runs_on:
           - ubuntu-latest
           - macos-latest
