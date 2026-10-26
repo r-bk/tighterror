@@ -26,5 +26,5 @@ const ROOT_LEVEL: [&str; 11] = [
 ];
 
 pub fn is_root_level_ident(s: &str) -> bool {
-    ROOT_LEVEL.iter().any(|v| *v == s)
+    ROOT_LEVEL.contains(&s)
 }

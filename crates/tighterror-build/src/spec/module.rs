@@ -43,7 +43,7 @@ impl ModuleSpec {
         }
     }
 
-    pub fn errors_iter(&self) -> ModuleSpecErrorIter {
+    pub fn errors_iter(&self) -> ModuleSpecErrorIter<'_> {
         ModuleSpecErrorIter {
             categories: self.categories.iter(),
             errors: [].iter(),
