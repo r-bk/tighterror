@@ -60,7 +60,7 @@ pub const ALL_KWS: [&str; 23] = [
 
 #[inline]
 fn contains(arr: &[&str], s: &str) -> bool {
-    arr.iter().any(|kw| *kw == s)
+    arr.contains(&s)
 }
 
 #[inline]
