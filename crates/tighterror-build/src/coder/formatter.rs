@@ -68,7 +68,7 @@ fn add_newlines(file: String) -> String {
 
 pub fn rustfmt(path: impl AsRef<OsStr>) -> Result<(), TbError> {
     let result = Command::new("rustfmt")
-        .args(["--edition", "2021"])
+        .args(["--edition", "2024"])
         .arg(path)
         .status();
     match result {
