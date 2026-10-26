@@ -416,10 +416,10 @@ impl ErrorParser {
         if m.len() != 1 {
             return false;
         }
-        if let Some(key) = m.keys().next() {
-            if let Some(k) = key.as_str() {
-                return !kws::is_any_kw(k);
-            }
+        if let Some(key) = m.keys().next()
+            && let Some(k) = key.as_str()
+        {
+            return !kws::is_any_kw(k);
         }
         false
     }
