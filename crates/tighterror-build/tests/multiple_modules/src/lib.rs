@@ -1,4 +1,4 @@
-//! This is a test crate to check `tighterror.yaml`
+//! This is a test crate to check `tighterror.kdl`
 //! with multiple modules.
 
 #![deny(missing_docs)]

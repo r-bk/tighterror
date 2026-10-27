@@ -1,7 +1,0 @@
----
-main:
-  no_std: true
-errors:
-  - BAD_FILE
-  - BAD_ARG
-  - IO_ERROR

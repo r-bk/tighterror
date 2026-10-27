@@ -1,7 +1,7 @@
 use tighterror_build::CodegenOptions;
 
 fn main() {
-    println!("cargo:rerun-if-changed=tighterror.yaml");
+    println!("cargo:rerun-if-changed=tighterror.kdl");
     env_logger::builder().init();
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_path = format!("{out_dir}/errors.rs");

@@ -1,8 +1,0 @@
----
-module:
-  doc_from_display: true
-
-errors:
-  - BAD_CONF_FILE: Configuration file is malformed.
-  - BAD_ARG: Invalid argument.
-  - IO_ERROR: An IO error occurred.
