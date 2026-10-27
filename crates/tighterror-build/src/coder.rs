@@ -21,6 +21,8 @@ use generator::ModuleCode;
 pub(crate) mod idents;
 mod options;
 pub use options::*;
+#[cfg(test)]
+mod test_golden;
 
 const TMP_FILE_PFX: &str = "tighterror.";
 const TMP_FILE_SFX: &str = ".rs";

@@ -1,0 +1,475 @@
+
+/**
+ * Error category type.
+ *
+ * See the [categories] module for category constants.
+ */
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
+pub struct ErrorCategory(_p::R);
+
+impl ErrorCategory {
+    #[inline]
+    const fn new(v: _p::R) -> Self {
+        Self(v)
+    }
+
+
+    /// Returns the name of the error category.
+    #[inline]
+    pub fn name(&self) -> &'static str {
+        _cn::A[self.0 as usize]
+    }
+
+}
+
+
+impl tighterror::Category for ErrorCategory {
+    type R = _p::R;
+    const BITS: usize = _p::CAT_BITS;
+
+    #[inline]
+    fn name(&self) -> &'static str {
+        self.name()
+    }
+
+}
+
+
+impl core::fmt::Display for ErrorCategory {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.pad(self.name())
+    }
+
+}
+
+
+impl core::fmt::Debug for ErrorCategory {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("ErrorCategory").field(&_p::Ident(self.name())).finish()
+    }
+
+}
+
+
+/**
+ * Error kind type.
+ *
+ * See the [kinds] module for error kind constants.
+ */
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
+pub struct ErrorKind(_p::R);
+
+impl ErrorKind {
+    const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
+        assert!(cat.0 == _p::CAT_MAX);
+        Self(variant)
+    }
+
+
+    #[inline]
+    fn category_value(&self) -> _p::R {
+        _p::CAT_MAX
+    }
+
+
+    #[inline]
+    fn variant_value(&self) -> _p::R {
+        self.0 & _p::VAR_MASK
+    }
+
+
+    /// Returns the error category.
+    #[inline]
+    pub fn category(&self) -> ErrorCategory {
+        ErrorCategory::new(self.category_value())
+    }
+
+
+    /// Returns the error kind name.
+    #[inline]
+    pub fn name(&self) -> &'static str {
+        _n::A[self.category_value() as usize][self.variant_value() as usize]
+    }
+
+
+    #[inline]
+    fn display(&self) -> &'static str {
+        _d::A[self.category_value() as usize][self.variant_value() as usize]
+    }
+
+
+    /// Returns the error kind value as the underlying Rust type.
+    #[inline]
+    pub fn value(&self) -> _p::R {
+        self.0
+    }
+
+
+    /// Creates an error kind from a raw value of the underlying Rust type.
+    #[inline]
+    pub fn from_value(value: _p::R) -> Option<Self> {
+        if value <= _p::VAR_MAXES[0] {
+            Some(Self::new(ErrorCategory::new(0), value))
+        } else {
+            None
+        }
+
+    }
+
+}
+
+
+impl tighterror::Kind for ErrorKind {
+    type R = _p::R;
+    type Category = ErrorCategory;
+    const BITS: usize = _p::KIND_BITS;
+
+    #[inline]
+    fn category(&self) -> Self::Category {
+        self.category()
+    }
+
+
+    #[inline]
+    fn name(&self) -> &'static str {
+        self.name()
+    }
+
+
+    #[inline]
+    fn value(&self) -> Self::R {
+        self.value()
+    }
+
+
+    #[inline]
+    fn from_value(value: Self::R) -> Option<Self> {
+        Self::from_value(value)
+    }
+
+}
+
+
+impl core::fmt::Display for ErrorKind {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.pad(self.name())
+    }
+
+}
+
+
+impl core::fmt::Debug for ErrorKind {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("ErrorKind")
+            .field("cat", &_p::Ident(self.category().name()))
+            .field("var", &_p::Ident(self.name()))
+            .field("val", &self.0)
+            .finish()
+    }
+
+}
+
+
+impl<T> core::convert::From<ErrorKind> for Result<T, Error> {
+    #[inline]
+    fn from(v: ErrorKind) -> Self {
+        Err(v.into())
+    }
+
+}
+
+
+/**
+ * Error type.
+ *
+ * See the [kinds] module for error kind constants.
+ */
+
+#[derive(Debug)]
+#[repr(transparent)]
+pub struct Error(ErrorKind);
+
+impl Error {
+    /// Returns the error kind.
+    #[inline]
+    pub fn kind(&self) -> ErrorKind {
+        self.0
+    }
+
+
+    /// Returns the error origin location.
+    #[inline]
+    pub fn location(&self) -> tighterror::Location {
+        tighterror::Location::undefined()
+    }
+
+}
+
+
+impl tighterror::Error for Error {
+    type R = _p::R;
+    type Category = ErrorCategory;
+    type Kind = ErrorKind;
+
+    #[inline]
+    fn kind(&self) -> Self::Kind {
+        self.kind()
+    }
+
+
+    #[inline]
+    fn location(&self) -> tighterror::Location {
+        self.location()
+    }
+
+}
+
+
+impl core::convert::From<ErrorKind> for Error {
+    #[inline]
+    fn from(kind: ErrorKind) -> Self {
+        Self(kind)
+    }
+
+}
+
+
+impl core::fmt::Display for Error {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.pad(self.kind().display())
+    }
+
+}
+
+
+impl core::cmp::PartialEq for Error {
+    /// Checks equality based on the error kind only.
+    #[inline]
+    fn eq(&self, other: &Error) -> bool {
+        self.0 == other.0
+    }
+
+}
+
+
+impl<T> core::convert::From<Error> for core::result::Result<T, Error> {
+    #[inline]
+    fn from(err: Error) -> Self {
+        Err(err)
+    }
+
+}
+
+
+impl std::error::Error for Error {}
+
+mod _cn {
+    pub const GENERAL: &str = "GENERAL";
+    pub static A: [&str; 1] = [GENERAL];
+}
+
+mod _n {
+    pub(crate) mod general {
+        pub(crate) const BAD_FILE: &str = "BAD_FILE";
+        pub(crate) const BAD_ARG: &str = "BAD_ARG";
+        pub(crate) const IO_ERROR: &str = "IO_ERROR";
+        pub static A: [&str; 3] = [BAD_FILE, BAD_ARG, IO_ERROR];
+    }
+
+    pub static A: [&[&str]; 1] = [&general::A];
+}
+
+mod _d {
+    pub(crate) mod general {
+        use super::super::_n;
+        const BAD_FILE: &str = _n::general::BAD_FILE;
+        const BAD_ARG: &str = _n::general::BAD_ARG;
+        const IO_ERROR: &str = _n::general::IO_ERROR;
+        pub static A: [&str; 3] = [BAD_FILE, BAD_ARG, IO_ERROR];
+    }
+
+    pub static A: [&[&str]; 1] = [&general::A];
+}
+
+mod _p {
+    pub type R = u8;
+    pub const KIND_BITS: usize = 2;
+    pub const CAT_BITS: usize = 0;
+    pub const CAT_MAX: R = 0;
+    pub const VAR_MASK: R = 3;
+    pub static VAR_MAXES: [R; 1] = [2];
+    const _: () = assert!(KIND_BITS <= R::BITS as usize);
+    const _: () = assert!(CAT_BITS <= usize::BITS as usize);
+    pub(super) struct Ident<'a>(pub(super) &'a str);
+
+    impl core::fmt::Debug for Ident<'_> {
+        #[inline]
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            f.pad(self.0)
+        }
+
+    }
+
+}
+
+
+/// Error category constants.
+pub mod category {
+    use super::ErrorCategory as C;
+
+    /// General error category.
+    pub const GENERAL: C = C::new(0);
+}
+
+
+/// Error kind constants.
+pub mod kind {
+    use super::ErrorKind as EK;
+    use super::category as c;
+
+    /// General category error kind constants.
+    pub mod general {
+        use super::c;
+        use super::EK;
+        pub const BAD_FILE: EK = EK::new(c::GENERAL, 0);
+        pub const BAD_ARG: EK = EK::new(c::GENERAL, 1);
+        pub const IO_ERROR: EK = EK::new(c::GENERAL, 2);
+    }
+
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_category_name() {
+        use category::*;
+        assert_eq!(GENERAL.name(), "GENERAL");
+        assert_eq!(tighterror::Category::name(& GENERAL), "GENERAL")
+    }
+
+
+    #[test]
+    fn test_category_display() {
+        use category::*;
+        assert_eq!(format!("{}", GENERAL), "GENERAL");
+    }
+
+
+    #[test]
+    fn test_category_uniqueness() {
+        use category::*;
+        use std::collections::HashSet;
+        let cats: [ErrorCategory; 1] = [GENERAL];
+        let set = HashSet::<ErrorCategory>::from_iter(cats);
+        assert_eq!(set.len(), 1);
+    }
+
+
+    #[test]
+    fn test_category_values() {
+        use category::*;
+        let cats: [ErrorCategory; 1] = [GENERAL];
+        for c in cats {
+            assert!(c.0 == 0);
+        }
+
+    }
+
+
+    #[test]
+    fn test_err_kind_name() {
+        use kind::*;
+        assert_eq!(general::BAD_FILE.name(), "BAD_FILE");
+        assert_eq!(tighterror::Kind::name(& general::BAD_FILE), "BAD_FILE");
+        assert_eq!(general::BAD_ARG.name(), "BAD_ARG");
+        assert_eq!(tighterror::Kind::name(& general::BAD_ARG), "BAD_ARG");
+        assert_eq!(general::IO_ERROR.name(), "IO_ERROR");
+        assert_eq!(tighterror::Kind::name(& general::IO_ERROR), "IO_ERROR");
+    }
+
+
+    #[test]
+    fn test_err_kind_display() {
+        use kind::*;
+        assert_eq!(format!("{}", general::BAD_FILE), "BAD_FILE");
+        assert_eq!(format!("{}", general::BAD_ARG), "BAD_ARG");
+        assert_eq!(format!("{}", general::IO_ERROR), "IO_ERROR");
+    }
+
+
+    #[test]
+    fn test_err_kind_uniqueness() {
+        use kind::*;
+        use std::collections::HashSet;
+        let errs: [ErrorKind; 3] = [
+            general::BAD_FILE,
+            general::BAD_ARG,
+            general::IO_ERROR,
+        ];
+
+        let set = HashSet::<ErrorKind>::from_iter(errs);
+        assert_eq!(set.len(), 3);
+    }
+
+
+    #[test]
+    fn test_err_kind_value_uniqueness() {
+        use kind::*;
+        use std::collections::HashSet;
+        let errs: [ErrorKind; 3] = [
+            general::BAD_FILE,
+            general::BAD_ARG,
+            general::IO_ERROR,
+        ];
+
+        let set = HashSet::<u8>::from_iter(errs.iter().map(|ec| ec.value()));
+        assert_eq!(set.len(), 3);
+    }
+
+
+    #[test]
+    fn test_err_kind_category() {
+        use kind::*;
+        assert_eq!(general::BAD_FILE.category(), category::GENERAL);
+        assert_eq!(general::BAD_ARG.category(), category::GENERAL);
+        assert_eq!(general::IO_ERROR.category(), category::GENERAL);
+    }
+
+
+    #[test]
+    fn test_err_kind_from_value() {
+        use kind::*;
+        assert_eq!(
+            ErrorKind::from_value(general::BAD_FILE.value()).unwrap(), general::BAD_FILE
+        );
+        assert_eq!(
+            ErrorKind::from_value(general::BAD_ARG.value()).unwrap(), general::BAD_ARG
+        );
+        assert_eq!(
+            ErrorKind::from_value(general::IO_ERROR.value()).unwrap(), general::IO_ERROR
+        );
+    }
+
+
+    #[test]
+    fn test_err_display() {
+        use kind::*;
+        assert_eq!(format!("{}", Error::from(general::BAD_FILE)), "BAD_FILE");
+        assert_eq!(format!("{}", Error::from(general::BAD_ARG)), "BAD_ARG");
+        assert_eq!(format!("{}", Error::from(general::IO_ERROR)), "IO_ERROR");
+    }
+
+}
+
