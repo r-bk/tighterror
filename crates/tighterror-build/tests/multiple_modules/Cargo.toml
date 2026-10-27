@@ -2,6 +2,7 @@
 name = "test_multiple_modules"
 edition = "2021"
 version = "0.0.0"
+publish = false
 
 [dependencies]
 tighterror = { path = "../../../.." }
