@@ -292,7 +292,8 @@ mod _n {
         pub(crate) const RUSTFMT_NOT_FOUND: &str = "RUSTFMT_NOT_FOUND";
         pub(crate) const TOO_MANY_BITS: &str = "TOO_MANY_BITS";
         pub(crate) const OUTPUT_PATH_NOT_DIRECTORY: &str = "OUTPUT_PATH_NOT_DIRECTORY";
-        pub static A: [&str; 9] = [
+        pub(crate) const OUT_DIR_NOT_SET: &str = "OUT_DIR_NOT_SET";
+        pub static A: [&str; 10] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
@@ -302,6 +303,7 @@ mod _n {
             RUSTFMT_NOT_FOUND,
             TOO_MANY_BITS,
             OUTPUT_PATH_NOT_DIRECTORY,
+            OUT_DIR_NOT_SET,
         ];
     }
 
@@ -361,7 +363,8 @@ mod _d {
         pub(crate) const TOO_MANY_BITS: &str =
             "The number of required bits exceeds the largest supported type u64.";
         pub(crate) const OUTPUT_PATH_NOT_DIRECTORY: &str = "Output path is not a directory.";
-        pub static A: [&str; 9] = [
+        pub(crate) const OUT_DIR_NOT_SET: &str = "Environment variable OUT_DIR isn't set.";
+        pub static A: [&str; 10] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
@@ -371,6 +374,7 @@ mod _d {
             RUSTFMT_NOT_FOUND,
             TOO_MANY_BITS,
             OUTPUT_PATH_NOT_DIRECTORY,
+            OUT_DIR_NOT_SET,
         ];
     }
 
@@ -383,7 +387,7 @@ mod _p {
     pub const CAT_BITS: usize = 1;
     pub const CAT_MAX: R = 1;
     pub const VAR_MASK: R = 15;
-    pub static VAR_MAXES: [R; 2] = [15, 8];
+    pub static VAR_MAXES: [R; 2] = [15, 9];
     pub const CAT_MASK: R = 16;
     pub const VAR_BITS: usize = 4;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
@@ -488,4 +492,7 @@ pub mod kind {
 
     /// Output path is not a directory.
     pub const OUTPUT_PATH_NOT_DIRECTORY: EK = EK::new(c::CODER, 8);
+
+    /// Environment variable OUT_DIR isn't set.
+    pub const OUT_DIR_NOT_SET: EK = EK::new(c::CODER, 9);
 }

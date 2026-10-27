@@ -3,7 +3,10 @@ use std::path::PathBuf;
 
 /// Options for the code generator.
 ///
-/// This struct is a builder for the code generator options.
+/// This struct is a builder for the code generator options. Use it to write
+/// the code into the source tree, as [cargo-tighterror] does. To generate
+/// the code in a build script use [BuildOptions](crate::BuildOptions)
+/// instead.
 ///
 /// # Examples
 /// ```no_run
@@ -17,6 +20,8 @@ use std::path::PathBuf;
 /// # }
 /// # foo().unwrap();
 /// ```
+///
+/// [cargo-tighterror]: https://crates.io/crates/cargo-tighterror
 #[derive(Debug, Clone, Default)]
 pub struct CodegenOptions {
     pub(crate) spec: Option<PathBuf>,
@@ -24,6 +29,7 @@ pub struct CodegenOptions {
     pub(crate) test: Option<bool>,
     pub(crate) update: Option<bool>,
     pub(crate) separate_files: Option<bool>,
+    pub(crate) build_script: bool,
 }
 
 impl CodegenOptions {
@@ -171,6 +177,11 @@ impl CodegenOptions {
     /// implicitly disabled.
     pub fn separate_files(&mut self, separate_files: impl Into<Option<bool>>) -> &mut Self {
         self.separate_files = separate_files.into();
+        self
+    }
+
+    pub(crate) fn build_script(&mut self, build_script: bool) -> &mut Self {
+        self.build_script = build_script;
         self
     }
 

@@ -11,6 +11,8 @@ pub struct FrozenOptions {
     pub(crate) test: bool,
     pub(crate) update: bool,
     pub(crate) separate_files: bool,
+    pub(crate) module_doc: bool,
+    pub(crate) rustfmt: bool,
 }
 
 impl FrozenOptions {
@@ -21,6 +23,8 @@ impl FrozenOptions {
             test: opts.test.unwrap_or(DEFAULT_TEST),
             update: opts.update.unwrap_or(DEFAULT_UPDATE_MODE),
             separate_files: op.separate_files,
+            module_doc: !opts.build_script,
+            rustfmt: !opts.build_script,
         })
     }
 
