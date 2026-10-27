@@ -21,7 +21,7 @@ macro_rules! include_errors {
     ($module:ident) => {
         ::core::include!(::core::concat!(
             ::core::env!("OUT_DIR"),
-            "/",
+            "/tighterror/",
             ::core::stringify!($module),
             ".rs"
         ));

@@ -78,8 +78,8 @@ impl BuildOptions {
 
     /// Generates the code of every module in the specification file.
     ///
-    /// The code of a module is written to `$OUT_DIR/<module>.rs`, where
-    /// `<module>` is the module name. The crate includes it with
+    /// The code of a module is written to `$OUT_DIR/tighterror/<module>.rs`,
+    /// where `<module>` is the module name. The crate includes it with
     /// [`tighterror::include_errors`]:
     ///
     /// ```text
@@ -92,6 +92,9 @@ impl BuildOptions {
     /// The `doc` of a module is left out of its file, because `include!`
     /// doesn't accept inner attributes. Write the module documentation on
     /// the `mod` item instead.
+    ///
+    /// The function empties `$OUT_DIR/tighterror` before writing, so that a
+    /// module that the specification no longer has can't be included.
     ///
     /// The `output` setting of the specification file is ignored, and the
     /// code isn't formatted with `rustfmt`.
