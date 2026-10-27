@@ -22,7 +22,7 @@ fn category(name: &str, errors: Vec<ErrorSpec>) -> CategorySpec {
 
 fn module(name: &str, categories: Vec<CategorySpec>) -> ModuleSpec {
     ModuleSpec {
-        name: Some(name.into()),
+        name: name.into(),
         categories,
         ..Default::default()
     }
