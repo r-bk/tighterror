@@ -22,19 +22,6 @@ pub const CATEGORIES: &str = "categories";
 pub const FLAT_KINDS: &str = "flat_kinds";
 pub const VARIANT_TYPE: &str = "variant_type";
 
-#[cfg(feature = "yaml")]
-pub const ROOT_KWS: [&str; 6] = [MAIN, ERRORS, MODULE, MODULES, CATEGORY, CATEGORIES];
-#[cfg(feature = "yaml")]
-pub const REQUIRED_ROOT_KWS: [&str; 3] = [ERRORS, CATEGORIES, MODULES];
-#[cfg(feature = "yaml")]
-pub const MUTUALLY_EXCLUSIVE_ROOT_KWS: [(&str, &str); 6] = [
-    (ERRORS, CATEGORIES),
-    (CATEGORY, CATEGORIES),
-    (ERRORS, MODULES),
-    (CATEGORY, MODULES),
-    (CATEGORIES, MODULES),
-    (MODULE, MODULES),
-];
 pub const ALL_KWS: [&str; 23] = [
     ERR_CAT_DOC,
     DISPLAY,
@@ -69,10 +56,4 @@ fn contains(arr: &[&str], s: &str) -> bool {
 #[inline]
 pub fn is_any_kw(s: &str) -> bool {
     contains(&ALL_KWS, s)
-}
-
-#[cfg(feature = "yaml")]
-#[inline]
-pub fn is_root_kw(s: &str) -> bool {
-    contains(&ROOT_KWS, s)
 }

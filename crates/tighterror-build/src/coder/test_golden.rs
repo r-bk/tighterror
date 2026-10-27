@@ -9,7 +9,7 @@ use std::{
 const BLESS_VAR: &str = "TIGHTERROR_BLESS";
 const GOLDEN_DIR: &str = "tests/golden";
 const TEST_CRATES_DIR: &str = "tests";
-const SPEC_FILE_NAMES: [&str; 2] = ["tighterror.yaml", "tighterror.kdl"];
+const SPEC_FILE_NAMES: [&str; 1] = ["tighterror.kdl"];
 const RUST_EXTENSION: &str = "rs";
 
 // A specification file under test, relative to the crate root, the options
@@ -44,8 +44,8 @@ const CASES: &[Case] = &[
     },
     case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
     case(
-        "tests/extra/implicit_category/tighterror.kdl",
-        "implicit_category.rs",
+        "tests/extra/custom_type_names/tighterror.kdl",
+        "custom_type_names.rs",
     ),
     case("tests/extra/minimal/tighterror.kdl", "minimal.rs"),
     case(
@@ -83,8 +83,7 @@ fn bless() -> bool {
 }
 
 fn markup_enabled(spec: &str) -> bool {
-    (spec.ends_with(".yaml") && cfg!(feature = "yaml"))
-        || (spec.ends_with(".kdl") && cfg!(feature = "kdl"))
+    spec.ends_with(".kdl") && cfg!(feature = "kdl")
 }
 
 fn generate(c: &Case) -> Vec<(String, String)> {

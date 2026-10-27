@@ -43,20 +43,14 @@ jobs:
         run: cargo test --workspace
       - name: clippy
         run: cargo clippy --workspace --all-features --all-targets
-      - name: build yaml
-        run: cargo build -p tighterror-build --no-default-features --features yaml
       - name: build kdl
         run: cargo build -p tighterror-build --no-default-features --features kdl
       - name: build all-features
         run: cargo build -p tighterror-build --all-features
-      - name: test yaml
-        run: cargo test -p tighterror-build --no-default-features --features yaml
       - name: test kdl
         run: cargo test -p tighterror-build --no-default-features --features kdl
       - name: test all-features
         run: cargo test -p tighterror-build --all-features
-      - name: clippy yaml
-        run: cargo clippy -p tighterror-build --no-default-features --features yaml --all-targets
       - name: clippy kdl
         run: cargo clippy -p tighterror-build --no-default-features --features kdl --all-targets
       - name: clippy all-features

@@ -31,7 +31,6 @@ _tighterror_ tries to achieve the following goals:
 
 ## Features
 
-- [x] YAML specification
 - [x] KDL specification
 - [x] Categories
   - [x] implicit
@@ -52,8 +51,8 @@ _tighterror_ tries to achieve the following goals:
 ## Introduction
 
 _tighterror_ takes the declarative approach where a user project maintains its
-set of errors in a specification file written in a markup language (YAML or
-KDL). Generation of Rust source code out of the specification file is done by
+set of errors in a specification file written in a markup language
+(KDL). Generation of Rust source code out of the specification file is done by
 a dedicated tool provided by the framework.
 
 In its basic form a _tighterror_ is a _newtype_ around a small unsigned integer,

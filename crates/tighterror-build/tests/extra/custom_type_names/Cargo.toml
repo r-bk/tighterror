@@ -1,5 +1,5 @@
 [package]
-name = "test_implicit_category"
+name = "test_custom_type_names"
 edition = "2021"
 version = "0.0.0"
 

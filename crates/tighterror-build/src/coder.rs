@@ -44,7 +44,7 @@ const ALL_MODULES: &str = "*";
 /// # use tighterror_build::{CodegenOptions, errors::TbError, codegen};
 /// # pub fn foo() -> Result<(), TbError> {
 /// let mut opts = CodegenOptions::new();
-/// opts.spec("tighterror.yaml".to_owned());
+/// opts.spec("tighterror.kdl".to_owned());
 /// codegen(&opts)?;
 /// # Ok(())
 /// # }

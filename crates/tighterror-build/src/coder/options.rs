@@ -10,7 +10,7 @@ use std::path::PathBuf;
 /// # use tighterror_build::{CodegenOptions, errors::TbError};
 /// # pub fn foo() -> Result<(), TbError> {
 /// CodegenOptions::new()
-///     .spec("tighterror.yaml".to_owned())
+///     .spec("tighterror.kdl".to_owned())
 ///     .output("src/errors.rs".to_owned())
 ///     .codegen()?;
 /// # Ok(())
@@ -34,20 +34,15 @@ impl CodegenOptions {
 
     /// Sets the specification file path.
     ///
-    /// If a value is not specified the default specification filenames
-    /// are used in the following order:
-    /// * if the `yaml` feature is enabled the path [DEFAULT_SPEC_PATH_YAML]
-    ///   is used
-    /// * if specification file is still not found and the `kdl` feature is
-    ///   enabled the path [DEFAULT_SPEC_PATH_KDL] is used
+    /// If a value is not specified the default specification file path
+    /// [DEFAULT_SPEC_PATH_KDL] is used.
     ///
     /// # Examples
     /// ```rust
     /// # use tighterror_build::CodegenOptions;
-    /// CodegenOptions::new().spec("tighterror.yaml");
+    /// CodegenOptions::new().spec("tighterror.kdl");
     /// ```
     ///
-    /// [DEFAULT_SPEC_PATH_YAML]: crate::DEFAULT_SPEC_PATH_YAML
     /// [DEFAULT_SPEC_PATH_KDL]: crate::DEFAULT_SPEC_PATH_KDL
     pub fn spec(&mut self, spec: impl Into<PathBuf>) -> &mut Self {
         self.spec = Some(spec.into());
@@ -65,7 +60,7 @@ impl CodegenOptions {
     /// ```rust
     /// # use tighterror_build::CodegenOptions;
     /// CodegenOptions::new().spec_option(None);
-    /// CodegenOptions::new().spec_option(Some("tighterror.yaml".into()));
+    /// CodegenOptions::new().spec_option(Some("tighterror.kdl".into()));
     /// ```
     pub fn spec_option(&mut self, spec: Option<PathBuf>) -> &mut Self {
         self.spec = spec;
@@ -86,8 +81,8 @@ impl CodegenOptions {
     /// If the value is a hyphen `-`, or output path is not set at all, the
     /// output is written to `stdout`.
     ///
-    /// A `Some` value defined here overrides the `MainObject::output` attribute
-    /// in the specification file.
+    /// A `Some` value defined here overrides the `output` setting in the
+    /// specification file.
     ///
     /// # Examples
     ///
