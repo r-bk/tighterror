@@ -56,12 +56,7 @@ impl ModuleSpec {
     }
 
     pub fn cat_const_doc<'a>(&'a self, c: &'a CategorySpec) -> &'a str {
-        let implicit_value = if self.categories.len() == 1 {
-            DEFAULT_GENERAL_CAT_DOC
-        } else {
-            ""
-        };
-        c.doc.as_deref().unwrap_or(implicit_value)
+        c.doc.as_deref().unwrap_or(DEFAULT_CATEGORY_CONST_DOC)
     }
 
     pub fn err_kind_const_doc<'a>(&self, c: &'a CategorySpec, e: &'a ErrorSpec) -> &'a str {

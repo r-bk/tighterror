@@ -311,8 +311,6 @@ mod _p {
 /// Error category constants.
 pub mod category {
     use super::ErrorCategory as C;
-
-    /// General error category.
     pub const GENERAL: C = C::new(0);
 }
 

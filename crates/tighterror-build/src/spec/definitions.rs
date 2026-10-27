@@ -8,7 +8,7 @@ pub const DEFAULT_ERROR_KIND_STRUCT_DOC: &str =
 pub const DEFAULT_ERROR_KIND_CONST_DOC: &str = "";
 pub const DEFAULT_CATEGORY_STRUCT_DOC: &str =
     "Error category type.\n\nSee the [category] module for category constants.";
-pub const DEFAULT_GENERAL_CAT_DOC: &str = "General error category.";
+pub const DEFAULT_CATEGORY_CONST_DOC: &str = "";
 pub const DEFAULT_DOC_FROM_DISPLAY: bool = false;
 pub const DEFAULT_TEST: bool = false;
 pub const DEFAULT_ERR_INTO_RESULT: bool = true;
