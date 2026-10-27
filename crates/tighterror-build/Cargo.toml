@@ -12,13 +12,15 @@ repository = "https://github.com/r-bk/tighterror"
 exclude = ["tests/golden"]
 
 [features]
-default = ["yaml", "toml"]
+default = ["yaml", "toml", "kdl"]
 yaml = ["dep:serde_yaml"]
 toml = ["dep:toml"]
+kdl = ["dep:kdl"]
 
 [dependencies]
 cfg-if = "1.0.0"
 convert_case = "0.12.0"
+kdl = { version = "6.7.1", optional = true, default-features = false, features = ["span"] }
 log = "0.4"
 prettyplease = "0.3"
 proc-macro2 = "1.0"

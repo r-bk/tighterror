@@ -291,6 +291,7 @@ mod _n {
     pub(crate) mod parser {
         pub(crate) const BAD_IDENTIFIER_CHARACTERS: &str = "BAD_IDENTIFIER_CHARACTERS";
         pub(crate) const BAD_IDENTIFIER_CASE: &str = "BAD_IDENTIFIER_CASE";
+        pub(crate) const BAD_KDL: &str = "BAD_KDL";
         pub(crate) const BAD_KEYWORD_TYPE: &str = "BAD_KEYWORD_TYPE";
         pub(crate) const BAD_MODULE_IDENTIFIER: &str = "BAD_MODULE_IDENTIFIER";
         pub(crate) const BAD_NAME: &str = "BAD_NAME";
@@ -308,9 +309,10 @@ mod _n {
         pub(crate) const NON_UNIQUE_NAME: &str = "NON_UNIQUE_NAME";
         pub(crate) const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
         pub(crate) const NAME_COLLISION: &str = "NAME_COLLISION";
-        pub static A: [&str; 19] = [
+        pub static A: [&str; 20] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
+            BAD_KDL,
             BAD_KEYWORD_TYPE,
             BAD_MODULE_IDENTIFIER,
             BAD_NAME,
@@ -363,6 +365,7 @@ mod _d {
     pub(crate) mod parser {
         pub(crate) const BAD_IDENTIFIER_CHARACTERS: &str = "Identifier contains unsupported characters.";
         pub(crate) const BAD_IDENTIFIER_CASE: &str = "Identifier is specified in an unsupported case.";
+        pub(crate) const BAD_KDL: &str = "KDL deserialization has failed.";
         pub(crate) const BAD_KEYWORD_TYPE: &str = "Specification keyword is not a String.";
         pub(crate) const BAD_MODULE_IDENTIFIER: &str = "Identifier is not valid on module-level.";
         pub(crate) const BAD_NAME: &str = "Invalid name.";
@@ -380,9 +383,10 @@ mod _d {
         pub(crate) const NON_UNIQUE_NAME: &str = "A name is not unique.";
         pub(crate) const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
         pub(crate) const NAME_COLLISION: &str = "Collision of names between different items.";
-        pub static A: [&str; 19] = [
+        pub static A: [&str; 20] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
+            BAD_KDL,
             BAD_KEYWORD_TYPE,
             BAD_MODULE_IDENTIFIER,
             BAD_NAME,
@@ -437,7 +441,7 @@ mod _p {
     pub const CAT_BITS: usize = 1;
     pub const CAT_MAX: R = 1;
     pub const VAR_MASK: R = 31;
-    pub static VAR_MAXES: [R; 2] = [18, 8];
+    pub static VAR_MAXES: [R; 2] = [19, 8];
     pub const CAT_MASK: R = 32;
     pub const VAR_BITS: usize = 5;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
@@ -478,56 +482,59 @@ pub mod kind {
     /// Identifier is specified in an unsupported case.
     pub const BAD_IDENTIFIER_CASE: EK = EK::new(c::PARSER, 1);
 
+    /// KDL deserialization has failed.
+    pub const BAD_KDL: EK = EK::new(c::PARSER, 2);
+
     /// Specification keyword is not a String.
-    pub const BAD_KEYWORD_TYPE: EK = EK::new(c::PARSER, 2);
+    pub const BAD_KEYWORD_TYPE: EK = EK::new(c::PARSER, 3);
 
     /// Identifier is not valid on module-level.
-    pub const BAD_MODULE_IDENTIFIER: EK = EK::new(c::PARSER, 3);
+    pub const BAD_MODULE_IDENTIFIER: EK = EK::new(c::PARSER, 4);
 
     /// Invalid name.
-    pub const BAD_NAME: EK = EK::new(c::PARSER, 4);
+    pub const BAD_NAME: EK = EK::new(c::PARSER, 5);
 
     /// An object attribute is invalid.
-    pub const BAD_OBJECT_ATTRIBUTE: EK = EK::new(c::PARSER, 5);
+    pub const BAD_OBJECT_ATTRIBUTE: EK = EK::new(c::PARSER, 6);
 
     /// Specification filename extension is not supported or is missing.
-    pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::PARSER, 6);
+    pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::PARSER, 7);
 
     /// TOML deserialization has failed.
-    pub const BAD_TOML: EK = EK::new(c::PARSER, 7);
+    pub const BAD_TOML: EK = EK::new(c::PARSER, 8);
 
     /// Specification contains an invalid root-level keyword.
-    pub const BAD_ROOT_LEVEL_KEYWORD: EK = EK::new(c::PARSER, 8);
+    pub const BAD_ROOT_LEVEL_KEYWORD: EK = EK::new(c::PARSER, 9);
 
     /// Specification value type is invalid.
-    pub const BAD_VALUE_TYPE: EK = EK::new(c::PARSER, 9);
+    pub const BAD_VALUE_TYPE: EK = EK::new(c::PARSER, 10);
 
     /// YAML deserialization has failed.
-    pub const BAD_YAML: EK = EK::new(c::PARSER, 10);
+    pub const BAD_YAML: EK = EK::new(c::PARSER, 11);
 
     /// An identifier cannot be an empty string.
-    pub const EMPTY_IDENTIFIER: EK = EK::new(c::PARSER, 11);
+    pub const EMPTY_IDENTIFIER: EK = EK::new(c::PARSER, 12);
 
     /// Empty list of objects is not allowed.
-    pub const EMPTY_LIST: EK = EK::new(c::PARSER, 12);
+    pub const EMPTY_LIST: EK = EK::new(c::PARSER, 13);
 
     /// Specification file couldn't be opened.
-    pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::PARSER, 13);
+    pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::PARSER, 14);
 
     /// Specification lacks a mandatory attribute.
-    pub const MISSING_ATTRIBUTE: EK = EK::new(c::PARSER, 14);
+    pub const MISSING_ATTRIBUTE: EK = EK::new(c::PARSER, 15);
 
     /// Specification contains mutually exclusive keywords.
-    pub const MUTUALLY_EXCLUSIVE_KEYWORDS: EK = EK::new(c::PARSER, 15);
+    pub const MUTUALLY_EXCLUSIVE_KEYWORDS: EK = EK::new(c::PARSER, 16);
 
     /// A name is not unique.
-    pub const NON_UNIQUE_NAME: EK = EK::new(c::PARSER, 16);
+    pub const NON_UNIQUE_NAME: EK = EK::new(c::PARSER, 17);
 
     /// Specification file couldn't be found.
-    pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::PARSER, 17);
+    pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::PARSER, 18);
 
     /// Collision of names between different items.
-    pub const NAME_COLLISION: EK = EK::new(c::PARSER, 18);
+    pub const NAME_COLLISION: EK = EK::new(c::PARSER, 19);
 
     /// At least one category must be defined.
     pub const CATEGORY_REQUIRED: EK = EK::new(c::CODER, 0);

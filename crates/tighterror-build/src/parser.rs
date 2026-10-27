@@ -7,8 +7,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[cfg(not(any(feature = "yaml", feature = "toml")))]
-compile_error!("At least one of the markup language features ['yaml', 'toml'] must be enabled.");
+#[cfg(not(any(feature = "yaml", feature = "toml", feature = "kdl")))]
+compile_error!(
+    "At least one of the markup language features ['yaml', 'toml', 'kdl'] must be enabled."
+);
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "yaml")] {
@@ -24,11 +26,19 @@ cfg_if::cfg_if! {
     }
 }
 
+cfg_if::cfg_if! {
+    if #[cfg(feature = "kdl")] {
+        mod kdl;
+        use self::kdl::KdlParser;
+    }
+}
+
 mod helpers;
 mod kws;
 #[cfg(test)]
 mod testing;
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 #[derive(Debug)]
 pub enum ParseMode {
     Single,
@@ -48,6 +58,8 @@ fn parse_path(path: PathBuf) -> Result<Spec, TbError> {
         Some(e) if e == "yaml" => YamlParser::parse_file(open_spec_file(&path)?),
         #[cfg(feature = "toml")]
         Some(e) if e == "toml" => TomlParser::parse_file(open_spec_file(&path)?),
+        #[cfg(feature = "kdl")]
+        Some(e) if e == "kdl" => KdlParser::parse_file(open_spec_file(&path)?, &path),
         Some(e) => {
             log::error!(
                 "specification file extension {:?} isn't supported: {:?}",
@@ -79,6 +91,11 @@ fn spec_file_path(spec: Option<&Path>) -> Result<&Path, TbError> {
     #[cfg(feature = "toml")]
     if Path::new(crate::DEFAULT_SPEC_PATH_TOML).is_file() {
         return Ok(Path::new(crate::DEFAULT_SPEC_PATH_TOML));
+    }
+
+    #[cfg(feature = "kdl")]
+    if Path::new(crate::DEFAULT_SPEC_PATH_KDL).is_file() {
+        return Ok(Path::new(crate::DEFAULT_SPEC_PATH_KDL));
     }
 
     SPEC_FILE_NOT_FOUND.into()
