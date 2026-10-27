@@ -11,14 +11,9 @@ categories = ["development-tools", "development-tools::build-utils"]
 repository = "https://github.com/r-bk/tighterror"
 exclude = ["tests/golden"]
 
-[features]
-default = ["kdl"]
-kdl = ["dep:kdl"]
-
 [dependencies]
-cfg-if = "1.0.0"
 convert_case = "0.12.0"
-kdl = { version = "6.7.1", optional = true, default-features = false, features = ["span"] }
+kdl = { version = "6.7.1", default-features = false, features = ["span"] }
 log = "0.4"
 prettyplease = "0.3"
 proc-macro2 = "1.0"

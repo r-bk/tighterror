@@ -545,7 +545,6 @@ dependencies = [
 name = "tighterror-build"
 version = "0.0.23"
 dependencies = [
- "cfg-if",
  "convert_case",
  "env_logger",
  "kdl",
