@@ -89,6 +89,8 @@ fn generate(c: &Case) -> Vec<(String, String)> {
         test: c.test,
         update: false,
         separate_files: c.separate_files,
+        module_doc: true,
+        rustfmt: false,
     };
     let modules = spec_to_rust(&opts, &spec).expect("code is generated");
     if c.separate_files {
