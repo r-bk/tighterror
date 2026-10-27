@@ -1,4 +1,5 @@
-extern crate test_compilation;
+// Checks that `error_trait: false` leaves out the `std::error::Error` impl
+// of `Error`.
 
 use test_compilation::errors::{kind::general::BAD_FILE, Error};
 
@@ -7,7 +8,7 @@ fn foo<T: std::error::Error>(e: T) -> String {
 }
 
 fn main() {
+    // Pass an `Error` where `std::error::Error` is required.
     let e = Error::from(BAD_FILE);
     foo(e);
-    //~^ ERROR the trait bound `test_compilation::errors::Error: std::error::Error` is not satisfied
 }

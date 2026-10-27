@@ -1,0 +1,7 @@
+error[E0277]: the trait bound `Result<(), test_compilation::errors::Error>: From<test_compilation::errors::ErrorKind>` is not satisfied
+ --> tests/compile-fail/negative_err_kind_into_result.rs:8:44
+  |
+8 |     let _res: Result<(), Error> = BAD_FILE.into();
+  |                                            ^^^^ the trait `From<test_compilation::errors::ErrorKind>` is not implemented for `Result<(), test_compilation::errors::Error>`
+  |
+  = note: required for `test_compilation::errors::ErrorKind` to implement `Into<Result<(), test_compilation::errors::Error>>`
