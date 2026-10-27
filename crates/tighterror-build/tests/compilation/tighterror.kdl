@@ -1,0 +1,12 @@
+module errors {
+    spec {
+        result-from-err #false
+        result-from-err-kind #false
+        error-trait #false
+    }
+    category General {
+        error BAD_FILE
+        error BAD_ARG
+        error IO_ERROR
+    }
+}

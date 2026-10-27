@@ -9,14 +9,14 @@ use std::{
 const BLESS_VAR: &str = "TIGHTERROR_BLESS";
 const GOLDEN_DIR: &str = "tests/golden";
 const TEST_CRATES_DIR: &str = "tests";
-const SPEC_FILE_NAMES: [&str; 2] = ["tighterror.yaml", "tighterror.toml"];
+const SPEC_FILE_NAMES: [&str; 3] = ["tighterror.yaml", "tighterror.toml", "tighterror.kdl"];
 const RUST_EXTENSION: &str = "rs";
 
 // A specification file under test, relative to the crate root, the options
 // its crate generates the code with, and the golden file that holds the
 // code. With `separate_files` the golden is a directory with a file per
-// module. A TOML spec that mirrors a YAML one shares its golden, which
-// checks that both parsers read them alike.
+// module. A TOML or KDL spec that mirrors another one shares its golden,
+// which checks that the parsers read them alike.
 struct Case {
     spec: &'static str,
     test: bool,
@@ -82,6 +82,41 @@ const CASES: &[Case] = &[
         "tests/extra/multiple_modules_toml/tighterror.toml",
         "multiple_modules_toml.rs",
     ),
+    Case {
+        test: false,
+        ..case("tighterror.kdl", "tighterror_build.rs")
+    },
+    case("tests/compilation/tighterror.kdl", "compilation.rs"),
+    Case {
+        separate_files: true,
+        ..case("tests/multiple_modules/tighterror.kdl", "multiple_modules")
+    },
+    case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
+    case(
+        "tests/extra/implicit_category/tighterror.kdl",
+        "implicit_category.rs",
+    ),
+    case("tests/extra/minimal/tighterror.kdl", "minimal.rs"),
+    case(
+        "tests/extra/minimal_256_variants/tighterror.kdl",
+        "minimal_256_variants.rs",
+    ),
+    case(
+        "tests/extra/minimal_no_std/tighterror.kdl",
+        "minimal_no_std.rs",
+    ),
+    case(
+        "tests/extra/minimal_with_display/tighterror.kdl",
+        "minimal_with_display.rs",
+    ),
+    case(
+        "tests/extra/multiple_categories/tighterror.kdl",
+        "multiple_categories.rs",
+    ),
+    case(
+        "tests/extra/multiple_modules_toml/tighterror.kdl",
+        "multiple_modules_toml.rs",
+    ),
 ];
 
 fn crate_root() -> &'static Path {
@@ -99,6 +134,7 @@ fn bless() -> bool {
 fn markup_enabled(spec: &str) -> bool {
     (spec.ends_with(".yaml") && cfg!(feature = "yaml"))
         || (spec.ends_with(".toml") && cfg!(feature = "toml"))
+        || (spec.ends_with(".kdl") && cfg!(feature = "kdl"))
 }
 
 fn generate(c: &Case) -> Vec<(String, String)> {

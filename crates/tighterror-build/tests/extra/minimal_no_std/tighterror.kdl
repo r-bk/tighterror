@@ -1,0 +1,9 @@
+spec { no-std #true }
+
+module errors {
+    category General {
+        error BAD_FILE
+        error BAD_ARG
+        error IO_ERROR
+    }
+}
