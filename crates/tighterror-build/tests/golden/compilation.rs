@@ -2,7 +2,7 @@
 /**
  * Error category type.
  *
- * See the [categories] module for category constants.
+ * See the [category] module for category constants.
  */
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -58,7 +58,7 @@ impl core::fmt::Debug for ErrorCategory {
 /**
  * Error kind type.
  *
- * See the [kinds] module for error kind constants.
+ * See the [kind] module for error kind constants.
  */
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -181,7 +181,7 @@ impl core::fmt::Debug for ErrorKind {
 /**
  * Error type.
  *
- * See the [kinds] module for error kind constants.
+ * See the [kind] module for error kind constants.
  */
 
 #[derive(Debug)]

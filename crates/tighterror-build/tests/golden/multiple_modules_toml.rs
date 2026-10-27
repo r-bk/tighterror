@@ -5,7 +5,7 @@ pub mod internal_errors {
     /**
  * Error category type.
  *
- * See the [categories] module for category constants.
+ * See the [category] module for category constants.
  */
 
     #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -61,7 +61,7 @@ pub mod internal_errors {
     /**
  * Error kind type.
  *
- * See the [kinds] module for error kind constants.
+ * See the [kind] module for error kind constants.
  */
 
     #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -194,7 +194,7 @@ pub mod internal_errors {
     /**
  * Error type.
  *
- * See the [kinds] module for error kind constants.
+ * See the [kind] module for error kind constants.
  */
 
     #[derive(Debug)]
