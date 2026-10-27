@@ -518,6 +518,12 @@ impl<'a> ModuleGenerator<'a> {
                     self.0
                 }
 
+                #[doc = " Returns the error category."]
+                #[inline]
+                pub fn category(&self) -> #err_cat_name {
+                    self.0.category()
+                }
+
                 #[doc = " Returns the error origin location."]
                 #[inline]
                 pub fn location(&self) -> tighterror::Location {

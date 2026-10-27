@@ -196,6 +196,13 @@ impl Error {
     }
 
 
+    /// Returns the error category.
+    #[inline]
+    pub fn category(&self) -> ErrorCategory {
+        self.0.category()
+    }
+
+
     /// Returns the error origin location.
     #[inline]
     pub fn location(&self) -> tighterror::Location {
