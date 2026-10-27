@@ -209,6 +209,13 @@ pub mod internal_errors {
         }
 
 
+        /// Returns the error category.
+        #[inline]
+        pub fn category(&self) -> ErrorCategory {
+            self.0.category()
+        }
+
+
         /// Returns the error origin location.
         #[inline]
         pub fn location(&self) -> tighterror::Location {
@@ -713,6 +720,13 @@ pub mod errors {
         #[inline]
         pub fn kind(&self) -> McErrorKind {
             self.0
+        }
+
+
+        /// Returns the error category.
+        #[inline]
+        pub fn category(&self) -> McErrorCategory {
+            self.0.category()
         }
 
 
