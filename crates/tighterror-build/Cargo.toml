@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["tighterror", "build"]
 categories = ["development-tools", "development-tools::build-utils"]
 repository = "https://github.com/r-bk/tighterror"
+exclude = ["tests/golden"]
 
 [features]
 default = ["yaml", "toml"]
