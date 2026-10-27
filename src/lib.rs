@@ -144,6 +144,55 @@
 //! # }
 //! ```
 //!
+//! Callers handle a whole category with one match arm on its constant, and
+//! single errors with arms on *error kind* constants. A `_` arm is needed,
+//! because the constants don't cover every value of the underlying integer:
+//!
+//! ```rust
+//! # #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+//! # pub struct ErrorKind(u8);
+//! # #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+//! # pub struct ErrorCategory(u8);
+//! # pub struct Error(ErrorKind);
+//! # impl ErrorKind {
+//! #     pub fn category(&self) -> ErrorCategory { ErrorCategory(self.0 >> 4) }
+//! # }
+//! # impl Error {
+//! #     pub fn kind(&self) -> ErrorKind { self.0 }
+//! #     pub fn category(&self) -> ErrorCategory { self.0.category() }
+//! # }
+//! # pub mod category {
+//! #     use super::ErrorCategory;
+//! #     pub const PARSER: ErrorCategory = ErrorCategory(0);
+//! #     pub const IO: ErrorCategory = ErrorCategory(1);
+//! # }
+//! # pub mod kind {
+//! #     use super::ErrorKind;
+//! #     pub const BAD_TOKEN: ErrorKind = ErrorKind(0);
+//! #     pub const QUEUE_FULL: ErrorKind = ErrorKind(1);
+//! #     pub const FILE_NOT_FOUND: ErrorKind = ErrorKind(16);
+//! # }
+//! fn group(e: &Error) -> &'static str {
+//!     match e.category() {
+//!         category::PARSER => "parser",
+//!         category::IO => "io",
+//!         _ => "other",
+//!     }
+//! }
+//!
+//! fn worth_retrying(e: &Error) -> bool {
+//!     match e.kind() {
+//!         kind::QUEUE_FULL | kind::FILE_NOT_FOUND => true,
+//!         _ => false,
+//!     }
+//! }
+//! # fn main() {
+//! #     assert_eq!(group(&Error(kind::FILE_NOT_FOUND)), "io");
+//! #     assert!(worth_retrying(&Error(kind::QUEUE_FULL)));
+//! #     assert!(!worth_retrying(&Error(kind::BAD_TOKEN)));
+//! # }
+//! ```
+//!
 //! ### Variant Types
 //!
 //! There are many cases when a function has only a single error condition.
