@@ -74,45 +74,24 @@
 //!
 //! ```no_run
 //! // build.rs
-//! use tighterror_build::CodegenOptions;
-//!
-//! fn tighterror_codegen() {
-//!     println!("cargo:rerun-if-changed=tighterror.kdl");
-//!     let out_dir = std::env::var("OUT_DIR").expect("OUT_DIR isn't defined");
-//!     let out_path = format!("{out_dir}/errors.rs");
-//!     if let Err(e) = CodegenOptions::new().output(out_path).codegen() {
-//!         panic!("tighterror-build failed: {e}; out_dir: {out_dir}");
-//!     }
-//! }
-//!
-//! fn main() {
-//!     env_logger::builder().init();
-//!     tighterror_codegen();
+//! fn main() -> Result<(), tighterror_build::errors::TbError> {
+//!     tighterror_build::build()
 //! }
 //! ```
 //!
-//! **Notes**
-//!
-//! 1. It is recommended to initialize some kind of logger in the build script
-//!    because *tighterror-build* uses the [log] crate and in case of an
-//!    error a detailed error description is traced.
-//!    In the example above we used `env_logger` to trace to `stderr`.
-//! 1. `cargo` takes care of rebuilding and rerunning the script when
-//!    `[build-dependencies]` change, i.e., when *tighterror-build* version
-//!    changes. To tell cargo that the specification file also affects the build
-//!    we print the `cargo:rerun-if-changed=tighterror.kdl` instruction.
-//!
-//! To use the generated code include the module somewhere in the project's
-//! operational code, e.g., `lib.rs` or `main.rs`, as follows:
+//! The code of a module is written to `$OUT_DIR/<module>.rs`. To use it
+//! include the module somewhere in the project's operational code, e.g.,
+//! `lib.rs` or `main.rs`, as follows:
 //!
 //! ```text
+//! /// Crate errors.
 //! pub mod errors {
 //!     include!(concat!(env!("OUT_DIR"), "/errors.rs"));
 //! }
 //! ```
 //!
-//! See [CodegenOptions] documentation for the full list of configurable
-//! attributes.
+//! See [BuildOptions] for the options, and for what [build] does besides
+//! writing the code.
 //!
 //! [cargo-tighterror]: https://crates.io/crates/cargo-tighterror
 //! [build script]: https://doc.rust-lang.org/cargo/reference/build-scripts.html
