@@ -1,5 +1,5 @@
 [package]
-name = "test_flat_kinds_toml"
+name = "test_multiple_modules_one_file"
 edition = "2021"
 version = "0.0.0"
 
@@ -9,6 +9,3 @@ tighterror = { path = "../../../../.." }
 [build-dependencies]
 env_logger = "0.11.1"
 tighterror-build = { path = "../../.." }
-
-[dev-dependencies]
-anyhow = "1.0"

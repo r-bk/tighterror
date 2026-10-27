@@ -19,7 +19,6 @@ module errors {
         error BAD_NAME display="Invalid name."
         error BAD_OBJECT_ATTRIBUTE display="An object attribute is invalid."
         error BAD_SPEC_FILE_EXTENSION display="Specification filename extension is not supported or is missing."
-        error BAD_TOML display="TOML deserialization has failed."
         error BAD_ROOT_LEVEL_KEYWORD display="Specification contains an invalid root-level keyword."
         error BAD_VALUE_TYPE display="Specification value type is invalid."
         error BAD_YAML display="YAML deserialization has failed."

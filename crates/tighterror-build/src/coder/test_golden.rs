@@ -9,14 +9,13 @@ use std::{
 const BLESS_VAR: &str = "TIGHTERROR_BLESS";
 const GOLDEN_DIR: &str = "tests/golden";
 const TEST_CRATES_DIR: &str = "tests";
-const SPEC_FILE_NAMES: [&str; 3] = ["tighterror.yaml", "tighterror.toml", "tighterror.kdl"];
+const SPEC_FILE_NAMES: [&str; 2] = ["tighterror.yaml", "tighterror.kdl"];
 const RUST_EXTENSION: &str = "rs";
 
 // A specification file under test, relative to the crate root, the options
 // its crate generates the code with, and the golden file that holds the
 // code. With `separate_files` the golden is a directory with a file per
-// module. A TOML or KDL spec that mirrors another one shares its golden,
-// which checks that the parsers read them alike.
+// module.
 struct Case {
     spec: &'static str,
     test: bool,
@@ -45,15 +44,7 @@ const CASES: &[Case] = &[
     },
     case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
     case(
-        "tests/extra/flat_kinds_toml/tighterror.toml",
-        "flat_kinds.rs",
-    ),
-    case(
         "tests/extra/implicit_category/tighterror.kdl",
-        "implicit_category.rs",
-    ),
-    case(
-        "tests/extra/implicit_category_toml/tighterror.toml",
         "implicit_category.rs",
     ),
     case("tests/extra/minimal/tighterror.kdl", "minimal.rs"),
@@ -65,7 +56,6 @@ const CASES: &[Case] = &[
         "tests/extra/minimal_no_std/tighterror.kdl",
         "minimal_no_std.rs",
     ),
-    case("tests/extra/minimal_toml/tighterror.toml", "minimal.rs"),
     case(
         "tests/extra/minimal_with_display/tighterror.kdl",
         "minimal_with_display.rs",
@@ -75,16 +65,8 @@ const CASES: &[Case] = &[
         "multiple_categories.rs",
     ),
     case(
-        "tests/extra/multiple_categories_toml/tighterror.toml",
-        "multiple_categories.rs",
-    ),
-    case(
-        "tests/extra/multiple_modules_toml/tighterror.toml",
-        "multiple_modules_toml.rs",
-    ),
-    case(
-        "tests/extra/multiple_modules_toml/tighterror.kdl",
-        "multiple_modules_toml.rs",
+        "tests/extra/multiple_modules_one_file/tighterror.kdl",
+        "multiple_modules_one_file.rs",
     ),
 ];
 
@@ -102,7 +84,6 @@ fn bless() -> bool {
 
 fn markup_enabled(spec: &str) -> bool {
     (spec.ends_with(".yaml") && cfg!(feature = "yaml"))
-        || (spec.ends_with(".toml") && cfg!(feature = "toml"))
         || (spec.ends_with(".kdl") && cfg!(feature = "kdl"))
 }
 

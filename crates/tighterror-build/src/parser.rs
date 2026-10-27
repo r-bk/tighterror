@@ -7,22 +7,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[cfg(not(any(feature = "yaml", feature = "toml", feature = "kdl")))]
-compile_error!(
-    "At least one of the markup language features ['yaml', 'toml', 'kdl'] must be enabled."
-);
+#[cfg(not(any(feature = "yaml", feature = "kdl")))]
+compile_error!("At least one of the markup language features ['yaml', 'kdl'] must be enabled.");
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "yaml")] {
         mod yaml;
         use yaml::YamlParser;
-    }
-}
-
-cfg_if::cfg_if! {
-    if #[cfg(feature = "toml")] {
-        mod toml;
-        use self::toml::TomlParser;
     }
 }
 
@@ -38,7 +29,7 @@ mod kws;
 #[cfg(test)]
 mod testing;
 
-#[cfg(any(feature = "yaml", feature = "toml"))]
+#[cfg(feature = "yaml")]
 #[derive(Debug)]
 pub enum ParseMode {
     Single,
@@ -56,8 +47,6 @@ fn parse_path(path: PathBuf) -> Result<Spec, TbError> {
     match path.extension() {
         #[cfg(feature = "yaml")]
         Some(e) if e == "yaml" => YamlParser::parse_file(open_spec_file(&path)?),
-        #[cfg(feature = "toml")]
-        Some(e) if e == "toml" => TomlParser::parse_file(open_spec_file(&path)?),
         #[cfg(feature = "kdl")]
         Some(e) if e == "kdl" => KdlParser::parse_file(open_spec_file(&path)?, &path),
         Some(e) => {
@@ -86,11 +75,6 @@ fn spec_file_path(spec: Option<&Path>) -> Result<&Path, TbError> {
     #[cfg(feature = "yaml")]
     if Path::new(crate::DEFAULT_SPEC_PATH_YAML).is_file() {
         return Ok(Path::new(crate::DEFAULT_SPEC_PATH_YAML));
-    }
-
-    #[cfg(feature = "toml")]
-    if Path::new(crate::DEFAULT_SPEC_PATH_TOML).is_file() {
-        return Ok(Path::new(crate::DEFAULT_SPEC_PATH_TOML));
     }
 
     #[cfg(feature = "kdl")]
