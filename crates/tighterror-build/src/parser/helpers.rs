@@ -3,7 +3,7 @@ use crate::{
     common::casing,
     errors::{TbError, kind::parser::*},
     parser::kws,
-    spec::{ErrorSpec, ModuleSpec},
+    spec::{CategorySpec, ErrorSpec, ModuleSpec},
 };
 use convert_case::Case;
 use regex::Regex;
@@ -143,7 +143,7 @@ where
     check_name_uniqueness("error", iter)
 }
 
-pub fn check_variant_type_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
+fn check_variant_type_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {
@@ -164,7 +164,7 @@ where
     check_name_uniqueness("<flat_kinds> module error", iter)
 }
 
-pub fn check_module_variant_type_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
+fn check_module_variant_type_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {
@@ -176,6 +176,30 @@ where
     I: IntoIterator<Item = &'a str>,
 {
     check_name_uniqueness("module", iter)
+}
+
+pub fn check_module_variant_types(m: &ModuleSpec) -> Result<(), TbError> {
+    for c in &m.categories {
+        let names = variant_type_names(m, c);
+        check_variant_type_name_uniqueness(names.iter().map(|s| s.as_str()))?;
+    }
+    if m.flat_kinds() {
+        let names = m
+            .categories
+            .iter()
+            .flat_map(|c| variant_type_names(m, c))
+            .collect::<Vec<String>>();
+        check_module_variant_type_name_uniqueness(names.iter().map(|s| s.as_str()))?;
+    }
+    Ok(())
+}
+
+fn variant_type_names(m: &ModuleSpec, c: &CategorySpec) -> Vec<String> {
+    c.errors
+        .iter()
+        .filter(|e| m.err_has_variant_type(c, e))
+        .map(|e| e.variant_type_name())
+        .collect()
 }
 
 pub fn check_name_collisions(m: &ModuleSpec) -> Result<(), TbError> {
