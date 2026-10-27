@@ -13,7 +13,7 @@
 //! 1. Minimal runtime overhead on error path. No dynamic memory allocation.
 //! 1. Minimal runtime overhead in matching a whole logical group of errors.
 //! 1. Minimal coding overhead:
-//!    - specify errors in markup language and generate all the boilerplate
+//!    - specify errors in a KDL file and generate all the boilerplate
 //!      Rust code automatically
 //!    - ergonomic error reporting
 //!
@@ -24,13 +24,12 @@
 //! 1. [Implementation Details](#implementation-details)
 //! 1. [Specification File Reference](#specification-file-reference)
 //!     * [Filename](#filename)
-//!     * [Error Object](#error-object)
-//!     * [Error List](#error-list)
-//!     * [Category Object](#category-object)
-//!     * [Category List](#category-list)
-//!     * [Module Object](#module-object)
-//!     * [Module List](#module-list)
-//!     * [Main Object](#main-object)
+//!     * [Structure](#structure)
+//!     * [Names](#names)
+//!     * [Root Settings](#root-settings)
+//!     * [Module Settings](#module-settings)
+//!     * [Category Settings](#category-settings)
+//!     * [Error Settings](#error-settings)
 //! 1. [tighterror-build](#tighterror-build)
 //! 1. [cargo-tighterror](#cargo-tighterror)
 //! 1. [Motivation](#motivation)
@@ -67,14 +66,16 @@
 //! - [`Error`] for `Error`
 //!
 //! The concrete types are auto-generated from a specification file defined in
-//! the user project. The specification file is written in one of the supported
-//! markup languages, YAML or TOML. For example, `tighterror.yaml`:
+//! the user project. The specification file is written in
+//! [KDL](https://kdl.dev). For example, `tighterror.kdl`:
 //!
-//! ```yaml
-//! ---
-//! errors:
-//!   - BAD_FILE
-//!   - BAD_ARG
+//! ```kdl
+//! module errors {
+//!     category General {
+//!         error BAD_FILE
+//!         error BAD_ARG
+//!     }
+//! }
 //! ```
 //!
 //! The specification file is translated to Rust using a dedicated command
@@ -211,13 +212,16 @@
 //!
 //! When at least one *variant type* is enabled *tighterror* creates a submodule
 //! `variant::types` that contains the variant types, or per-category modules
-//! with them when the `flat_kinds` module setting is disabled.
+//! with them when the `flat-kinds` module setting is disabled.
 //!
-//! ```yaml
-//! ---
-//! errors:
-//!   - name: OPERATION_TIMEOUT
-//!     variant_type: true
+//! ```kdl
+//! module errors {
+//!     category General {
+//!         error OPERATION_TIMEOUT {
+//!             spec { variant-type #true }
+//!         }
+//!     }
+//! }
 //! ```
 //!
 //! ```rust
@@ -288,751 +292,135 @@
 //!
 //! # Specification File Reference
 //!
-//! *tighterror* uses markup languages for its specification file.
-//! Currently supported languages are [YAML](https://yaml.org) and
-//! [TOML](https://toml.io).
+//! The specification file is written in [KDL](https://kdl.dev) 2.0.
 //!
 //! ## Filename
 //!
-//! When specification filename isn't explicitly provided *tighterror-build*
-//! searches the current working directory for a file with one of the default
-//! names `tighterror.yaml` or `tighterror.toml`.
+//! When the specification file path isn't given, *tighterror-build* looks for
+//! `tighterror.kdl` in the current working directory. A custom path must have
+//! the `.kdl` extension.
 //!
-//! Custom filenames, or files outside the current working directory,
-//! must be explicitly specified. A custom filename must have one of the
-//! supported markup language extensions `.yaml` or `.toml`.
+//! ## Structure
 //!
-//! ## Error Object
+//! A specification holds one or more `module` nodes. A module holds one or
+//! more `category` nodes, and a category holds one or more `error` nodes.
+//! Each of them takes its name as its single argument.
 //!
-//! An *error object* specifies a single *error kind*.
+//! ```kdl
+//! spec {
+//!     output "src/errors.rs"
+//! }
 //!
-//! *Error object* is never defined standalone. It must be defined as
-//! an item in an [*error list*](#error-list).
-//!
-//! An *error object* comprises the following attributes:
-//!
-//! * `name` - string (required)
-//!
-//!   Defines the *error kind* name. Must be a string in UPPER_SNAKE_CASE.
-//!   This string becomes the *error kind* constant.<br><br>
-//!
-//! * `display` - string (optional)
-//!
-//!   Defines the *error kind's* display string. This string is used in
-//!   `std::fmt::Display` implementation to display the *error kind*.<br>
-//!   When undefined the `name` is used as display string.<br><br>
-//!
-//! * `doc` - string (optional)
-//!
-//!   Defines the error's documentation comment. This becomes the
-//!   doc comment of the *error kind's* constant.
-//!   When undefined the constant doesn't receive a doc comment.<br><br>
-//!
-//! * `doc_from_display` - bool (optional)<a name="err-obj-doc-from-display"></a>
-//!
-//!   When enabled the `display` string is also used as the doc comment,
-//!   unless `doc` is defined.
-//!   The `display` attribute must be explicitly set for this to take effect.<br>
-//!
-//!   This attribute can be set on a higher level in
-//!   [category object](#category-doc-from-display) to affect all
-//!   errors in the category, or in [module object](#module-doc-from-display)
-//!   to affect all errors in the module.
-//!   Values defined on lower levels win.<br>
-//!   Default: `false`<br><br>
-//!
-//! * `variant_type` - bool|string (optional)<a name="err-obj-variant-type"></a>
-//!
-//!   Enables creation of a Variant Type for this error.
-//!
-//!   When specified as a boolean `true|false` it enables/disables creation
-//!   of a Variant Type for this error. When enabled the name of the Variant
-//!   Type is derived by converting the error name case from UPPER_SNAKE to
-//!   UpperCamel, e.g., `OPERATION_TIMEOUT` becomes `OperationTimeout`.
-//!
-//!   To customize the Variant Type name it is possible to specify this
-//!   attribute as a string. In this case the value of the attribute becomes
-//!   the name of the Variant Type. It must be a valid Rust struct name
-//!   specified in UpperCamel case.
-//!
-//!   This attribute can be enabled on a higher level in
-//!   [category object](#category-variant-type) or in
-//!   [module object](#module-variant-type).
-//!   Values defined on lower levels win.
-//!
-//!   Default: `false`<br><br>
-//!
-//! ### Error Object Examples
-//!
-//! **YAML**
-//!
-//! ```yaml
-//! errors:
-//!   - name: BAD_PATH
-//!     display: Path is malformed.
-//!     doc: Returned when a path value has an invalid structure.
-//!     doc_from_display: false
+//! module errors {
+//!     spec { doc "Crate errors." }
+//!     category Parser {
+//!         spec { doc "Parser errors." }
+//!         error BAD_TOKEN display="Decoded an invalid token."
+//!         error QUEUE_FULL
+//!     }
+//!     category Io {
+//!         error FILE_NOT_FOUND {
+//!             spec {
+//!                 display "File not found."
+//!                 variant-type #true
+//!             }
+//!         }
+//!     }
+//! }
 //! ```
 //!
-//! **TOML**
-//!
-//! ```toml
-//! [[errors]]
-//! name = "BAD_PATH"
-//! display = "Path is malformed."
-//! doc = "Returned when a path value has an invalid structure."
-//! doc_from_display = false
-//! ```
-//!
-//! [identifier requirements]: https://doc.rust-lang.org/reference/identifiers.html
-//!
-//! ## Error List
-//!
-//! *Error list* is an ordered list of [*error objects*](#error-object)
-//! with unique names. It is identified by the `errors` keyword.
-//!
-//! The `errors` keyword may appear as a standalone root-level attribute or as
-//! an attribute of a [*category object*](#category-object).
-//! When specified at the root-level the specification file defines only a single
-//! category and the list defines all the errors of the specification.
-//! When specified at *category object* level the specification file can define
-//! more than one category, and the list defines errors belonging to the
-//! category in which it is specified. The root-level and per-category notations
-//! are mutually exclusive.
-//!
-//! To allow more compact specification of errors *tighterror* supports
-//! shorthand notations where part of *error object* attributes are
-//! specified without corresponding keywords (see the examples below).
-//!
-//! The order of elements in a list matters because *error variant* is
-//! assigned to errors in the order of their appearance in the list.
-//! Therefore, insertion or deletion of a not-last object causes
-//! reassignment of *error variant* of all subsequent objects in the list.
-//! This may create a larger than expected diff in the generated code.
-//!
-//! ### YAML Error List
-//!
-//! In general an *error list* is an array of error objects where every
-//! item can have any of the [*error object's*](#error-object) attributes.
-//! The `name` attribute is mandatory.
-//!
-//! ```yaml
-//! ---
-//! errors:
-//!   - name: MISSING_ATTRIBUTE
-//!     display: An object attribute is missing.
-//!     doc_from_display: true
-//!   - name: TIMEOUT
-//!     display: Operation timed out.
-//!     doc_from_display: true
-//! ```
-//!
-//! **Name-Only Notation**
-//!
-//! *Error object* has only a single mandatory attribute - `name`.
-//! This allows a short *name-only* notation, where every element
-//! of the list is an error name specified without the `name` keyword.
-//!
-//! This notation doesn't allow specification of attributes other than `name`.
-//! Therefore they receive default values. In particular, in this notation
-//! an *error kind* constant has no doc comment and is displayed by its `name`.
-//!
-//! ```yaml
-//! ---
-//! errors:
-//!   - MISSING_ATTRIBUTE
-//!   - TIMEOUT
-//! ```
-//!
-//! **Name-Display Notation**
-//!
-//! *Name-display* notation slightly enhances the *name-only* notation
-//! with an addition of a display string, without using the `display`
-//! keyword. Every element in the list is a `name: display` single-item mapping.
-//! This notation is available in YAML only.
-//!
-//! ```yaml
-//! ---
-//! errors:
-//!   - MISSING_ATTRIBUTE: An object attribute is missing.
-//!   - TIMEOUT: Operation timed out.
-//! ```
-//!
-//! ### TOML Error List
-//!
-//! In TOML an *error list* is an array of tables:
-//!
-//! ```toml
-//! [[errors]]
-//! name = "MISSING_ATTRIBUTE"
-//! display = "An object attribute is missing."
-//! doc_from_display = true
-//!
-//! [[errors]]
-//! name = "TIMEOUT"
-//! display = "Operation timed out."
-//! doc_from_display = true
-//! ```
-//!
-//! or array of inline tables:
-//!
-//! ```toml
-//! errors = [
-//!     { name = "MISSING_ATTRIBUTE", display = "An object attribute is missing.", doc_from_display = true },
-//!     { name = "TIMEOUT", display = "Operation timed out.", doc_from_display = true }
-//! ]
-//! ```
-//!
-//! **Name-Only Notation**
-//!
-//! *Name-only* shorthand notation is available in TOML as follows:
-//!
-//! ```toml
-//! errors = ["MISSING_ATTRIBUTE", "TIMEOUT"]
-//! ```
-//!
-//! ## Category Object
-//!
-//! A *category object* defines properties of a single *error category*.
-//! An *error category* groups several *error kinds* logically and allows
-//! matching the whole group with a single match arm.
-//!
-//! A *category object* can appear as a standalone root-level attribute
-//! `category` or as an item in a [*category list*](#category-list).
-//! Definition at the root-level allows specification of a single category.
-//! Definition as an item in a *category list* allows specification
-//! of multiple categories.
-//!
-//! When a *category object* is specified at the root-level its `errors`
-//! attribute is forbidden and should be defined at the root-level too.
-//! Therefore, the whole *category object* at the root-level is
-//! optional because all other attributes have default values.
-//!
-//! When no *category object* is defined *tighterror* creates an implicit
-//! `General` category. When there is only a single category the number of
-//! *category* bits is zero.
-//!
-//! ---
-//!
-//! A *category object* comprises the following attributes:
-//!
-//! * `name` - string
-//!
-//!   Defines the name of the category.<br>
-//!
-//!   The value must be a valid Rust struct name specified in UpperCamelCase.
-//!   This string becomes a *category* constant after transition to
-//!   UPPER_SNAKE_CASE.
-//!
-//!   The name is a mandatory attribute when *category object* is defined
-//!   as an item in a [*category list*](#category-list).
-//!   Otherwise it is optional with the default value `General`.<br><br>
-//!
-//! * `doc` - string (optional)
-//!
-//!   Defines the category's document string.<br>
-//!
-//!   This becomes the doc comment of the category constant.<br><br>
-//!
-//! * `doc_from_display` - bool (optional)<a name="category-doc-from-display"></a>
-//!
-//!   Sets a default value for the [`doc_from_display`](#err-obj-doc-from-display)
-//!   *error object* attribute. This affects errors belonging to this category
-//!   only. The value is used for all errors that do not define it
-//!   explicitly as part of *error object* specification.
-//!
-//!   Usage of this attribute allows addition of a doc comment in *name-display*
-//!   error list notation, which otherwise isn't possible.<br><br>
-//!
-//! * `errors` - ErrorList
-//!
-//!   Defines the [list of errors](#error-list) belonging to this category.<br>
-//!
-//!   This is a mandatory attribute when *category object* is defined
-//!   as an item in a [*category list*](#category-list). Conversely, when
-//!   a *category object* is defined as a standalone root-level attribute
-//!   (see below) this attribute is forbidden, and the error list must be
-//!   defined as a root-level attribute.<br><br>
-//!
-//! * `variant_type` - bool (optional)<a name="category-variant-type"></a>
-//!
-//!   Sets a default value for the [`variant_type`](#err-obj-variant-type)
-//!   *error object* attribute. This affects errors belonging to this category
-//!   only. The value is used for all errors that do not define this property
-//!   explicitly as part of *error object* specification.
-//!
-//!   Customization of Variant Type name is possible only in the *error object*
-//!   specification.
-//!
-//!   Default: `false`<br><br>
-//!
-//! ### Category Object Examples
-//!
-//! A specification with a single implicit category `General`. Note, the error
-//! constants have no documentation in this scenario.
-//!
-//! ```yaml
-//! ---
-//! errors:
-//!   - MISSING_ATTRIBUTE: An object attribute is missing.
-//!   - TIMEOUT: Operation timed out.
-//! ```
-//!
-//! A specification with a single category with a custom name. Note, the
-//! error constants receive a doc string that is equal to the display string.
-//!
-//! ```yaml
-//! ---
-//! category:
-//!   name: MyErrorCategory
-//!   doc_from_display: true
-//!
-//! errors:
-//!   - MISSING_ATTRIBUTE: An object attribute is missing.
-//!   - TIMEOUT: Operation timed out.
-//! ```
-//!
-//! A TOML specification with a single category with a custom name and
-//! documentation equal to display string.
-//!
-//! ```toml
-//! [category]
-//! name = "MyErrorCategory"
-//! doc_from_display = true
-//!
-//! [[errors]]
-//! name = "MISSING_ATTRIBUTE"
-//! display = "An object attribute is missing."
-//!
-//! [[errors]]
-//! name = "TIMEOUT"
-//! display = "Operation timed out"
-//! ```
-//!
-//! ## Category List
-//!
-//! *Category list* is an ordered list of [*category objects*](#category-object)
-//! with unique names. It is identified by the `categories` keyword.
-//!
-//! The `categories` keyword may appear as a standalone root-level attribute,
-//! or as an attribute of a [module object](#module-object).
-//! It allows definition of one or more categories, each with its own set of
-//! errors.
-//!
-//! When a *category object* is defined as an item in a *category list* the
-//! `name` and `errors` attributes are mandatory.
-//!
-//! `category` and `categories` keywords are mutually exclusive,
-//! as well as root-level `errors` and `categories` keywords. `category` and
-//! root-level `errors` keywords are used only for a single-category
-//! specification.
-//!
-//! The order of elements in a list matters because category constant identifier
-//! is assigned in the order of their appearance in the list. Therefore,
-//! insertion or deletion of a non-last category causes reassignment of
-//! category identifiers of all subsequent objects in the list. This may create
-//! a larger than expected diff in the generated code.
-//!
-//! ### Category List Examples
-//!
-//! A two-category YAML example.
-//!
-//! ```yaml
-//! ---
-//! categories:
-//!   - name: Parsing
-//!     doc_from_display: true
-//!     errors:
-//!       - MISSING_ATTRIBUTE: An object attribute is missing.
-//!       - INVALID_ATTRIBUTE: An object contains an invalid attribute.
-//!
-//!   - name: CodeGeneration
-//!     doc_from_display: true
-//!     errors:
-//!       - INVALID_NAME: An object has an invalid name.
-//!       - INVALID_PATH: A file path is invalid.
-//! ```
-//!
-//! An equivalent two-category TOML example.
-//!
-//! ```toml
-//! [[categories]]
-//! name = "Parsing"
-//! doc_from_display = true
-//!
-//! [[categories.errors]]
-//! name = "MISSING_ATTRIBUTE"
-//! display = "An object attribute is missing."
-//!
-//! [[categories.errors]]
-//! name = "INVALID_ATTRIBUTE"
-//! display = "An object contains an invalid attribute."
-//!
-//! [[categories]]
-//! name = "CodeGeneration"
-//! doc_from_display = true
-//!
-//! [[categories.errors]]
-//! name = "INVALID_NAME"
-//! display = "An object has an invalid name."
-//!
-//! [[categories.errors]]
-//! name = "INVALID_PATH"
-//! display = "A file path is invalid."
-//! ```
-//!
-//! See [module list examples](#module-list-examples) for an example
-//! of a *category list* specified as a *module object* attribute.
-//!
-//! ## Module Object
-//!
-//! A *module object* defines the topmost Rust construct in *tighterror* - a
-//! module. All other *tighterror* types and definitions are sub-items of a
-//! module. Hence, a *module object* controls attributes of its direct and
-//! indirect descendant objects.
-//!
-//! A *module object* can appear as a standalone `module` attribute or as part
-//! of a [module list](#module-list). Definition at the root-level allows
-//! specification of a single module. Definition as an item in *module list*
-//! allows specification of multiple modules.
-//!
-//! When *module object* appears as an item in a *module list* its
-//! `name` and `categories` attributes are mandatory. Conversely, when defined
-//! under the `module` attribute, `categories` is forbidden and `name`
-//! has a default value. Hence, the whole `module` section is optional.
-//!
-//! When no *module object* is explicitly defined *tighterror* creates an
-//! implicit `errors` module.
-//!
-//! ---
-//!
-//! A *module object* comprises the following attributes:
-//!
-//! * `categories` - CategoryList (optional)
-//!
-//!   Defines the [list of categories](#category-list) of this module.
-//!
-//!   This attribute is required when a *module object* is specified as an item
-//!   in a *module list*. When specified under the root-level `module` attribute
-//!   `categories` must be specified as root-level attribute too (see [category
-//!   list](#category-list)).<br><br>
-//!
-//! * `doc` - string (optional)
-//!
-//!   Defines the doc comment of the generated module.<br>
-//!   By default module doc comment is not defined.<br><br>
-//!
-//! * `doc_from_display` - bool (optional)<a name="module-doc-from-display"></a>
-//!
-//!   Sets a default value for the [`doc_from_display`](#err-obj-doc-from-display)
-//!   *error object* attribute.
-//!   This value is used for all errors that do not define it
-//!   explicitly as part of *error object* specification.
-//!
-//!   Usage of this attribute allows addition of a doc comment in *name-display*
-//!   error list notation, which otherwise isn't possible.
-//!
-//!   ```yaml
-//!   ---
-//!   module:
-//!     doc_from_display: true
-//!   errors:
-//!     - MISSING_ATTRIBUTE: An object attribute is missing.
-//!     - TIMEOUT: Operation timed out.
-//!   ```
-//!   <br>
-//!
-//! * `err_cat_doc` - string (optional)
-//!
-//!   Defines the doc comment of the *error category* struct.
-//!
-//!   This becomes the doc comment of the struct that implements the
-//!   [Category] trait.<br>
-//!   The default value is equivalent to the following YAML specification:
-//!   ```yaml
-//!   ---
-//!   module:
-//!     err_cat_doc: |
-//!       Error category type.
-//!
-//!       See the [category] module for category constants.
-//!   ```
-//!   <br>
-//!
-//! * `err_cat_name` - string (optional)
-//!
-//!   Defines the name of the *error category* struct.
-//!
-//!   This becomes the name of the struct that implements the
-//!   [Category] trait.<br>
-//!   The value must be a valid Rust struct name.<br>
-//!   Default: `ErrorCategory`<br><br>
-//!
-//! * `err_doc` - string (optional)
-//!
-//!   Defines the doc comment of the *error* struct.
-//!
-//!   This becomes the doc comment of the struct that implements the
-//!   [Error] trait.<br>
-//!   The default value is equivalent to the following YAML specification:
-//!   ```yaml
-//!   ---
-//!   module:
-//!     err_doc: |
-//!       Error type.
-//!
-//!       See the [kind] module for error kind constants.
-//!   ```
-//!   <br>
-//!
-//! * `err_kind_doc` - string (optional)
-//!
-//!   Defines the doc comment of the *error kind* struct.
-//!
-//!   This becomes the doc comment of the struct that implements the
-//!   [Kind] trait.<br>
-//!   The default value is equivalent to the following YAML specification:
-//!   ```yaml
-//!   ---
-//!   module:
-//!     err_kind_doc: |
-//!       Error kind type.
-//!
-//!       See the [kind] module for error kind constants.
-//!   ```
-//!   <br>
-//!
-//! * `err_kind_name` - string (optional)
-//!
-//!   Defines the name of the *error kind* struct.
-//!
-//!   This becomes the name of the struct that implements the [Kind]
-//!   trait.<br>
-//!   The value must be a valid Rust struct name.<br>
-//!   Default: `ErrorKind`<br><br>
-//!
-//! * `err_name` - string (optional)
-//!
-//!   Defines the name of the *error* struct.
-//!
-//!   This becomes the name of the struct that implements the [Error]
-//!   trait.<br>
-//!   The value must be a valid Rust struct name.<br>
-//!   Default: `Error`<br><br>
-//!
-//! * `error_trait` - bool (optional)
-//!
-//!   When enabled implements `std::error::Error` trait on the *error*
-//!   struct.<br>
-//!   This attribute is ignored when `no_std` is enabled.<br>
-//!   Default: `true`<br><br>
-//!
-//! * `flat_kinds` - bool (optional)
-//!
-//!   Puts the error kind constants directly under the `kind` sub-module,
-//!   e.g., `kind::ERR`, and the variant types directly under
-//!   `variant::types`. This requires error names, and variant type names, to
-//!   be unique on module level.
-//!
-//!   When disabled, the constants are placed in a category-specific
-//!   sub-module, so that error names need to be unique on category level
-//!   only. For example:
-//!
-//!   ```yaml
-//!   module:
-//!     flat_kinds: false
-//!
-//!   categories:
-//!     - name: Foo
-//!       errors:
-//!         - ERR
-//!     - name: Baz
-//!       errors:
-//!         - ERR
-//!   ```
-//!
-//!   The error kind constants' paths are `kind::foo::ERR` and
-//!   `kind::baz::ERR`.
-//!
-//!   Default: `true`<br><br>
-//!
-//! * `result_from_err` - bool (optional)
-//!
-//!   When enabled an implementation of [From] trait is added
-//!   to create a `Result<T, Error>` from `Error`.<br>
-//!   Default: `true`<br><br>
-//!
-//! * `result_from_err_kind` - bool (optional)
-//!
-//!   When enabled an implementation of [From] trait is added
-//!   to create a `Result<T, Error>` from `ErrorKind`.<br>
-//!   Default: `true`<br><br>
-//!
-//! * `variant_type` - bool (optional)<a name="module-variant-type"></a>
-//!
-//!   Sets a default value for the [`variant_type`](#err-obj-variant-type)
-//!   *error object* attribute. This affects errors belonging to all categories
-//!   in this module. The value is used for all categories and errors that do
-//!   not define this property explicitly as part of
-//!   [category object](#category-variant-type) or
-//!   [error object](#err-obj-variant-type) specification.
-//!
-//!   Customization of Variant Type name is possible only in the *error object*
-//!   specification.
-//!
-//!   Default: `false`<br><br>
-//!
-//! ### Module Object Examples
-//!
-//! YAML
-//!
-//! ```yaml
-//! module:
-//!   name: internal_errors
-//!   flat_kinds: false
-//! ```
-//!
-//! TOML
-//!
-//! ```toml
-//! [module]
-//! name = "internal_errors"
-//! doc_from_display = true
-//! error_trait = false
-//! ```
-//!
-//! ## Module List
-//!
-//! *Module list* is a list of *module objects* with unique names. It is
-//! identified by the `modules` keyword.
-//!
-//! The `modules` keyword may appear as a standalone root-level attribute of
-//! a specification file. It allows definition of one or more modules, each
-//! with its own set of categories and errors.
-//!
-//! When a *module object* is defined as an item in a *module list* its `name`
-//! and `categories` attributes are mandatory.
-//!
-//! The root-level keywords `errors`, `category`, `categories` and `module` are
-//! mutually exclusive with `modules`.
-//!
-//! ### Module List Examples
-//!
-//! **YAML**
-//!
-//! ```yaml
-//! modules:
-//!   - name: errors
-//!     categories:
-//!       - name: General
-//!         errors:
-//!           - BAD_ARG: An argument is invalid.
-//!           - TIMEOUT: Operation timed out.
-//!   - name: parser_errors
-//!     categories:
-//!       - name: General
-//!         errors:
-//!           - BAD_FILE_FORMAT: Input file is malformed.
-//!           - BAD_OBJECT_ATTRIBUTE: An object attribute is invalid.
-//! ```
-//!
-//! **TOML**
-//!
-//! The following is a TOML equivalent of the previous example.
-//! A *module list* in TOML is an array of tables.
-//!
-//! ```toml
-//! [[modules]]
-//! name = "errors"
-//!
-//! [[modules.categories]]
-//! name = "General"
-//!
-//! [[modules.categories.errors]]
-//! name = "BAD_ARG"
-//! display = "An argument is invalid."
-//!
-//! [[modules.categories.errors]]
-//! name = "TIMEOUT"
-//! display = "Operation timed out."
-//!
-//! [[modules]]
-//! name = "parser_errors"
-//!
-//! [[modules.categories]]
-//! name = "General"
-//!
-//! [[modules.categories.errors]]
-//! name = "BAD_FILE_FORMAT"
-//! display = "Input file is malformed."
-//!
-//! [[modules.categories.errors]]
-//! name = "BAD_OBJECT_ATTRIBUTE"
-//! display = "An object attribute is invalid."
-//! ```
-//!
-//! ## Main Object
-//!
-//! The *main* configuration object is identified by the `main`
-//! keyword and is found at the root-level of a specification file. It defines
-//! attributes applicable to all other specification objects in the file.
-//!
-//! All attributes of the *main object* have default values. Therefore, the
-//! whole `main` section is optional.
-//!
-//! ---
-//!
-//! A *main object* comprises the following attributes:
-//!
-//! * `no_std` - bool (optional)
-//!
-//!   Generates code suitable for Rust `no_std` environment.
-//!
-//!   When enabled this attribute implicitly disables `error_trait` and
-//!   skips unit tests that require `std`.<br>
-//!   Default: `false`<br><br>
-//!
-//! * `output` - string (optional)<a name="main-object-output"></a>
-//!
-//!   Defines the output path.
-//!
-//!   This can be either an absolute path, a relative path, or a hyphen `-`.
-//!   A relative path is relative to the location of the specification file.
-//!   Hyphen `-` forces the output to be written to `stdout`.
-//!
-//!   If the path points to an existing directory the behavior depends
-//!   on [*separate files* mode](#separate-files-mode):
-//!
-//!   - when *separate files* mode is enabled every module is written under
-//!     the directory with a filename derived from the module name with addition
-//!     of the `.rs` extension
-//!
-//!   - when *separate files* mode is disabled the output is written to file
-//!     `tighterror.rs` under the directory
-//!
-//!   When undefined the output is written to `stdout`.
-//!
-//!   This attribute is overridden by the `-o, --output` command-line
-//!   argument in *cargo-tighterror*.<br><br>
-//!
-//! ### Main Object Examples
-//!
-//! YAML
-//!
-//! ```yaml
-//! ---
-//! main:
-//!   no_std: true
-//!   output: src/errors.rs
-//! ```
-//!
-//! TOML
-//!
-//! ```toml
-//! [main]
-//! no_std = true
-//! output = "src/errors.rs"
-//! ```
+//! The settings of a node go in its `spec` child node, one `key value` per
+//! line, or several on one line separated by `;`. The `spec` node comes
+//! first, at most once, and lists a setting at most once. The root `spec`
+//! node comes before the modules.
+//!
+//! An error may also give its `display` on its own line, as
+//! `display="..."`. When its `spec` gives one too, the `spec` one wins.
+//!
+//! Unknown nodes and settings, and values of the wrong type, are rejected
+//! with the file, line and column of the offending node.
+//!
+//! ## Names
+//!
+//! | Node       | Case             | Becomes                             |
+//! |------------|------------------|-------------------------------------|
+//! | `module`   | lower_snake_case | a module, see below                 |
+//! | `category` | UpperCamelCase   | a constant, e.g. `category::PARSER` |
+//! | `error`    | UPPER_SNAKE_CASE | a constant, e.g. `kind::BAD_TOKEN`  |
+//!
+//! When the output holds several modules, each one is a module block, e.g.
+//! `pub mod errors { ... }`. In [*separate files* mode](#separate-files-mode)
+//! the module name is the file name instead.
+//!
+//! Module names are unique in the file, and category names in their module.
+//! Error names are unique in their module, or in their category when the
+//! module sets `flat-kinds #false`.
+//!
+//! ## Root Settings
+//!
+//! | Setting  | Type   | Default  | Description                            |
+//! |----------|--------|----------|----------------------------------------|
+//! | `output` | string | `stdout` | Output path, see below.                |
+//! | `no-std` | bool   | `#false` | Generate code for `no_std`.            |
+//!
+//! <a name="output-setting"></a>`output` is an absolute path, a path
+//! relative to the specification file, or `-` for `stdout`. When it is an
+//! existing directory, the code goes to `tighterror.rs` under it, or to one
+//! file per module in [*separate files* mode](#separate-files-mode). The
+//! `-o, --output` argument of *cargo-tighterror* overrides it.
+//!
+//! `no-std` also turns off `error-trait` and the unit tests that need `std`.
+//!
+//! ## Module Settings
+//!
+//! | Setting                | Type   | Default         | Description                                         |
+//! |------------------------|--------|-----------------|-----------------------------------------------------|
+//! | `doc`                  | string | none            | Doc comment of the module.                          |
+//! | `err-name`             | string | `Error`         | Name of the [Error] struct.                         |
+//! | `err-kind-name`        | string | `ErrorKind`     | Name of the [Kind] struct.                          |
+//! | `err-cat-name`         | string | `ErrorCategory` | Name of the [Category] struct.                      |
+//! | `err-doc`              | string | see below       | Doc comment of the [Error] struct.                  |
+//! | `err-kind-doc`         | string | see below       | Doc comment of the [Kind] struct.                   |
+//! | `err-cat-doc`          | string | see below       | Doc comment of the [Category] struct.               |
+//! | `error-trait`          | bool   | `#true`         | Implement `std::error::Error` for the error struct. |
+//! | `result-from-err`      | bool   | `#true`         | Implement `From<Error> for Result<T, Error>`.       |
+//! | `result-from-err-kind` | bool   | `#true`         | Implement `From<ErrorKind> for Result<T, Error>`.   |
+//! | `flat-kinds`           | bool   | `#true`         | Put all error kinds of the module in one namespace. |
+//! | `doc-from-display`     | bool   | `#false`        | Default for the errors of the module.               |
+//! | `variant-type`         | bool   | `#false`        | Default for the errors of the module.               |
+//!
+//! The struct names are UpperCamelCase. The default struct docs name the
+//! struct and point at the `kind` or `category` module.
+//!
+//! With `flat-kinds`, the error kinds are `kind::NAME` and the variant
+//! types `variant::types::Name`, so their names are unique in the module.
+//! With `flat-kinds #false` they move to a module per category, e.g.
+//! `kind::parser::NAME`, and their names need to be unique in the category
+//! only.
+//!
+//! ## Category Settings
+//!
+//! | Setting            | Type   | Default  | Description                             |
+//! |--------------------|--------|----------|-----------------------------------------|
+//! | `doc`              | string | none     | Doc comment of the category constant.   |
+//! | `doc-from-display` | bool   | `#false` | Default for the errors of the category. |
+//! | `variant-type`     | bool   | `#false` | Default for the errors of the category. |
+//!
+//! ## Error Settings
+//!
+//! | Setting            | Type         | Default  | Description                                          |
+//! |--------------------|--------------|----------|------------------------------------------------------|
+//! | `display`          | string       | the name | The `Display` text of the error kind.                |
+//! | `doc`              | string       | none     | Doc comment of the error kind constant.              |
+//! | `doc-from-display` | bool         | `#false` | Use a set `display` as the doc when `doc` is unset.  |
+//! | `variant-type`     | bool or name | `#false` | Generate a variant type for the error.               |
+//!
+//! `doc-from-display` and `variant-type` set on an error win over its
+//! category, and a category's win over its module.
+//!
+//! `variant-type #true` names the variant type after the error, e.g.
+//! `OPERATION_TIMEOUT` becomes `OperationTimeout`. A name in UpperCamelCase,
+//! e.g. `variant-type Timeout`, enables it under that name.
 //!
 //! # tighterror-build
 //!
@@ -1095,10 +483,9 @@
 //!
 //!   It is required if a specification file has a custom name.
 //!   It can be omitted if the specification file uses the default
-//!   name `tighterror.yaml` or `tighterror.toml` and is present in the
-//!   current working directory.
+//!   name `tighterror.kdl` and is present in the current working directory.
 //!
-//!   The file extension `.yaml` or `.toml` is mandatory in custom filenames.
+//!   The file extension `.kdl` is mandatory in custom filenames.
 //!   <br><br>
 //!
 //! * `-o, --output <PATH>` (optional)
@@ -1108,8 +495,8 @@
 //!   This can be either an absolute path, a relative path, or a hyphen `-`.
 //!   A relative path is relative to the location of the specification file.
 //!
-//!   This argument overrides the [`MainObject::output`](#main-object-output)
-//!   attribute defined in the specification file.
+//!   This argument overrides the [`output`](#output-setting)
+//!   setting defined in the specification file.
 //!   If this argument is omitted and output path isn't
 //!   defined in the specification file the output is written to `stdout`.
 //!
