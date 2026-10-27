@@ -26,6 +26,8 @@ fn codegen_main(args: Args) {
 }
 
 fn main() {
-    pretty_env_logger::init();
+    env_logger::Builder::from_default_env()
+        .format_timestamp(None)
+        .init();
     codegen_main(Args::parse_args())
 }

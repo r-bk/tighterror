@@ -18,7 +18,7 @@ repository = "https://github.com/r-bk/tighterror"
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
 log = "0.4"
-pretty_env_logger = "0.5"
+env_logger = { version = "0.11", default-features = false, features = ["auto-color", "regex"] }
 tighterror-build = { version = "0.0.23", path = "../tighterror-build" }
 
 [package.metadata.docs.rs]
