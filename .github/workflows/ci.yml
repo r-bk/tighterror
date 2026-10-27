@@ -15,22 +15,27 @@ env:
 
 jobs:
   ci:
+    name: ci (${{ matrix.rust }}, ${{ matrix.runs_on }})
     runs-on: ${{ matrix.runs_on }}
     strategy:
       matrix:
         rust:
           - stable
           - beta
-          - 1.99.1  # MSRV
+          - msrv
         runs_on:
           - ubuntu-latest
           - macos-latest
           - windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: msrv
+        id: msrv
+        run: sed -n 's/^rust-version = "\(.*\)"$/version=\1/p' Cargo.toml >> "$GITHUB_OUTPUT"
+        shell: bash
       - uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: ${{ matrix.rust == 'msrv' && steps.msrv.outputs.version || matrix.rust }}
           components: rustfmt, clippy
       - name: build
         run: cargo build --workspace
