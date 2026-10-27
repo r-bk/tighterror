@@ -83,3 +83,47 @@ pub fn variants_mod_ident() -> Ident {
 pub fn types_mod_ident() -> Ident {
     format_ident!("{}", idents::TYPES_MOD)
 }
+
+#[cfg(test)]
+mod testing {
+    use super::*;
+    use crate::coder::formatter::pretty;
+
+    fn render(doc: &str) -> String {
+        let doc = doc_tokens(doc);
+        pretty(quote! { #doc pub struct S; }).unwrap()
+    }
+
+    // Checks that a multi-line doc becomes a block comment whose closing
+    // line is ` */`, the form rustfmt 1.11 requires and older rustfmt keeps.
+    #[test]
+    fn test_multiline_doc_closing_line() {
+        // render a two-line doc on a struct
+        let code = render("Line one.\nLine two.");
+        // the block comment holds both lines and closes with ` */`
+        assert!(
+            code.contains("/**\n * Line one.\n * Line two.\n */\npub struct S;"),
+            "{code}"
+        );
+    }
+
+    // Checks that a one-line doc ending in a newline, as a YAML block scalar
+    // produces, becomes a line comment rather than a block comment.
+    #[test]
+    fn test_single_line_doc_with_trailing_newline() {
+        // render a one-line doc that ends in a newline
+        let code = render("Line one.\n");
+        // the doc is a line comment, and no block comment is left
+        assert!(code.contains("/// Line one.\npub struct S;"), "{code}");
+        assert!(!code.contains("*/"), "{code}");
+    }
+
+    // Checks that a doc made of newlines only adds no doc attribute.
+    #[test]
+    fn test_newlines_only_doc() {
+        // render a doc that holds newlines only
+        let code = render("\n\n");
+        // the struct is left without a doc comment
+        assert_eq!(code.trim(), "pub struct S;", "{code}");
+    }
+}
