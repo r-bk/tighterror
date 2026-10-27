@@ -9,8 +9,8 @@ use crate::{
 use log::error;
 use std::{
     env,
-    fs::File,
-    io::{self, Read, Write},
+    fs::{self, File},
+    io::{self, ErrorKind, Read, Write},
     path::Path,
 };
 
@@ -27,6 +27,8 @@ mod logger;
 mod options;
 pub use options::*;
 #[cfg(test)]
+mod test_build_script;
+#[cfg(test)]
 mod test_golden;
 
 const TMP_FILE_PFX: &str = "tighterror.";
@@ -34,6 +36,7 @@ const TMP_FILE_SFX: &str = ".rs";
 const RUST_FILE_EXTENSION: &str = "rs";
 const ALL_MODULES: &str = "*";
 const OUT_DIR_VAR: &str = "OUT_DIR";
+const BUILD_SCRIPT_DIR: &str = "tighterror";
 
 /// Generates Rust source code from a specification file.
 ///
@@ -110,7 +113,25 @@ fn build_script(opts: &BuildOptions) -> Result<(), TbError> {
         return OUT_DIR_NOT_SET.into();
     };
 
-    opts.codegen.clone().spec(spec).output(out_dir).codegen()
+    let dir = Path::new(&out_dir).join(BUILD_SCRIPT_DIR);
+    reset_dir(&dir)?;
+
+    opts.codegen.clone().spec(spec).output(dir).codegen()
+}
+
+fn reset_dir(dir: &Path) -> Result<(), TbError> {
+    match fs::remove_dir_all(dir) {
+        Ok(()) => {}
+        Err(e) if e.kind() == ErrorKind::NotFound => {}
+        Err(e) => {
+            error!("failed to remove the output directory {:?}: {e}", dir);
+            return FAILED_TO_WRITE_OUTPUT_FILE.into();
+        }
+    }
+    fs::create_dir_all(dir).map_err(|e| {
+        error!("failed to create the output directory {:?}: {e}", dir);
+        TbError::from(FAILED_TO_WRITE_OUTPUT_FILE)
+    })
 }
 
 fn write_modules(frozen: &FrozenOptions, modules: &[ModuleCode]) -> Result<(), TbError> {
