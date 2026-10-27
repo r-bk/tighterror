@@ -38,8 +38,6 @@ impl CodegenOptions {
     /// are used in the following order:
     /// * if the `yaml` feature is enabled the path [DEFAULT_SPEC_PATH_YAML]
     ///   is used
-    /// * if specification file is still not found and the `toml` feature is
-    ///   enabled the path [DEFAULT_SPEC_PATH_TOML] is used
     /// * if specification file is still not found and the `kdl` feature is
     ///   enabled the path [DEFAULT_SPEC_PATH_KDL] is used
     ///
@@ -50,7 +48,6 @@ impl CodegenOptions {
     /// ```
     ///
     /// [DEFAULT_SPEC_PATH_YAML]: crate::DEFAULT_SPEC_PATH_YAML
-    /// [DEFAULT_SPEC_PATH_TOML]: crate::DEFAULT_SPEC_PATH_TOML
     /// [DEFAULT_SPEC_PATH_KDL]: crate::DEFAULT_SPEC_PATH_KDL
     pub fn spec(&mut self, spec: impl Into<PathBuf>) -> &mut Self {
         self.spec = Some(spec.into());

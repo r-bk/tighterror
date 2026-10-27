@@ -128,11 +128,6 @@
 #[cfg_attr(docsrs, doc(cfg(feature = "yaml")))]
 pub const DEFAULT_SPEC_PATH_YAML: &str = "tighterror.yaml";
 
-/// The default TOML specification file path.
-#[cfg(feature = "toml")]
-#[cfg_attr(docsrs, doc(cfg(feature = "toml")))]
-pub const DEFAULT_SPEC_PATH_TOML: &str = "tighterror.toml";
-
 /// The default KDL specification file path.
 #[cfg(feature = "kdl")]
 #[cfg_attr(docsrs, doc(cfg(feature = "kdl")))]

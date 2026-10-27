@@ -36,7 +36,7 @@ pub struct ModuleSpec {
 }
 
 impl ModuleSpec {
-    #[cfg(any(feature = "yaml", feature = "toml"))]
+    #[cfg(feature = "yaml")]
     pub fn implicit_with_categories(categories: Vec<CategorySpec>) -> Self {
         Self {
             categories,
