@@ -1,5 +1,6 @@
 [[modules]]
 name = "internal_errors"
+flat_kinds = false
 doc = "Internal errors."
 doc_from_display = true
 
@@ -25,6 +26,7 @@ display = "Internal error, state mismatch."
 
 [[modules]]
 name = "errors"
+flat_kinds = false
 doc = "Public errors."
 doc_from_display = true
 err_doc = "A custom error struct doc."

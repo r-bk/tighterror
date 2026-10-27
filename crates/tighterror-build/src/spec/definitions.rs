@@ -16,6 +16,6 @@ pub const DEFAULT_ERR_KIND_INTO_RESULT: bool = true;
 pub const DEFAULT_ERROR_TRAIT: bool = true;
 pub const DEFAULT_UPDATE_MODE: bool = false;
 pub const DEFAULT_NO_STD: bool = false;
-pub const DEFAULT_FLAT_KINDS: bool = false;
+pub const DEFAULT_FLAT_KINDS: bool = true;
 pub const DEFAULT_SEPARATE_FILES: bool = false;
 pub const DEFAULT_VARIANT_TYPE: bool = false;

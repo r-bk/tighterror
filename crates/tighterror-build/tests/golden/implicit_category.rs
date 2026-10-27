@@ -300,26 +300,19 @@ pub mod kind {
     use super::IcErrorKind as EK;
     use super::category as c;
 
-    /// General category error kind constants.
-    pub mod general {
-        use super::c;
-        use super::EK;
+    /// Input file could not be open.
+    pub const FAILED_TO_OPEN_FILE: EK = EK::new(c::GENERAL, 0);
 
-        /// Input file could not be open.
-        pub const FAILED_TO_OPEN_FILE: EK = EK::new(c::GENERAL, 0);
+    /// Input file has invalid format.
+    pub const BAD_INPUT: EK = EK::new(c::GENERAL, 1);
 
-        /// Input file has invalid format.
-        pub const BAD_INPUT: EK = EK::new(c::GENERAL, 1);
-
-        /**
+    /**
  * This is an example for a long doc string.
  *
  * It continues on several lines. And can include Rust doc-string
  * formatting [`String`].
  */
-        pub const LONG_DESCRIPTION: EK = EK::new(c::GENERAL, 2);
-    }
-
+    pub const LONG_DESCRIPTION: EK = EK::new(c::GENERAL, 2);
 }
 
 
@@ -366,25 +359,21 @@ mod test {
     #[test]
     fn test_err_kind_name() {
         use kind::*;
-        assert_eq!(general::FAILED_TO_OPEN_FILE.name(), "FAILED_TO_OPEN_FILE");
-        assert_eq!(
-            tighterror::Kind::name(& general::FAILED_TO_OPEN_FILE), "FAILED_TO_OPEN_FILE"
-        );
-        assert_eq!(general::BAD_INPUT.name(), "BAD_INPUT");
-        assert_eq!(tighterror::Kind::name(& general::BAD_INPUT), "BAD_INPUT");
-        assert_eq!(general::LONG_DESCRIPTION.name(), "LONG_DESCRIPTION");
-        assert_eq!(
-            tighterror::Kind::name(& general::LONG_DESCRIPTION), "LONG_DESCRIPTION"
-        );
+        assert_eq!(FAILED_TO_OPEN_FILE.name(), "FAILED_TO_OPEN_FILE");
+        assert_eq!(tighterror::Kind::name(& FAILED_TO_OPEN_FILE), "FAILED_TO_OPEN_FILE");
+        assert_eq!(BAD_INPUT.name(), "BAD_INPUT");
+        assert_eq!(tighterror::Kind::name(& BAD_INPUT), "BAD_INPUT");
+        assert_eq!(LONG_DESCRIPTION.name(), "LONG_DESCRIPTION");
+        assert_eq!(tighterror::Kind::name(& LONG_DESCRIPTION), "LONG_DESCRIPTION");
     }
 
 
     #[test]
     fn test_err_kind_display() {
         use kind::*;
-        assert_eq!(format!("{}", general::FAILED_TO_OPEN_FILE), "FAILED_TO_OPEN_FILE");
-        assert_eq!(format!("{}", general::BAD_INPUT), "BAD_INPUT");
-        assert_eq!(format!("{}", general::LONG_DESCRIPTION), "LONG_DESCRIPTION");
+        assert_eq!(format!("{}", FAILED_TO_OPEN_FILE), "FAILED_TO_OPEN_FILE");
+        assert_eq!(format!("{}", BAD_INPUT), "BAD_INPUT");
+        assert_eq!(format!("{}", LONG_DESCRIPTION), "LONG_DESCRIPTION");
     }
 
 
@@ -392,12 +381,7 @@ mod test {
     fn test_err_kind_uniqueness() {
         use kind::*;
         use std::collections::HashSet;
-        let errs: [IcErrorKind; 3] = [
-            general::FAILED_TO_OPEN_FILE,
-            general::BAD_INPUT,
-            general::LONG_DESCRIPTION,
-        ];
-
+        let errs: [IcErrorKind; 3] = [FAILED_TO_OPEN_FILE, BAD_INPUT, LONG_DESCRIPTION];
         let set = HashSet::<IcErrorKind>::from_iter(errs);
         assert_eq!(set.len(), 3);
     }
@@ -407,12 +391,7 @@ mod test {
     fn test_err_kind_value_uniqueness() {
         use kind::*;
         use std::collections::HashSet;
-        let errs: [IcErrorKind; 3] = [
-            general::FAILED_TO_OPEN_FILE,
-            general::BAD_INPUT,
-            general::LONG_DESCRIPTION,
-        ];
-
+        let errs: [IcErrorKind; 3] = [FAILED_TO_OPEN_FILE, BAD_INPUT, LONG_DESCRIPTION];
         let set = HashSet::<u8>::from_iter(errs.iter().map(|ec| ec.value()));
         assert_eq!(set.len(), 3);
     }
@@ -421,9 +400,9 @@ mod test {
     #[test]
     fn test_err_kind_category() {
         use kind::*;
-        assert_eq!(general::FAILED_TO_OPEN_FILE.category(), category::GENERAL);
-        assert_eq!(general::BAD_INPUT.category(), category::GENERAL);
-        assert_eq!(general::LONG_DESCRIPTION.category(), category::GENERAL);
+        assert_eq!(FAILED_TO_OPEN_FILE.category(), category::GENERAL);
+        assert_eq!(BAD_INPUT.category(), category::GENERAL);
+        assert_eq!(LONG_DESCRIPTION.category(), category::GENERAL);
     }
 
 
@@ -431,16 +410,12 @@ mod test {
     fn test_err_kind_from_value() {
         use kind::*;
         assert_eq!(
-            IcErrorKind::from_value(general::FAILED_TO_OPEN_FILE.value()).unwrap(),
-            general::FAILED_TO_OPEN_FILE
+            IcErrorKind::from_value(FAILED_TO_OPEN_FILE.value()).unwrap(),
+            FAILED_TO_OPEN_FILE
         );
+        assert_eq!(IcErrorKind::from_value(BAD_INPUT.value()).unwrap(), BAD_INPUT);
         assert_eq!(
-            IcErrorKind::from_value(general::BAD_INPUT.value()).unwrap(),
-            general::BAD_INPUT
-        );
-        assert_eq!(
-            IcErrorKind::from_value(general::LONG_DESCRIPTION.value()).unwrap(),
-            general::LONG_DESCRIPTION
+            IcErrorKind::from_value(LONG_DESCRIPTION.value()).unwrap(), LONG_DESCRIPTION
         );
     }
 
@@ -449,16 +424,13 @@ mod test {
     fn test_err_display() {
         use kind::*;
         assert_eq!(
-            format!("{}", IcError::from(general::FAILED_TO_OPEN_FILE)),
+            format!("{}", IcError::from(FAILED_TO_OPEN_FILE)),
             "Input file could not be open."
         );
         assert_eq!(
-            format!("{}", IcError::from(general::BAD_INPUT)),
-            "Input file has invalid format."
+            format!("{}", IcError::from(BAD_INPUT)), "Input file has invalid format."
         );
-        assert_eq!(
-            format!("{}", IcError::from(general::LONG_DESCRIPTION)), "LONG_DESCRIPTION"
-        );
+        assert_eq!(format!("{}", IcError::from(LONG_DESCRIPTION)), "LONG_DESCRIPTION");
     }
 
 }

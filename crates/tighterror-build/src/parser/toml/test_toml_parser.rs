@@ -715,6 +715,26 @@ display = "second error"
 "#;
 
     assert!(TomlParser::parse_str(s).is_ok());
+
+    // without a flat_kinds key the default applies, which rejects an error
+    // name reused across categories too
+    let s = r#"
+[[categories]]
+name = "Cat1"
+
+[[categories.errors]]
+name = "ERR1"
+display = "first error"
+
+[[categories]]
+name = "Cat2"
+
+[[categories.errors]]
+name = "ERR1"
+display = "another first error"
+"#;
+
+    assert_eq!(TomlParser::parse_str(s), NON_UNIQUE_NAME.into());
 }
 
 #[test]
@@ -1179,11 +1199,11 @@ errors = ["DUMMY_ERR2"]
 
 [[categories]]
 name = "Cat2"
-errors = ["DUMMY_ERR2"]
+errors = ["DUMMY_ERR3"]
 
 [[categories]]
 name = "Cat2"
-errors = ["DUMMY_ERR3"]
+errors = ["DUMMY_ERR4"]
 
 "#;
     assert_eq!(
@@ -1746,10 +1766,12 @@ variant_type = "FooBar"
 "#;
     assert!(TomlParser::parse_str(s).is_ok());
 
-    // without flat_kinds, the same name in two categories does not clash
+    // with flat_kinds turned off, the same name in two categories does not
+    // clash
     let s = r#"
 [module]
 variant_type = true
+flat_kinds = false
 
 [[categories]]
 name = "CatOne"

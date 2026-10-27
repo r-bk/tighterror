@@ -718,6 +718,22 @@ categories:
 ";
 
     assert!(YamlParser::parse_str(s).is_ok());
+
+    // without a flat_kinds key the default applies, which rejects an error
+    // name reused across categories too
+    let s = "
+---
+categories:
+  - name: Cat1
+    errors:
+      - ERR1: first error
+
+  - name: Cat2
+    errors:
+      - ERR1: another first error
+";
+
+    assert_eq!(YamlParser::parse_str(s), NON_UNIQUE_NAME.into());
 }
 
 #[test]
@@ -1206,17 +1222,17 @@ categories:
     doc: First category.
     doc_from_display: false
     errors:
-      - DUMMY_ERR
+      - DUMMY_ERR1
   - name: Cat1
     doc_from_display: true
     errors:
       - DUMMY_ERR2
   - name: Cat2
     errors:
-      - DUMMY_ERR
+      - DUMMY_ERR3
   - name: Cat2
     errors:
-      - DUMMY_ERR
+      - DUMMY_ERR4
 ";
     assert_eq!(
         YamlParser::parse_str(s).unwrap_err().kind(),
@@ -1746,11 +1762,13 @@ categories:
 "#;
     assert!(YamlParser::parse_str(s).is_ok());
 
-    // without flat_kinds, the same name in two categories does not clash
+    // with flat_kinds turned off, the same name in two categories does not
+    // clash
     let s = r#"
 ---
 module:
   variant_type: true
+  flat_kinds: false
 categories:
   - name: CatOne
     errors:
