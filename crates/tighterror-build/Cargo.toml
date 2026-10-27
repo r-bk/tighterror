@@ -1,6 +1,6 @@
 [package]
 name = "tighterror-build"
-version = "0.0.22"
+version = "0.0.23"
 authors = ["Rafael Buchbinder <rafi@rbk.io>"]
 edition = "2024"
 rust-version = "1.99.1"
@@ -27,7 +27,7 @@ serde = "1"
 serde_yaml = { version = "0.9", optional = true }
 syn = { version = "2.0", default-features = false, features = ["parsing"] }
 tempfile = "3.10.0"
-tighterror = { path = "../..", version = "0.0.22" }
+tighterror = { path = "../..", version = "0.0.23" }
 toml = { version = "0.8", optional = true }
 
 [dev-dependencies]
