@@ -1,4 +1,5 @@
 use crate::{
+    coder::idents,
     errors::TbErrorKind,
     parser::{kdl::*, testing::log_init},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, OverridableErrorSpec, Spec},
@@ -40,6 +41,24 @@ fn kind(s: &str) -> TbErrorKind {
 
 fn in_category(category_spec: &str, errors: &str) -> String {
     format!("module errors {{\n category General {{\n{category_spec}\n{errors}\n }}\n}}\n")
+}
+
+// Identifiers that fail the UpperCamel rules of type names, each with the
+// error it must raise.
+const BAD_TYPE_NAMES: [(&str, TbErrorKind); 7] = [
+    ("notUpperCamelCase", BAD_IDENTIFIER_CASE),
+    ("\"With Spaces\"", BAD_IDENTIFIER_CHARACTERS),
+    ("\"\"", EMPTY_IDENTIFIER),
+    ("\"  \"", BAD_IDENTIFIER_CHARACTERS),
+    ("\" PaddedWithSpaces  \"", BAD_IDENTIFIER_CHARACTERS),
+    ("Disallowed-Character-", BAD_IDENTIFIER_CHARACTERS),
+    ("With_Underscore", BAD_IDENTIFIER_CHARACTERS),
+];
+
+fn with_module_spec(module_spec: &str) -> String {
+    format!(
+        "module errors {{\n spec {{ {module_spec} }}\n category General {{ error A_ERR }}\n}}\n"
+    )
 }
 
 // Checks that a minimal specification, one module with one category of
@@ -353,4 +372,173 @@ fn test_invalid_kdl() {
         kind(&in_category("", "error A_ERR display=\"open")),
         BAD_KDL
     );
+}
+
+// Checks the rules of module, category and error names beyond their case:
+// empty names, foreign characters and the module name's lower snake case.
+#[test]
+fn test_name_rules() {
+    log_init();
+
+    // a module name is lower snake case and not empty
+    for good in ["errors", "my_errors"] {
+        let s = format!("module {good} {{ category General {{ error A_ERR }} }}");
+        assert_eq!(KdlParser::parse_str(&s).unwrap().modules[0].name(), good);
+    }
+    for bad in ["\"\"", "My_Errors", "ERRORS"] {
+        let s = format!("module {bad} {{ category General {{ error A_ERR }} }}");
+        assert_eq!(kind(&s), BAD_NAME, "{bad}");
+    }
+
+    // a category name follows the type name rules
+    for (bad, k) in BAD_TYPE_NAMES {
+        let s = format!("module errors {{ category {bad} {{ error A_ERR }} }}");
+        assert_eq!(kind(&s), k, "{bad}");
+    }
+
+    // an error name is upper snake case without foreign characters
+    for (bad, k) in [
+        ("\"\"", EMPTY_IDENTIFIER),
+        ("\"  \"", BAD_IDENTIFIER_CHARACTERS),
+        ("camelCase", BAD_IDENTIFIER_CASE),
+        ("\"With Spaces\"", BAD_IDENTIFIER_CHARACTERS),
+        ("With-Dashes", BAD_IDENTIFIER_CHARACTERS),
+        ("UpperCamelCase", BAD_IDENTIFIER_CASE),
+        ("\"BadChars+\"", BAD_IDENTIFIER_CHARACTERS),
+    ] {
+        assert_eq!(kind(&in_category("", &format!("error {bad}"))), k, "{bad}");
+    }
+}
+
+// Checks the names of a module's error, kind and category types. It
+// simulates custom names, the defaults set explicitly, malformed names,
+// a name that another type reserves, and two types given the same name.
+#[test]
+fn test_type_names() {
+    log_init();
+
+    // custom names and the defaults are accepted
+    for (key, good) in [
+        ("err-name", "MyError"),
+        ("err-name", idents::ERROR),
+        ("err-kind-name", "MyErrorKind"),
+        ("err-kind-name", idents::ERROR_KIND),
+        ("err-cat-name", "MyErrorCategory"),
+        ("err-cat-name", idents::ERROR_CATEGORY),
+    ] {
+        let s = with_module_spec(&format!("{key} {good}"));
+        assert!(KdlParser::parse_str(&s).is_ok(), "{key} {good}");
+    }
+
+    // each type name follows the type name rules
+    for key in ["err-name", "err-kind-name", "err-cat-name"] {
+        for (bad, k) in BAD_TYPE_NAMES {
+            let s = with_module_spec(&format!("{key} {bad}"));
+            assert_eq!(kind(&s), k, "{key} {bad}");
+        }
+    }
+
+    // a type cannot take the default name of another type
+    for (key, bad) in [
+        ("err-name", idents::ERROR_KIND),
+        ("err-name", idents::ERROR_CATEGORY),
+        ("err-kind-name", idents::ERROR),
+        ("err-kind-name", idents::ERROR_CATEGORY),
+        ("err-cat-name", idents::ERROR),
+        ("err-cat-name", idents::ERROR_KIND),
+    ] {
+        let s = with_module_spec(&format!("{key} {bad}"));
+        assert_eq!(kind(&s), BAD_MODULE_IDENTIFIER, "{key} {bad}");
+    }
+
+    // two types cannot share a custom name
+    for pair in [
+        "err-name Same; err-kind-name Same",
+        "err-name Same; err-cat-name Same",
+        "err-kind-name Same; err-cat-name Same",
+    ] {
+        assert_eq!(kind(&with_module_spec(pair)), NAME_COLLISION, "{pair}");
+    }
+}
+
+// Checks the rules of variant type names: their case, collisions with the
+// module's type names, and uniqueness. It simulates both explicit names and
+// names derived from error names.
+#[test]
+fn test_variant_type_names() {
+    log_init();
+
+    // a variant type name follows the type name rules, avoids the module's
+    // type names and is unique
+    let pfx = "module errors {\n spec { err-name CustomErr; err-cat-name CustomErrCat; err-kind-name CustomErrKind }\n category General {\n  error EXISTING_ERR { spec { variant-type ExistingErr } }\n";
+    for (bad, k) in [
+        ("MY_ERR", BAD_IDENTIFIER_CHARACTERS),
+        ("my_err", BAD_IDENTIFIER_CHARACTERS),
+        ("myErr", BAD_IDENTIFIER_CASE),
+        ("myerr", BAD_IDENTIFIER_CASE),
+        ("CustomErr", NAME_COLLISION),
+        ("CustomErrCat", NAME_COLLISION),
+        ("CustomErrKind", NAME_COLLISION),
+        ("ExistingErr", NON_UNIQUE_NAME),
+    ] {
+        let s = format!("{pfx}  error MY_ERR {{ spec {{ variant-type {bad} }} }}\n }}\n}}");
+        assert_eq!(kind(&s), k, "{bad}");
+    }
+
+    // with flat kinds, variant type names are unique across categories
+    let s = "module errors {\n spec { variant-type #true }\n category CatOne { error ONE { spec { variant-type Same } } }\n category CatTwo { error TWO { spec { variant-type Same } } }\n}";
+    assert_eq!(kind(s), NON_UNIQUE_NAME);
+
+    // without flat kinds, the same name in two categories does not clash
+    let s = "module errors {\n spec { variant-type #true; flat-kinds #false }\n category CatOne { error ONE { spec { variant-type Same } } }\n category CatTwo { error TWO { spec { variant-type Same } } }\n}";
+    assert!(KdlParser::parse_str(s).is_ok());
+}
+
+// Checks that variant type names collide or repeat only among the errors
+// that get a variant type. The errors simulate names whose derived variant
+// type names are `Error`, `ErrorKind`, `ErrorCategory` and `FooBar`.
+#[test]
+fn test_variant_type_names_need_variant_type() {
+    log_init();
+
+    // without variant types the derived names collide with nothing
+    let s = in_category("", "error ERROR\nerror ERROR_KIND\nerror ERROR_CATEGORY");
+    assert!(KdlParser::parse_str(&s).is_ok());
+
+    // a module default gives each error a variant type that collides
+    for name in ["ERROR", "ERROR_KIND", "ERROR_CATEGORY"] {
+        let s = format!(
+            "module errors {{\n spec {{ variant-type #true }}\n category General {{ error {name} }}\n}}"
+        );
+        assert_eq!(kind(&s), NAME_COLLISION, "{name}");
+    }
+
+    // an error that turns the module default off collides with nothing
+    let s = "module errors {\n spec { variant-type #true }\n category General { error ERROR_KIND { spec { variant-type #false } } }\n}";
+    assert!(KdlParser::parse_str(s).is_ok());
+
+    // only BAZ gets a variant type, so FOO_BAR's derived name is not taken
+    let s = in_category(
+        "",
+        "error FOO_BAR\nerror BAZ { spec { variant-type FooBar } }",
+    );
+    assert!(KdlParser::parse_str(&s).is_ok());
+
+    // both errors get a variant type named FooBar
+    let s = in_category(
+        "",
+        "error FOO_BAR { spec { variant-type #true } }\nerror BAZ { spec { variant-type FooBar } }",
+    );
+    assert_eq!(kind(&s), NON_UNIQUE_NAME);
+
+    // a category default gives FOO_BAR its derived variant type FooBar
+    let s = in_category(
+        "spec { variant-type #true }",
+        "error FOO_BAR\nerror BAZ { spec { variant-type FooBar } }",
+    );
+    assert_eq!(kind(&s), NON_UNIQUE_NAME);
+
+    // across categories with flat kinds, only BAZ gets a variant type
+    let s = "module errors {\n category CatOne { error FOO_BAR }\n category CatTwo { error BAZ { spec { variant-type FooBar } } }\n}";
+    assert!(KdlParser::parse_str(s).is_ok());
 }
