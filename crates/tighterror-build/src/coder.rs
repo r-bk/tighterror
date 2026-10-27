@@ -23,6 +23,7 @@ pub(crate) use frozen_options::*;
 mod generator;
 use generator::ModuleCode;
 pub(crate) mod idents;
+mod logger;
 mod options;
 pub use options::*;
 #[cfg(test)]
@@ -95,6 +96,8 @@ pub fn build() -> Result<(), TbError> {
 }
 
 fn build_script(opts: &BuildOptions) -> Result<(), TbError> {
+    logger::set_fallback();
+
     let spec = opts
         .codegen
         .spec

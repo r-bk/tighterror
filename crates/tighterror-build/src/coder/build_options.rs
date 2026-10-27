@@ -100,6 +100,12 @@ impl BuildOptions {
     ///
     /// The function must be called from a build script, because it reads
     /// the `OUT_DIR` environment variable that cargo sets for it.
+    ///
+    /// Errors are described in [log] records. When no logger is set, the
+    /// function sets one that writes warnings and errors to `stderr`, which
+    /// cargo shows when the build script fails. A build script that sets its
+    /// own logger must do so before calling the function, because a process
+    /// can set a logger only once.
     pub fn build(&self) -> Result<(), TbError> {
         super::build_script(self)
     }
