@@ -1,0 +1,33 @@
+module errors {
+    spec {
+        doc "Crate errors."
+        doc-from-display #true
+    }
+    category General {
+        spec { doc "General errors category." }
+        error TIMEOUT display="Operation timed out."
+        error BAD_ARG display="Invalid argument received." {
+            spec { variant-type #true }
+        }
+    }
+    category Io {
+        spec { doc "I/O errors category." }
+        error CONNECTION_REFUSED display="Outgoing network connection was refused."
+    }
+}
+
+module internal_errors {
+    spec {
+        doc "Internal errors."
+        doc-from-display #true
+        flat-kinds #false
+    }
+    category Parser {
+        spec { doc "Parser errors category." }
+        error BAD_FILE display="Configuration file is malformed."
+    }
+    category Processor {
+        spec { doc "Processor errors category." }
+        error BAD_FILE display="Processor file is malformed or missing."
+    }
+}
