@@ -79,12 +79,13 @@ impl BuildOptions {
     /// Generates the code of every module in the specification file.
     ///
     /// The code of a module is written to `$OUT_DIR/<module>.rs`, where
-    /// `<module>` is the module name. The crate includes it as follows:
+    /// `<module>` is the module name. The crate includes it with
+    /// [`tighterror::include_errors`]:
     ///
     /// ```text
     /// /// Crate errors.
     /// pub mod errors {
-    ///     include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+    ///     tighterror::include_errors!(errors);
     /// }
     /// ```
     ///

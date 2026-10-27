@@ -1,5 +1,5 @@
 #![deny(warnings)]
 
 pub mod errors {
-    include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+    tighterror::include_errors!(errors);
 }

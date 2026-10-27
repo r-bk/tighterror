@@ -6,12 +6,12 @@
 
 /// Crate errors.
 pub mod errors {
-    include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+    tighterror::include_errors!(errors);
 }
 
 /// Internal errors.
 pub mod internal_errors {
-    include!(concat!(env!("OUT_DIR"), "/internal_errors.rs"));
+    tighterror::include_errors!(internal_errors);
 }
 
 #[cfg(test)]

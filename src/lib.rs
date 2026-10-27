@@ -546,7 +546,7 @@
 //!   ```text
 //!   /// Module doc string
 //!   pub mod errors {
-//!       include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+//!       tighterror::include_errors!(errors);
 //!
 //!       #[derive(thiserror::Error, Debug)]
 //!       #[error("Custom display string")]
@@ -841,3 +841,5 @@ pub use location::*;
 
 mod variant_type;
 pub use variant_type::*;
+
+mod macros;
