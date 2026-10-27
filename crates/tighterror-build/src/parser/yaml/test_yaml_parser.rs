@@ -1643,3 +1643,29 @@ categories:
     let res = YamlParser::parse_str(s);
     assert_eq!(res.unwrap_err().kind(), NON_UNIQUE_NAME);
 }
+
+// Checks that a variant type name equal to the name of a module struct is a
+// collision only for an error that gets a variant type. The errors simulate
+// names whose derived variant type names are `Error`, `ErrorKind` and
+// `ErrorCategory`.
+#[test]
+fn test_variant_type_name_collision_needs_variant_type() {
+    log_init();
+
+    // without variant types the derived names collide with nothing
+    let s = "---\nerrors:\n  - ERROR\n  - ERROR_KIND\n  - ERROR_CATEGORY\n";
+    assert!(YamlParser::parse_str(s).is_ok());
+
+    // a module default gives each error a variant type that collides
+    for name in ["ERROR", "ERROR_KIND", "ERROR_CATEGORY"] {
+        let s = format!("---\nmodule:\n  variant_type: true\nerrors:\n  - {name}\n");
+        assert_eq!(
+            YamlParser::parse_str(&s).unwrap_err().kind(),
+            NAME_COLLISION
+        );
+    }
+
+    // an error that turns the module default off collides with nothing
+    let s = "---\nmodule:\n  variant_type: true\nerrors:\n  - name: ERROR_KIND\n    variant_type: false\n";
+    assert!(YamlParser::parse_str(s).is_ok());
+}

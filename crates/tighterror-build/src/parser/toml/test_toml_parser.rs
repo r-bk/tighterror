@@ -1617,3 +1617,45 @@ name = "CAT_TWO_ERR_TWO"
     let res = TomlParser::parse_str(s);
     assert_eq!(res.unwrap_err().kind(), NON_UNIQUE_NAME);
 }
+
+// Checks that a variant type name equal to the name of a module struct is a
+// collision only for an error that gets a variant type. The errors simulate
+// names whose derived variant type names are `Error`, `ErrorKind` and
+// `ErrorCategory`.
+#[test]
+fn test_variant_type_name_collision_needs_variant_type() {
+    log_init();
+
+    // without variant types the derived names collide with nothing
+    let s = r#"
+[[errors]]
+name = "ERROR"
+
+[[errors]]
+name = "ERROR_KIND"
+
+[[errors]]
+name = "ERROR_CATEGORY"
+"#;
+    assert!(TomlParser::parse_str(s).is_ok());
+
+    // a module default gives each error a variant type that collides
+    for name in ["ERROR", "ERROR_KIND", "ERROR_CATEGORY"] {
+        let s = format!("[module]\nvariant_type = true\n\n[[errors]]\nname = \"{name}\"\n");
+        assert_eq!(
+            TomlParser::parse_str(&s).unwrap_err().kind(),
+            NAME_COLLISION
+        );
+    }
+
+    // an error that turns the module default off collides with nothing
+    let s = r#"
+[module]
+variant_type = true
+
+[[errors]]
+name = "ERROR_KIND"
+variant_type = false
+"#;
+    assert!(TomlParser::parse_str(s).is_ok());
+}
