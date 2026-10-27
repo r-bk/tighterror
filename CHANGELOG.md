@@ -78,8 +78,8 @@ A small cleanup release - align documentation and add small code cleanups.
 ### Changed
 
 - cleanup documentation
-    - UPPER_SNAKE error name casing in examples
-    - rephrase *separate files* mode documentation
+  - UPPER_SNAKE error name casing in examples
+  - rephrase _separate files_ mode documentation
 
 - ensure category name casing conversions use `UpperCamel` case as the source
   case instead of letting `convert_case` crate guess it
@@ -89,7 +89,7 @@ A small cleanup release - align documentation and add small code cleanups.
 ### Changed
 
 - update documentation following the reordering of category and variant bits
-  in binary representation of *error kind*
+  in binary representation of _error kind_
 
 ## [0.0.19], [b-0.0.19], [c-0.0.19] - 2024-07-19
 
@@ -102,8 +102,8 @@ A backward incompatible release.
 
 - change the required case for error names from `UpperCamel` to `UPPER_SNAKE`.
   This is done to make the error definitions in markup language have the same
-  casing as Rust error-kind constants have. This way grepping for an *error
-  kind* returns the error definition together with error usages.
+  casing as Rust error-kind constants have. This way grepping for an _error
+  kind_ returns the error definition together with error usages.
 
 ## [0.0.18], [b-0.0.18], [c-0.0.18] - 2024-07-05
 
@@ -114,23 +114,23 @@ A backward incompatible release.
 - add new `CodegenOptions` methods to manipulate the underlying option
   directly. This is done because the signature of the existing methods `spec`
   and `output` was changed (see below):
-    - `CodegenOptions::spec_option(&mut self, spec: Option<PathBuf>)`
-    - `CodegenOptions::output_option(&mut self, output: Option<PathBuf>)`
+  - `CodegenOptions::spec_option(&mut self, spec: Option<PathBuf>)`
+  - `CodegenOptions::output_option(&mut self, output: Option<PathBuf>)`
 
 ### Changed
 
 - rename "interface" traits to a shorter form without the `TightError` prefix:
-    - `TightErrorCategory` to `Category`
-    - `TightErrorKind` to `Kind`
-    - `TightError` to `Error`
+  - `TightErrorCategory` to `Category`
+  - `TightErrorKind` to `Kind`
+  - `TightError` to `Error`
 
 - use `PathBuf` for paths where previously a `String` was used.
   This affects `CodegenOptions` methods dealing with paths in a backward
   incompatible way:
-    - change `CodegenOptions::spec` method to receive a `impl Into<PathBuf>`
-      instead of `impl Into<Option<String>>`
-    - change `CodegenOptions::output` method to receive a `impl Into<PathBuf>`
-      instead of `impl Into<Option<String>>`
+  - change `CodegenOptions::spec` method to receive a `impl Into<PathBuf>`
+    instead of `impl Into<Option<String>>`
+  - change `CodegenOptions::output` method to receive a `impl Into<PathBuf>`
+    instead of `impl Into<Option<String>>`
 
 ## [0.0.17], [b-0.0.17], [c-0.0.17] - 2024-06-29
 
@@ -144,10 +144,10 @@ A backward incompatible release.
 ### Added
 
 - `MainObject::output` path can now point to a directory. When done so,
-  and *separate files* mode is disabled (see below), the output is written to
+  and _separate files_ mode is disabled (see below), the output is written to
   file `tighterror.rs` under the directory.
 
-- add support for *separate files* mode. In this mode every module in
+- add support for _separate files_ mode. In this mode every module in
   specification is written into a separate file. `MainObject::output` must point
   to an existing directory. The files are written under the directory and
   the filenames are derived from corresponding module names with addition of the
@@ -157,9 +157,9 @@ A backward incompatible release.
 
 ### Changed
 
-- add support for *multiple modules*
+- add support for _multiple modules_
 
-  Now it is possible to maintain more than one *tighterror* module in the
+  Now it is possible to maintain more than one _tighterror_ module in the
   same specification file. This allows having dedicated error types
   for different sub-systems in a large codebase.
 
@@ -230,7 +230,7 @@ A relatively big release with support for multiple categories.
 - add a new module-level attribute `flat_kinds`
 
   By default error names are required to be unique on category level only and
-  may repeat in different categories. This forces *tighterror* to place the
+  may repeat in different categories. This forces _tighterror_ to place the
   constants within a category-specific sub-module so that repeating error names
   in different categories do not collide. This makes the constant's paths longer
   due to the addition of category-specific module.
@@ -268,7 +268,7 @@ A relatively big release with support for multiple categories.
 
 ## [0.0.13], [b-0.0.13], [c-0.0.13] - 2024-03-23
 
-A breaking change to prepare for multiple *tighterror* modules in a single
+A breaking change to prepare for multiple _tighterror_ modules in a single
 specification file.
 
 ### Changed
@@ -298,7 +298,7 @@ Finally, some sufficient documentation.
 ### Changed
 
 - renamed `MainSpec` to `ModuleSpec` in preparation for supporting
-  multiple *tighterror* modules in a single specification file
+  multiple _tighterror_ modules in a single specification file
 
 ### Added
 
@@ -340,12 +340,12 @@ Another breaking change on the way to more stable documented release.
 
 ## [0.0.8], [b-0.0.8], [c-0.0.8] - 2024-02-09
 
-This release is a big breaking change. The interfaces of *tighterror* types are
+This release is a big breaking change. The interfaces of _tighterror_ types are
 revised.
 
 ### Added
 
-- add *update mode* in which destination file ins't overwritten if the new
+- add _update mode_ in which destination file ins't overwritten if the new
   to-be-written data equals the existing one. This avoids updating destination
   file's modification time, and transitively recompilation of a user crate.
 
