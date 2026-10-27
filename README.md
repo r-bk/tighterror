@@ -33,6 +33,7 @@ _tighterror_ tries to achieve the following goals:
 
 - [x] YAML specification
 - [x] TOML specification
+- [x] KDL specification
 - [x] Categories
   - [x] implicit
   - [x] single
