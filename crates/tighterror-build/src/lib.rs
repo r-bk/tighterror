@@ -133,6 +133,11 @@ pub const DEFAULT_SPEC_PATH_YAML: &str = "tighterror.yaml";
 #[cfg_attr(docsrs, doc(cfg(feature = "toml")))]
 pub const DEFAULT_SPEC_PATH_TOML: &str = "tighterror.toml";
 
+/// The default KDL specification file path.
+#[cfg(feature = "kdl")]
+#[cfg_attr(docsrs, doc(cfg(feature = "kdl")))]
+pub const DEFAULT_SPEC_PATH_KDL: &str = "tighterror.kdl";
+
 mod common;
 
 mod coder;

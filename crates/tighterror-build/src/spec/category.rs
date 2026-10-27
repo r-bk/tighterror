@@ -4,6 +4,7 @@ use crate::{
 };
 use convert_case::Case::{Snake, UpperCamel, UpperSnake};
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 pub const IMPLICIT_CATEGORY_NAME: &str = "General";
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -24,6 +25,7 @@ impl CategorySpec {
         casing::convert_case(&self.name, UpperCamel, Snake)
     }
 
+    #[cfg(any(feature = "yaml", feature = "toml"))]
     pub fn implicit_with_errors(errors: Vec<ErrorSpec>) -> Self {
         Self {
             name: IMPLICIT_CATEGORY_NAME.into(),

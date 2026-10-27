@@ -1,11 +1,14 @@
+#[cfg(any(feature = "yaml", feature = "toml"))]
 use crate::spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec};
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 pub const GENERAL_CAT: &str = "General";
 
 pub fn log_init() {
     env_logger::builder().is_test(true).try_init().ok();
 }
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 pub fn spec_from_err(err: ErrorSpec) -> Spec {
     let cat = CategorySpec {
         name: GENERAL_CAT.into(),
@@ -24,6 +27,7 @@ pub fn spec_from_err(err: ErrorSpec) -> Spec {
     }
 }
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 pub fn spec_from_err_iter(iter: impl IntoIterator<Item = ErrorSpec>) -> Spec {
     let cat = CategorySpec {
         name: GENERAL_CAT.into(),
@@ -42,6 +46,7 @@ pub fn spec_from_err_iter(iter: impl IntoIterator<Item = ErrorSpec>) -> Spec {
     }
 }
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 pub fn spec_from_module(mut module: ModuleSpec) -> Spec {
     let err = ErrorSpec {
         name: "DUMMY_ERR".into(),
@@ -62,6 +67,7 @@ pub fn spec_from_module(mut module: ModuleSpec) -> Spec {
     }
 }
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 pub fn spec_from_main(main: MainSpec) -> Spec {
     let err = ErrorSpec {
         name: "DUMMY_ERR".into(),
@@ -86,6 +92,7 @@ pub fn spec_from_main(main: MainSpec) -> Spec {
     }
 }
 
+#[cfg(any(feature = "yaml", feature = "toml"))]
 pub fn spec_from_category(mut cat: CategorySpec) -> Spec {
     let err = ErrorSpec {
         name: "DUMMY_ERR".into(),

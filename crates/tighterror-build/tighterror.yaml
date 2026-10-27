@@ -16,6 +16,7 @@ categories:
     errors:
       - BAD_IDENTIFIER_CHARACTERS: Identifier contains unsupported characters.
       - BAD_IDENTIFIER_CASE: Identifier is specified in an unsupported case.
+      - BAD_KDL: KDL deserialization has failed.
       - BAD_KEYWORD_TYPE: Specification keyword is not a String.
       - BAD_MODULE_IDENTIFIER: Identifier is not valid on module-level.
       - BAD_NAME: Invalid name.
