@@ -205,7 +205,9 @@ pub fn check_struct_names_collision(m: &ModuleSpec) -> Result<(), TbError> {
 fn check_variant_type_names_collision(m: &ModuleSpec) -> Result<(), TbError> {
     for c in &m.categories {
         for e in &c.errors {
-            check_variant_type_names_collision_impl(m, e)?;
+            if m.err_has_variant_type(c, e) {
+                check_variant_type_names_collision_impl(m, e)?;
+            }
         }
     }
     Ok(())
