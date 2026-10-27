@@ -82,10 +82,6 @@ fn bless() -> bool {
     std::env::var(BLESS_VAR).is_ok_and(|v| v == "1")
 }
 
-fn markup_enabled(spec: &str) -> bool {
-    spec.ends_with(".kdl") && cfg!(feature = "kdl")
-}
-
 fn generate(c: &Case) -> Vec<(String, String)> {
     let spec = parser::parse(Some(&crate_root().join(c.spec))).expect("spec parses");
     let opts = FrozenOptions {
@@ -160,7 +156,7 @@ fn test_generated_code_matches_golden_files() {
     let mut written: BTreeMap<String, (&str, String)> = BTreeMap::new();
     let mut failures = Vec::new();
 
-    for c in CASES.iter().filter(|c| markup_enabled(c.spec)) {
+    for c in CASES {
         // generate the code of the spec with the options its crate uses
         for (golden, actual) in generate(c) {
             let path = crate_root().join(GOLDEN_DIR).join(&golden);
@@ -215,18 +211,13 @@ fn test_golden_files_have_cases() {
         return;
     }
 
-    // collect the golden file names the cases produce; the per-module names
-    // of a case whose markup language is disabled are unknown, so accept its
-    // whole directory
+    // collect the golden file names the cases produce
     let mut known = BTreeSet::new();
-    let mut known_dirs = BTreeSet::new();
     for c in CASES {
-        if !c.separate_files {
-            known.insert(c.golden.to_owned());
-        } else if markup_enabled(c.spec) {
+        if c.separate_files {
             known.extend(generate(c).into_iter().map(|(golden, _)| golden));
         } else {
-            known_dirs.insert(format!("{}/", c.golden));
+            known.insert(c.golden.to_owned());
         }
     }
 
@@ -234,10 +225,7 @@ fn test_golden_files_have_cases() {
     let golden_dir = crate_root().join(GOLDEN_DIR);
     let mut files = Vec::new();
     files_under(&golden_dir, &golden_dir, &mut files);
-    let stale: Vec<String> = files
-        .into_iter()
-        .filter(|f| !known.contains(f) && !known_dirs.iter().any(|d| f.starts_with(d.as_str())))
-        .collect();
+    let stale: Vec<String> = files.into_iter().filter(|f| !known.contains(f)).collect();
 
     assert!(stale.is_empty(), "golden files without a case: {stale:?}");
 }

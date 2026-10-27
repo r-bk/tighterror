@@ -120,12 +120,9 @@
 
 #![deny(missing_docs)]
 #![deny(warnings)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 
 /// The default KDL specification file path.
-#[cfg(feature = "kdl")]
-#[cfg_attr(docsrs, doc(cfg(feature = "kdl")))]
 pub const DEFAULT_SPEC_PATH_KDL: &str = "tighterror.kdl";
 
 mod common;

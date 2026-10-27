@@ -1,3 +1,4 @@
+use self::kdl::KdlParser;
 use crate::{
     errors::{TbError, kind::*},
     spec::Spec,
@@ -7,17 +8,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[cfg(not(feature = "kdl"))]
-compile_error!("The `kdl` feature must be enabled.");
-
-cfg_if::cfg_if! {
-    if #[cfg(feature = "kdl")] {
-        mod kdl;
-        use self::kdl::KdlParser;
-    }
-}
-
 mod helpers;
+mod kdl;
 mod kws;
 #[cfg(test)]
 mod testing;
@@ -31,7 +23,6 @@ pub fn parse(spec: Option<&Path>) -> Result<Spec, TbError> {
 
 fn parse_path(path: PathBuf) -> Result<Spec, TbError> {
     match path.extension() {
-        #[cfg(feature = "kdl")]
         Some(e) if e == "kdl" => KdlParser::parse_file(open_spec_file(&path)?, &path),
         Some(e) => {
             log::error!(
@@ -56,7 +47,6 @@ fn spec_file_path(spec: Option<&Path>) -> Result<&Path, TbError> {
         return Ok(p);
     }
 
-    #[cfg(feature = "kdl")]
     if Path::new(crate::DEFAULT_SPEC_PATH_KDL).is_file() {
         return Ok(Path::new(crate::DEFAULT_SPEC_PATH_KDL));
     }

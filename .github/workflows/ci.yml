@@ -43,18 +43,6 @@ jobs:
         run: cargo test --workspace
       - name: clippy
         run: cargo clippy --workspace --all-features --all-targets
-      - name: build kdl
-        run: cargo build -p tighterror-build --no-default-features --features kdl
-      - name: build all-features
-        run: cargo build -p tighterror-build --all-features
-      - name: test kdl
-        run: cargo test -p tighterror-build --no-default-features --features kdl
-      - name: test all-features
-        run: cargo test -p tighterror-build --all-features
-      - name: clippy kdl
-        run: cargo clippy -p tighterror-build --no-default-features --features kdl --all-targets
-      - name: clippy all-features
-        run: cargo clippy -p tighterror-build --all-features --all-targets
       - name: extra-tests build
         run: cargo build --workspace --all-features --all-targets
         working-directory: crates/tighterror-build/tests/extra
