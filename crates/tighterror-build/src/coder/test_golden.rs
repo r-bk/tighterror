@@ -38,50 +38,6 @@ const CASES: &[Case] = &[
         test: false,
         ..case("tighterror.kdl", "tighterror_build.rs")
     },
-    case("tests/compilation/tighterror.yaml", "compilation.rs"),
-    Case {
-        separate_files: true,
-        ..case("tests/multiple_modules/tighterror.yaml", "multiple_modules")
-    },
-    case("tests/extra/flat_kinds/tighterror.yaml", "flat_kinds.rs"),
-    case(
-        "tests/extra/flat_kinds_toml/tighterror.toml",
-        "flat_kinds.rs",
-    ),
-    case(
-        "tests/extra/implicit_category/tighterror.yaml",
-        "implicit_category.rs",
-    ),
-    case(
-        "tests/extra/implicit_category_toml/tighterror.toml",
-        "implicit_category.rs",
-    ),
-    case("tests/extra/minimal/tighterror.yaml", "minimal.rs"),
-    case(
-        "tests/extra/minimal_256_variants/tighterror.yaml",
-        "minimal_256_variants.rs",
-    ),
-    case(
-        "tests/extra/minimal_no_std/tighterror.yaml",
-        "minimal_no_std.rs",
-    ),
-    case("tests/extra/minimal_toml/tighterror.toml", "minimal.rs"),
-    case(
-        "tests/extra/minimal_with_display/tighterror.yaml",
-        "minimal_with_display.rs",
-    ),
-    case(
-        "tests/extra/multiple_categories/tighterror.yaml",
-        "multiple_categories.rs",
-    ),
-    case(
-        "tests/extra/multiple_categories_toml/tighterror.toml",
-        "multiple_categories.rs",
-    ),
-    case(
-        "tests/extra/multiple_modules_toml/tighterror.toml",
-        "multiple_modules_toml.rs",
-    ),
     case("tests/compilation/tighterror.kdl", "compilation.rs"),
     Case {
         separate_files: true,
@@ -89,7 +45,15 @@ const CASES: &[Case] = &[
     },
     case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
     case(
+        "tests/extra/flat_kinds_toml/tighterror.toml",
+        "flat_kinds.rs",
+    ),
+    case(
         "tests/extra/implicit_category/tighterror.kdl",
+        "implicit_category.rs",
+    ),
+    case(
+        "tests/extra/implicit_category_toml/tighterror.toml",
         "implicit_category.rs",
     ),
     case("tests/extra/minimal/tighterror.kdl", "minimal.rs"),
@@ -101,6 +65,7 @@ const CASES: &[Case] = &[
         "tests/extra/minimal_no_std/tighterror.kdl",
         "minimal_no_std.rs",
     ),
+    case("tests/extra/minimal_toml/tighterror.toml", "minimal.rs"),
     case(
         "tests/extra/minimal_with_display/tighterror.kdl",
         "minimal_with_display.rs",
@@ -108,6 +73,14 @@ const CASES: &[Case] = &[
     case(
         "tests/extra/multiple_categories/tighterror.kdl",
         "multiple_categories.rs",
+    ),
+    case(
+        "tests/extra/multiple_categories_toml/tighterror.toml",
+        "multiple_categories.rs",
+    ),
+    case(
+        "tests/extra/multiple_modules_toml/tighterror.toml",
+        "multiple_modules_toml.rs",
     ),
     case(
         "tests/extra/multiple_modules_toml/tighterror.kdl",
