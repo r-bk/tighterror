@@ -20,13 +20,13 @@ toml = ["dep:toml"]
 cfg-if = "1.0.0"
 convert_case = "0.6.0"
 log = "0.4"
-prettyplease = "0.2"
+prettyplease = "0.3"
 proc-macro2 = "1.0"
 quote = "1.0"
 regex = "1.10"
 serde = "1"
 serde_yaml = { version = "0.9", optional = true }
-syn = { version = "2.0", default-features = false, features = ["parsing"] }
+syn = { version = "3.0", default-features = false, features = ["parsing"] }
 tempfile = "3.10.0"
 tighterror = { path = "../..", version = "0.0.23" }
 toml = { version = "0.8", optional = true }
