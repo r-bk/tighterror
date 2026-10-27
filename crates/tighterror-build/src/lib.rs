@@ -79,14 +79,14 @@
 //! }
 //! ```
 //!
-//! The code of a module is written to `$OUT_DIR/<module>.rs`. To use it
-//! include the module somewhere in the project's operational code, e.g.,
-//! `lib.rs` or `main.rs`, as follows:
+//! To use the code of a module include it somewhere in the project's
+//! operational code, e.g., `lib.rs` or `main.rs`, with
+//! [`tighterror::include_errors`]:
 //!
 //! ```text
 //! /// Crate errors.
 //! pub mod errors {
-//!     include!(concat!(env!("OUT_DIR"), "/errors.rs"));
+//!     tighterror::include_errors!(errors);
 //! }
 //! ```
 //!
