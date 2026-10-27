@@ -25,7 +25,7 @@ cwd = "crates/tighterror-build/tests/compilation"
 
 [tasks.tb-errors]
 condition = { files_modified = { input = [
-    "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/tighterror-build/tighterror.yaml",
+    "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/tighterror-build/tighterror.kdl",
 ], output = [
     "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/crates/tighterror-build/src/errors.rs",
 ] } }
