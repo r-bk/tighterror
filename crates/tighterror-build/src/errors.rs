@@ -421,99 +421,87 @@ pub mod kind {
     use super::TbErrorKind as EK;
     use super::category as c;
 
-    /// Parser category error kind constants.
-    pub mod parser {
-        use super::EK;
-        use super::c;
+    /// Identifier contains unsupported characters.
+    pub const BAD_IDENTIFIER_CHARACTERS: EK = EK::new(c::PARSER, 0);
 
-        /// Identifier contains unsupported characters.
-        pub const BAD_IDENTIFIER_CHARACTERS: EK = EK::new(c::PARSER, 0);
+    /// Identifier is specified in an unsupported case.
+    pub const BAD_IDENTIFIER_CASE: EK = EK::new(c::PARSER, 1);
 
-        /// Identifier is specified in an unsupported case.
-        pub const BAD_IDENTIFIER_CASE: EK = EK::new(c::PARSER, 1);
+    /// Specification keyword is not a String.
+    pub const BAD_KEYWORD_TYPE: EK = EK::new(c::PARSER, 2);
 
-        /// Specification keyword is not a String.
-        pub const BAD_KEYWORD_TYPE: EK = EK::new(c::PARSER, 2);
+    /// Identifier is not valid on module-level.
+    pub const BAD_MODULE_IDENTIFIER: EK = EK::new(c::PARSER, 3);
 
-        /// Identifier is not valid on module-level.
-        pub const BAD_MODULE_IDENTIFIER: EK = EK::new(c::PARSER, 3);
+    /// Invalid name.
+    pub const BAD_NAME: EK = EK::new(c::PARSER, 4);
 
-        /// Invalid name.
-        pub const BAD_NAME: EK = EK::new(c::PARSER, 4);
+    /// An object attribute is invalid.
+    pub const BAD_OBJECT_ATTRIBUTE: EK = EK::new(c::PARSER, 5);
 
-        /// An object attribute is invalid.
-        pub const BAD_OBJECT_ATTRIBUTE: EK = EK::new(c::PARSER, 5);
+    /// Specification filename extension is not supported or is missing.
+    pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::PARSER, 6);
 
-        /// Specification filename extension is not supported or is missing.
-        pub const BAD_SPEC_FILE_EXTENSION: EK = EK::new(c::PARSER, 6);
+    /// TOML deserialization has failed.
+    pub const BAD_TOML: EK = EK::new(c::PARSER, 7);
 
-        /// TOML deserialization has failed.
-        pub const BAD_TOML: EK = EK::new(c::PARSER, 7);
+    /// Specification contains an invalid root-level keyword.
+    pub const BAD_ROOT_LEVEL_KEYWORD: EK = EK::new(c::PARSER, 8);
 
-        /// Specification contains an invalid root-level keyword.
-        pub const BAD_ROOT_LEVEL_KEYWORD: EK = EK::new(c::PARSER, 8);
+    /// Specification value type is invalid.
+    pub const BAD_VALUE_TYPE: EK = EK::new(c::PARSER, 9);
 
-        /// Specification value type is invalid.
-        pub const BAD_VALUE_TYPE: EK = EK::new(c::PARSER, 9);
+    /// YAML deserialization has failed.
+    pub const BAD_YAML: EK = EK::new(c::PARSER, 10);
 
-        /// YAML deserialization has failed.
-        pub const BAD_YAML: EK = EK::new(c::PARSER, 10);
+    /// An identifier cannot be an empty string.
+    pub const EMPTY_IDENTIFIER: EK = EK::new(c::PARSER, 11);
 
-        /// An identifier cannot be an empty string.
-        pub const EMPTY_IDENTIFIER: EK = EK::new(c::PARSER, 11);
+    /// Empty list of objects is not allowed.
+    pub const EMPTY_LIST: EK = EK::new(c::PARSER, 12);
 
-        /// Empty list of objects is not allowed.
-        pub const EMPTY_LIST: EK = EK::new(c::PARSER, 12);
+    /// Specification file couldn't be opened.
+    pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::PARSER, 13);
 
-        /// Specification file couldn't be opened.
-        pub const FAILED_TO_OPEN_SPEC_FILE: EK = EK::new(c::PARSER, 13);
+    /// Specification lacks a mandatory attribute.
+    pub const MISSING_ATTRIBUTE: EK = EK::new(c::PARSER, 14);
 
-        /// Specification lacks a mandatory attribute.
-        pub const MISSING_ATTRIBUTE: EK = EK::new(c::PARSER, 14);
+    /// Specification contains mutually exclusive keywords.
+    pub const MUTUALLY_EXCLUSIVE_KEYWORDS: EK = EK::new(c::PARSER, 15);
 
-        /// Specification contains mutually exclusive keywords.
-        pub const MUTUALLY_EXCLUSIVE_KEYWORDS: EK = EK::new(c::PARSER, 15);
+    /// A name is not unique.
+    pub const NON_UNIQUE_NAME: EK = EK::new(c::PARSER, 16);
 
-        /// A name is not unique.
-        pub const NON_UNIQUE_NAME: EK = EK::new(c::PARSER, 16);
+    /// Specification file couldn't be found.
+    pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::PARSER, 17);
 
-        /// Specification file couldn't be found.
-        pub const SPEC_FILE_NOT_FOUND: EK = EK::new(c::PARSER, 17);
+    /// Collision of names between different items.
+    pub const NAME_COLLISION: EK = EK::new(c::PARSER, 18);
 
-        /// Collision of names between different items.
-        pub const NAME_COLLISION: EK = EK::new(c::PARSER, 18);
-    }
+    /// At least one category must be defined.
+    pub const CATEGORY_REQUIRED: EK = EK::new(c::CODER, 0);
 
-    /// Coder category error kind constants.
-    pub mod coder {
-        use super::EK;
-        use super::c;
+    /// At least one error must be defined.
+    pub const ERROR_REQUIRED: EK = EK::new(c::CODER, 1);
 
-        /// At least one category must be defined.
-        pub const CATEGORY_REQUIRED: EK = EK::new(c::CODER, 0);
+    /// Generated code tokens couldn't be parsed.
+    pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::CODER, 2);
 
-        /// At least one error must be defined.
-        pub const ERROR_REQUIRED: EK = EK::new(c::CODER, 1);
+    /// Output file couldn't be read.
+    pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::CODER, 3);
 
-        /// Generated code tokens couldn't be parsed.
-        pub const FAILED_TO_PARSE_TOKENS: EK = EK::new(c::CODER, 2);
+    /// Output file couldn't be written.
+    pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::CODER, 4);
 
-        /// Output file couldn't be read.
-        pub const FAILED_TO_READ_OUTPUT_FILE: EK = EK::new(c::CODER, 3);
+    /// Rustfmt tool exited with an error.
+    pub const RUSTFMT_FAILED: EK = EK::new(c::CODER, 5);
 
-        /// Output file couldn't be written.
-        pub const FAILED_TO_WRITE_OUTPUT_FILE: EK = EK::new(c::CODER, 4);
+    /// Rustfmt tool isn't found.
+    pub const RUSTFMT_NOT_FOUND: EK = EK::new(c::CODER, 6);
 
-        /// Rustfmt tool exited with an error.
-        pub const RUSTFMT_FAILED: EK = EK::new(c::CODER, 5);
+    /// The number of required bits exceeds the largest supported type u64.
+    pub const TOO_MANY_BITS: EK = EK::new(c::CODER, 7);
 
-        /// Rustfmt tool isn't found.
-        pub const RUSTFMT_NOT_FOUND: EK = EK::new(c::CODER, 6);
-
-        /// The number of required bits exceeds the largest supported type u64.
-        pub const TOO_MANY_BITS: EK = EK::new(c::CODER, 7);
-
-        /// Output path is not a directory.
-        pub const OUTPUT_PATH_NOT_DIRECTORY: EK = EK::new(c::CODER, 8);
-    }
+    /// Output path is not a directory.
+    pub const OUTPUT_PATH_NOT_DIRECTORY: EK = EK::new(c::CODER, 8);
 }

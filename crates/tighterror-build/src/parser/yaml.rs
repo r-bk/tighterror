@@ -1,5 +1,5 @@
 use crate::{
-    errors::{TbError, kind::parser::*},
+    errors::{TbError, kind::*},
     parser::{ParseMode, helpers::*, kws},
     spec::{
         CategorySpec, ErrorSpec, IMPLICIT_CATEGORY_NAME, MainSpec, ModuleSpec, Spec,
