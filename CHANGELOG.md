@@ -7,7 +7,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.0.23], [b-0.0.23], [c-0.0.23] - 2026-10-27
+
+A backward incompatible release that requires Rust 1.99.1 and formats
+generated code in the 2024 style.
 
 ### Changed
 
@@ -509,3 +512,6 @@ The tagging scheme that will be maintained in the project is as follows:
 [0.0.22]: https://github.com/r-bk/tighterror/releases/tag/v0.0.22
 [b-0.0.22]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.22
 [c-0.0.22]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.22
+[0.0.23]: https://github.com/r-bk/tighterror/releases/tag/v0.0.23
+[b-0.0.23]: https://github.com/r-bk/tighterror/releases/tag/b-0.0.23
+[c-0.0.23]: https://github.com/r-bk/tighterror/releases/tag/c-0.0.23
