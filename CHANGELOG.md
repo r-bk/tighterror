@@ -7,6 +7,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- require Rust 1.99.1 or newer for all three crates. Until now no minimum
+  was declared, and the crates were tested with Rust 1.76.
+
+- format generated code in the 2024 style. A generated file kept in source
+  control now passes `cargo fmt --check` in a crate on the 2024 edition, and
+  fails it in a crate on the 2021 edition, which orders `use` items
+  differently. A crate on the 2021 edition keeps the two in agreement with
+  this line in its `rustfmt.toml`:
+
+  ```toml
+  style_edition = "2021"
+  ```
+
+- end multi-line doc comments in generated code with ` */`, the form that
+  rustfmt in Rust 1.100 and newer requires and older versions keep
+
+- write a one-line `doc` that ends in a newline, e.g., a YAML `doc: |`
+  block, as a `///` line comment instead of a block comment
+
+- reject a spec in which two errors get variant types of the same name,
+  within a category, or within a module with `flat_kinds`. Until now such a
+  spec generated code that did not compile.
+
+- leave a generated file unformatted when a module is named `gen` or a
+  category `Gen`, because `gen` is a reserved keyword in the 2024 edition.
+  The generated code itself still compiles under the 2021 edition.
+
+### Fixed
+
+- generated code passes `cargo clippy` with warnings denied again. Since
+  Rust 1.83 clippy reported `needless_lifetimes` in it.
+
+- accept an error whose name derives a variant type name equal to the name
+  of a module struct, e.g., `ERROR_KIND`, when the error gets no variant
+  type
+
 ## [0.0.22], [b-0.0.22], [c-0.0.22] - 2024-08-31
 
 A backward incompatible and relatively big release that adds support for
