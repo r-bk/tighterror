@@ -68,7 +68,7 @@
 //!
 //! ## Example
 //!
-//! Assuming there is a specification file `tighterror.yaml`
+//! Assuming there is a specification file `tighterror.kdl`
 //! in the root directory of a project, *tighterror-build* can be invoked
 //! from project's build script as follows:
 //!
@@ -77,7 +77,7 @@
 //! use tighterror_build::CodegenOptions;
 //!
 //! fn tighterror_codegen() {
-//!     println!("cargo:rerun-if-changed=tighterror.yaml");
+//!     println!("cargo:rerun-if-changed=tighterror.kdl");
 //!     let out_dir = std::env::var("OUT_DIR").expect("OUT_DIR isn't defined");
 //!     let out_path = format!("{out_dir}/errors.rs");
 //!     if let Err(e) = CodegenOptions::new().output(out_path).codegen() {
@@ -100,7 +100,7 @@
 //! 1. `cargo` takes care of rebuilding and rerunning the script when
 //!    `[build-dependencies]` change, i.e., when *tighterror-build* version
 //!    changes. To tell cargo that the specification file also affects the build
-//!    we print the `cargo:rerun-if-changed=tighterror.yaml` instruction.
+//!    we print the `cargo:rerun-if-changed=tighterror.kdl` instruction.
 //!
 //! To use the generated code include the module somewhere in the project's
 //! operational code, e.g., `lib.rs` or `main.rs`, as follows:
@@ -122,11 +122,6 @@
 #![deny(warnings)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
-
-/// The default YAML specification file path.
-#[cfg(feature = "yaml")]
-#[cfg_attr(docsrs, doc(cfg(feature = "yaml")))]
-pub const DEFAULT_SPEC_PATH_YAML: &str = "tighterror.yaml";
 
 /// The default KDL specification file path.
 #[cfg(feature = "kdl")]

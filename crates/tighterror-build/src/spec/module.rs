@@ -36,14 +36,6 @@ pub struct ModuleSpec {
 }
 
 impl ModuleSpec {
-    #[cfg(feature = "yaml")]
-    pub fn implicit_with_categories(categories: Vec<CategorySpec>) -> Self {
-        Self {
-            categories,
-            ..Default::default()
-        }
-    }
-
     pub fn errors_iter(&self) -> ModuleSpecErrorIter<'_> {
         ModuleSpecErrorIter {
             categories: self.categories.iter(),

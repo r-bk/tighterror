@@ -7,15 +7,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[cfg(not(any(feature = "yaml", feature = "kdl")))]
-compile_error!("At least one of the markup language features ['yaml', 'kdl'] must be enabled.");
-
-cfg_if::cfg_if! {
-    if #[cfg(feature = "yaml")] {
-        mod yaml;
-        use yaml::YamlParser;
-    }
-}
+#[cfg(not(feature = "kdl"))]
+compile_error!("The `kdl` feature must be enabled.");
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "kdl")] {
@@ -29,13 +22,6 @@ mod kws;
 #[cfg(test)]
 mod testing;
 
-#[cfg(feature = "yaml")]
-#[derive(Debug)]
-pub enum ParseMode {
-    Single,
-    List,
-}
-
 pub fn parse(spec: Option<&Path>) -> Result<Spec, TbError> {
     let path = spec_file_path(spec)?;
     let mut spec = parse_path(path.into())?;
@@ -45,8 +31,6 @@ pub fn parse(spec: Option<&Path>) -> Result<Spec, TbError> {
 
 fn parse_path(path: PathBuf) -> Result<Spec, TbError> {
     match path.extension() {
-        #[cfg(feature = "yaml")]
-        Some(e) if e == "yaml" => YamlParser::parse_file(open_spec_file(&path)?),
         #[cfg(feature = "kdl")]
         Some(e) if e == "kdl" => KdlParser::parse_file(open_spec_file(&path)?, &path),
         Some(e) => {
@@ -59,7 +43,7 @@ fn parse_path(path: PathBuf) -> Result<Spec, TbError> {
         }
         None => {
             log::error!(
-                "specification file name must have a markup language extension: {:?}",
+                "specification file name must have the `.kdl` extension: {:?}",
                 path
             );
             BAD_SPEC_FILE_EXTENSION.into()
@@ -70,11 +54,6 @@ fn parse_path(path: PathBuf) -> Result<Spec, TbError> {
 fn spec_file_path(spec: Option<&Path>) -> Result<&Path, TbError> {
     if let Some(p) = spec {
         return Ok(p);
-    }
-
-    #[cfg(feature = "yaml")]
-    if Path::new(crate::DEFAULT_SPEC_PATH_YAML).is_file() {
-        return Ok(Path::new(crate::DEFAULT_SPEC_PATH_YAML));
     }
 
     #[cfg(feature = "kdl")]

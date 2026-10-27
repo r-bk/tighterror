@@ -107,8 +107,8 @@ mod testing {
         );
     }
 
-    // Checks that a one-line doc ending in a newline, as a YAML block scalar
-    // produces, becomes a line comment rather than a block comment.
+    // Checks that a one-line doc ending in a newline becomes a line comment
+    // rather than a block comment.
     #[test]
     fn test_single_line_doc_with_trailing_newline() {
         // render a one-line doc that ends in a newline

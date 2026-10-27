@@ -1,5 +1,5 @@
 //! This is a test crate to check `tighterror.kdl`
-//! with implicit category.
+//! with flat kinds.
 
 #![deny(missing_docs)]
 #![deny(warnings)]

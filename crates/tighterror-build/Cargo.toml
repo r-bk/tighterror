@@ -12,8 +12,7 @@ repository = "https://github.com/r-bk/tighterror"
 exclude = ["tests/golden"]
 
 [features]
-default = ["yaml", "kdl"]
-yaml = ["dep:serde_yaml"]
+default = ["kdl"]
 kdl = ["dep:kdl"]
 
 [dependencies]
@@ -25,8 +24,6 @@ prettyplease = "0.3"
 proc-macro2 = "1.0"
 quote = "1.0"
 regex = "1.10"
-serde = "1"
-serde_yaml = { version = "0.9", optional = true }
 syn = { version = "3.0", default-features = false, features = ["parsing"] }
 tempfile = "3.10.0"
 tighterror = { path = "../..", version = "0.0.23" }

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "implicit_category",
+    "custom_type_names",
     "flat_kinds",
     "minimal",
     "minimal_256_variants",
