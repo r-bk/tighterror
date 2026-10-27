@@ -15,11 +15,13 @@ const RUST_EXTENSION: &str = "rs";
 // A specification file under test, relative to the crate root, the options
 // its crate generates the code with, and the golden file that holds the
 // code. With `separate_files` the golden is a directory with a file per
-// module.
+// module. Without `module_doc` the module doc is left out, as BuildOptions
+// leaves it out.
 struct Case {
     spec: &'static str,
     test: bool,
     separate_files: bool,
+    module_doc: bool,
     golden: &'static str,
 }
 
@@ -28,7 +30,16 @@ const fn case(spec: &'static str, golden: &'static str) -> Case {
         spec,
         test: true,
         separate_files: false,
+        module_doc: true,
         golden,
+    }
+}
+
+// A case of a crate that generates its code with BuildOptions.
+const fn build_case(spec: &'static str, golden: &'static str) -> Case {
+    Case {
+        module_doc: false,
+        ..case(spec, golden)
     }
 }
 
@@ -37,30 +48,30 @@ const CASES: &[Case] = &[
         test: false,
         ..case("tighterror.kdl", "tighterror_build.rs")
     },
-    case("tests/compilation/tighterror.kdl", "compilation.rs"),
+    build_case("tests/compilation/tighterror.kdl", "compilation.rs"),
     Case {
         separate_files: true,
         ..case("tests/multiple_modules/tighterror.kdl", "multiple_modules")
     },
-    case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
+    build_case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
     case(
         "tests/extra/custom_type_names/tighterror.kdl",
         "custom_type_names.rs",
     ),
-    case("tests/extra/minimal/tighterror.kdl", "minimal.rs"),
-    case(
+    build_case("tests/extra/minimal/tighterror.kdl", "minimal.rs"),
+    build_case(
         "tests/extra/minimal_256_variants/tighterror.kdl",
         "minimal_256_variants.rs",
     ),
-    case(
+    build_case(
         "tests/extra/minimal_no_std/tighterror.kdl",
         "minimal_no_std.rs",
     ),
-    case(
+    build_case(
         "tests/extra/minimal_with_display/tighterror.kdl",
         "minimal_with_display.rs",
     ),
-    case(
+    build_case(
         "tests/extra/multiple_categories/tighterror.kdl",
         "multiple_categories.rs",
     ),
@@ -89,7 +100,7 @@ fn generate(c: &Case) -> Vec<(String, String)> {
         test: c.test,
         update: false,
         separate_files: c.separate_files,
-        module_doc: true,
+        module_doc: c.module_doc,
         rustfmt: false,
     };
     let modules = spec_to_rust(&opts, &spec).expect("code is generated");
