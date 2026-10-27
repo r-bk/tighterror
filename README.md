@@ -25,7 +25,7 @@ _tighterror_ tries to achieve the following goals:
    (by default).
 1. Minimize the runtime overhead of matching a group of errors.
 1. Minimize the coding effort:
-   - define errors in a markup language and generate Rust boilerplate code
+   - define errors in a KDL file and generate Rust boilerplate code
      automatically
    - ergonomic error reporting
 
@@ -33,12 +33,10 @@ _tighterror_ tries to achieve the following goals:
 
 - [x] KDL specification
 - [x] Categories
-  - [x] implicit
   - [x] single
   - [x] multiple
   - [x] flat kinds
 - [x] Modules
-  - [x] implicit
   - [x] single
   - [x] multiple
   - [x] separate files
@@ -51,8 +49,8 @@ _tighterror_ tries to achieve the following goals:
 ## Introduction
 
 _tighterror_ takes the declarative approach where a user project maintains its
-set of errors in a specification file written in a markup language
-(KDL). Generation of Rust source code out of the specification file is done by
+set of errors in a specification file written in [KDL](https://kdl.dev).
+Generation of Rust source code out of the specification file is done by
 a dedicated tool provided by the framework.
 
 In its basic form a _tighterror_ is a _newtype_ around a small unsigned integer,
@@ -95,19 +93,18 @@ specification file. Supported underlying types are `u8`, `u16`, `u32` and `u64`.
 Below is a minimalistic example suitable for projects where documentation
 isn't required. For more configuration options see the [crate documentation].
 
-Define errors in `tighterror.yaml` file in the root directory of your project:
+Define errors in `tighterror.kdl` file in the root directory of your project:
 
-```yaml
----
-errors:
-  - BAD_ARG
-  - BAD_FILE_PATH
+```kdl
+module errors {
+    category General {
+        error BAD_ARG
+        error BAD_FILE_PATH
+    }
+}
 ```
 
 > [!NOTE]
-> The example above defines only the list of errors and doesn't specify any
-> categories. In such case **tighterror** creates an implicit `General` category.
->
 > When there is only a single category the number of _category_ bits is 0.
 
 Add **tighterror** to your Cargo.toml file:
@@ -132,7 +129,7 @@ Include the generated module in your project as any other handwritten Rust
 module, i.e., `mod errors;`.
 
 > [!NOTE]
-> It is recommended to put both `tighterror.yaml` and `src/errors.rs` under
+> It is recommended to put both `tighterror.kdl` and `src/errors.rs` under
 > source control for visibility and tracking of changes.
 
 The following is a stripped-down view of the generated module:
