@@ -1,13 +1,13 @@
-# *cargo-tighterror*
+# _cargo-tighterror_
 
-The Cargo plugin of the *tighterror* framework.
+The Cargo plugin of the _tighterror_ framework.
 
 [![crates.io][crates-badge]][crates-url]
 
 [crates-badge]: https://img.shields.io/crates/v/cargo-tighterror.svg
 [crates-url]: https://crates.io/crates/cargo-tighterror
 
-**cargo-tighterror** is a command-line utility that deals with *tighterror*
+**cargo-tighterror** is a command-line utility that deals with _tighterror_
 specification files and Rust code generation. It is a thin wrapper around the
 [tighterror-build] library.
 
@@ -47,9 +47,9 @@ See the documentation in the [tighterror] crate.
 
 Licensed under either of
 
-* Apache License, Version 2.0
+- Apache License, Version 2.0
   ([LICENSE-APACHE](../../LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
-* MIT license
+- MIT license
   ([LICENSE-MIT](../../LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.

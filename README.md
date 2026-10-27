@@ -1,4 +1,4 @@
-# *tighterror* - compact error types + codegen
+# _tighterror_ - compact error types + codegen
 
 [![crates.io][crates-badge]][crates-url]
 [![docs.rs][docs-badge]][docs-url]
@@ -12,12 +12,12 @@
 
 It is heavily inspired by the standard `std::io::Error` which
 represents a group of errors in a single Rust type. This concept is taken
-one step further such that a *tighterror* can represent multiple groups of
+one step further such that a _tighterror_ can represent multiple groups of
 errors in a single Rust type.
 
 ## Goals
 
-*tighterror* tries to achieve the following goals:
+_tighterror_ tries to achieve the following goals:
 
 1. Minimize the size of error types while keeping support for idiomatic error
    reporting.
@@ -34,15 +34,15 @@ errors in a single Rust type.
 - [x] YAML specification
 - [x] TOML specification
 - [x] Categories
-    - [x] implicit
-    - [x] single
-    - [x] multiple
-    - [x] flat kinds
+  - [x] implicit
+  - [x] single
+  - [x] multiple
+  - [x] flat kinds
 - [x] Modules
-    - [x] implicit
-    - [x] single
-    - [x] multiple
-    - [x] separate files
+  - [x] implicit
+  - [x] single
+  - [x] multiple
+  - [x] separate files
 - [x] Variant error types
 - [ ] Category error types
 - [ ] Flags
@@ -51,13 +51,13 @@ errors in a single Rust type.
 
 ## Introduction
 
-*tighterror* takes the declarative approach where a user project maintains its
+_tighterror_ takes the declarative approach where a user project maintains its
 set of errors in a specification file written in a markup language (YAML or
 TOML). Generation of Rust source code out of the specification file is done by
 a dedicated tool provided by the framework.
 
-In its basic form a *tighterror* is a *newtype* around a small unsigned integer,
-e.g., `u8`, whose value is a unique identifier of the error, the *error kind*.
+In its basic form a _tighterror_ is a _newtype_ around a small unsigned integer,
+e.g., `u8`, whose value is a unique identifier of the error, the _error kind_.
 
 ```rust
 #[repr(transparent)]
@@ -67,24 +67,24 @@ pub struct ErrorKind(u8);
 pub struct Error(ErrorKind);  // <-- the type to use in Result<T, E>
 ```
 
-An *error kind* is built bitwise from two parts: *error category* and
-*error variant*.
-The *error category* groups several errors logically and allows
+An _error kind_ is built bitwise from two parts: _error category_ and
+_error variant_.
+The _error category_ groups several errors logically and allows
 handling the whole group with a single match arm.
-The *error variant* is a unique identifier of the error within its *category*.
-Together *category* and *variant* comprise a unique identifier of an error
-in a given *tighterror* instantiation.
+The _error variant_ is a unique identifier of the error within its _category_.
+Together _category_ and _variant_ comprise a unique identifier of an error
+in a given _tighterror_ instantiation.
 
-The following diagram shows an example layout of *error kind*. This layout
+The following diagram shows an example layout of _error kind_. This layout
 can represent up to 4 categories with a maximum of 32 errors in each category.
 
 ```text
-            ┌───┬───┬───┬───┬───┬───┬───┬───┐                      
-            │   │   │   │   │   │   │   │   │ (0-4) 5 variant bits 
+            ┌───┬───┬───┬───┬───┬───┬───┬───┐
+            │   │   │   │   │   │   │   │   │ (0-4) 5 variant bits
           u8│ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │ (5-6) 2 category bits
-            │   │   │   │   │   │   │   │   │ (7-7) 1 reserved bit 
-            └───┼───┴───┼───┴───┴───┴───┴───┤                      
-                │  cat  │      variant      │                      
+            │   │   │   │   │   │   │   │   │ (7-7) 1 reserved bit
+            └───┼───┴───┼───┴───┴───┴───┴───┤
+                │  cat  │      variant      │
 ```
 
 By default **tighterror** chooses the smallest underlying type that is big
@@ -109,7 +109,7 @@ errors:
 > The example above defines only the list of errors and doesn't specify any
 > categories. In such case **tighterror** creates an implicit `General` category.
 >
-> When there is only a single category the number of *category* bits is 0.
+> When there is only a single category the number of _category_ bits is 0.
 
 Add **tighterror** to your Cargo.toml file:
 

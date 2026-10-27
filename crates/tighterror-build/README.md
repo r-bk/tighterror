@@ -1,7 +1,7 @@
-# *tighterror-build*
+# _tighterror-build_
 
 **tighterror-build** is a library that deals with everything related to
-*tighterror* specification files and Rust code generation.
+_tighterror_ specification files and Rust code generation.
 
 [![crates.io][crates-badge]][crates-url]
 [![docs.rs][docs-badge]][docs-url]
@@ -30,9 +30,9 @@ The overall framework is documented in the [tighterror] crate.
 
 Licensed under either of
 
-* Apache License, Version 2.0
+- Apache License, Version 2.0
   ([LICENSE-APACHE](../../LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
-* MIT license
+- MIT license
   ([LICENSE-MIT](../../LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
