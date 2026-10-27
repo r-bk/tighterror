@@ -36,7 +36,7 @@ const fn case(spec: &'static str, golden: &'static str) -> Case {
 const CASES: &[Case] = &[
     Case {
         test: false,
-        ..case("tighterror.yaml", "tighterror_build.rs")
+        ..case("tighterror.kdl", "tighterror_build.rs")
     },
     case("tests/compilation/tighterror.yaml", "compilation.rs"),
     Case {
@@ -82,10 +82,6 @@ const CASES: &[Case] = &[
         "tests/extra/multiple_modules_toml/tighterror.toml",
         "multiple_modules_toml.rs",
     ),
-    Case {
-        test: false,
-        ..case("tighterror.kdl", "tighterror_build.rs")
-    },
     case("tests/compilation/tighterror.kdl", "compilation.rs"),
     Case {
         separate_files: true,
