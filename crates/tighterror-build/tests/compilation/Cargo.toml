@@ -11,7 +11,7 @@ env_logger = "0.11.1"
 tighterror-build = { path = "../.." }
 
 [dev-dependencies]
-compiletest_rs = "0.10.0"
+trybuild = "1.0"
 
 # force this package out of the main workspace
 [workspace]

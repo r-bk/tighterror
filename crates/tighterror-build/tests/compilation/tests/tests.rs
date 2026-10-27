@@ -1,23 +1,11 @@
 #![deny(warnings)]
 
-extern crate compiletest_rs as compiletest;
-
-use std::path::PathBuf;
-
-fn run_mode(mode: &'static str) {
-    let mut config = compiletest::Config {
-        mode: mode.parse().expect("Invalid mode"),
-        src_base: PathBuf::from(format!("tests/{}", mode)),
-        ..Default::default()
-    };
-
-    config.link_deps(); // Populate config.target_rustcflags with dependencies on the path
-    config.clean_rmeta(); // If your tests import the parent crate, this helps with E0464
-
-    compiletest::run_tests(&config);
-}
-
+// Checks that a module generated with `result_from_err`,
+// `result_from_err_kind` and `error_trait` disabled leaves out the
+// conversions and the trait impl those settings control. Every case under
+// `compile-fail` must fail to compile with the errors in its `.stderr` file.
 #[test]
-fn compile_test() {
-    run_mode("compile-fail");
+fn compile_fail() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/compile-fail/*.rs");
 }
