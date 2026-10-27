@@ -2,5 +2,6 @@
 **/*.rs.bk
 test.yaml
 test.toml
+test.kdl
 crates/tighterror-build/tests/**/Cargo.lock
 .vscode/
