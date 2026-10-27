@@ -18,7 +18,7 @@ mod tests {
         fn foo(e: errors::IcError, name: &str) {
             assert_eq!(format!("{}", e.kind()), name);
         }
-        foo(errors::kind::general::BAD_INPUT.into(), "BAD_INPUT");
+        foo(errors::kind::BAD_INPUT.into(), "BAD_INPUT");
     }
 
     #[test]
@@ -26,7 +26,7 @@ mod tests {
         fn foo(ec: errors::IcErrorKind, name: &str) {
             assert_eq!(format!("{ec}"), name);
         }
-        foo(errors::kind::general::BAD_INPUT, "BAD_INPUT");
+        foo(errors::kind::BAD_INPUT, "BAD_INPUT");
     }
 
     #[test]

@@ -1,4 +1,5 @@
 [module]
+flat_kinds = false
 doc_from_display = true
 err_doc = "A custom error struct doc."
 err_kind_doc = "A custom error doc."

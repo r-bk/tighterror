@@ -314,16 +314,9 @@ pub mod category {
 pub mod kind {
     use super::ErrorKind as EK;
     use super::category as c;
-
-    /// General category error kind constants.
-    pub mod general {
-        use super::c;
-        use super::EK;
-        pub const BAD_FILE: EK = EK::new(c::GENERAL, 0);
-        pub const BAD_ARG: EK = EK::new(c::GENERAL, 1);
-        pub const IO_ERROR: EK = EK::new(c::GENERAL, 2);
-    }
-
+    pub const BAD_FILE: EK = EK::new(c::GENERAL, 0);
+    pub const BAD_ARG: EK = EK::new(c::GENERAL, 1);
+    pub const IO_ERROR: EK = EK::new(c::GENERAL, 2);
 }
 
 
@@ -370,21 +363,21 @@ mod test {
     #[test]
     fn test_err_kind_name() {
         use kind::*;
-        assert_eq!(general::BAD_FILE.name(), "BAD_FILE");
-        assert_eq!(tighterror::Kind::name(& general::BAD_FILE), "BAD_FILE");
-        assert_eq!(general::BAD_ARG.name(), "BAD_ARG");
-        assert_eq!(tighterror::Kind::name(& general::BAD_ARG), "BAD_ARG");
-        assert_eq!(general::IO_ERROR.name(), "IO_ERROR");
-        assert_eq!(tighterror::Kind::name(& general::IO_ERROR), "IO_ERROR");
+        assert_eq!(BAD_FILE.name(), "BAD_FILE");
+        assert_eq!(tighterror::Kind::name(& BAD_FILE), "BAD_FILE");
+        assert_eq!(BAD_ARG.name(), "BAD_ARG");
+        assert_eq!(tighterror::Kind::name(& BAD_ARG), "BAD_ARG");
+        assert_eq!(IO_ERROR.name(), "IO_ERROR");
+        assert_eq!(tighterror::Kind::name(& IO_ERROR), "IO_ERROR");
     }
 
 
     #[test]
     fn test_err_kind_display() {
         use kind::*;
-        assert_eq!(format!("{}", general::BAD_FILE), "BAD_FILE");
-        assert_eq!(format!("{}", general::BAD_ARG), "BAD_ARG");
-        assert_eq!(format!("{}", general::IO_ERROR), "IO_ERROR");
+        assert_eq!(format!("{}", BAD_FILE), "BAD_FILE");
+        assert_eq!(format!("{}", BAD_ARG), "BAD_ARG");
+        assert_eq!(format!("{}", IO_ERROR), "IO_ERROR");
     }
 
 
@@ -392,12 +385,7 @@ mod test {
     fn test_err_kind_uniqueness() {
         use kind::*;
         use std::collections::HashSet;
-        let errs: [ErrorKind; 3] = [
-            general::BAD_FILE,
-            general::BAD_ARG,
-            general::IO_ERROR,
-        ];
-
+        let errs: [ErrorKind; 3] = [BAD_FILE, BAD_ARG, IO_ERROR];
         let set = HashSet::<ErrorKind>::from_iter(errs);
         assert_eq!(set.len(), 3);
     }
@@ -407,12 +395,7 @@ mod test {
     fn test_err_kind_value_uniqueness() {
         use kind::*;
         use std::collections::HashSet;
-        let errs: [ErrorKind; 3] = [
-            general::BAD_FILE,
-            general::BAD_ARG,
-            general::IO_ERROR,
-        ];
-
+        let errs: [ErrorKind; 3] = [BAD_FILE, BAD_ARG, IO_ERROR];
         let set = HashSet::<u8>::from_iter(errs.iter().map(|ec| ec.value()));
         assert_eq!(set.len(), 3);
     }
@@ -421,33 +404,27 @@ mod test {
     #[test]
     fn test_err_kind_category() {
         use kind::*;
-        assert_eq!(general::BAD_FILE.category(), category::GENERAL);
-        assert_eq!(general::BAD_ARG.category(), category::GENERAL);
-        assert_eq!(general::IO_ERROR.category(), category::GENERAL);
+        assert_eq!(BAD_FILE.category(), category::GENERAL);
+        assert_eq!(BAD_ARG.category(), category::GENERAL);
+        assert_eq!(IO_ERROR.category(), category::GENERAL);
     }
 
 
     #[test]
     fn test_err_kind_from_value() {
         use kind::*;
-        assert_eq!(
-            ErrorKind::from_value(general::BAD_FILE.value()).unwrap(), general::BAD_FILE
-        );
-        assert_eq!(
-            ErrorKind::from_value(general::BAD_ARG.value()).unwrap(), general::BAD_ARG
-        );
-        assert_eq!(
-            ErrorKind::from_value(general::IO_ERROR.value()).unwrap(), general::IO_ERROR
-        );
+        assert_eq!(ErrorKind::from_value(BAD_FILE.value()).unwrap(), BAD_FILE);
+        assert_eq!(ErrorKind::from_value(BAD_ARG.value()).unwrap(), BAD_ARG);
+        assert_eq!(ErrorKind::from_value(IO_ERROR.value()).unwrap(), IO_ERROR);
     }
 
 
     #[test]
     fn test_err_display() {
         use kind::*;
-        assert_eq!(format!("{}", Error::from(general::BAD_FILE)), "BAD_FILE");
-        assert_eq!(format!("{}", Error::from(general::BAD_ARG)), "BAD_ARG");
-        assert_eq!(format!("{}", Error::from(general::IO_ERROR)), "IO_ERROR");
+        assert_eq!(format!("{}", Error::from(BAD_FILE)), "BAD_FILE");
+        assert_eq!(format!("{}", Error::from(BAD_ARG)), "BAD_ARG");
+        assert_eq!(format!("{}", Error::from(IO_ERROR)), "IO_ERROR");
     }
 
 }
