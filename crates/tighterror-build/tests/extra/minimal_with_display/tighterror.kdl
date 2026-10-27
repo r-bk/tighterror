@@ -1,0 +1,8 @@
+module errors {
+    spec { doc-from-display #true }
+    category General {
+        error BAD_CONF_FILE display="Configuration file is malformed."
+        error BAD_ARG display="Invalid argument."
+        error IO_ERROR display="An IO error occurred."
+    }
+}

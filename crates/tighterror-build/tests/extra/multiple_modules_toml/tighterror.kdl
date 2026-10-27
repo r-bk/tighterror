@@ -1,0 +1,67 @@
+module internal_errors {
+    spec {
+        flat-kinds #false
+        doc "Internal errors."
+        doc-from-display #true
+    }
+    category Parser {
+        spec { doc "Parser errors category." }
+        error BAD_FILE display="Configuration file is malformed."
+    }
+    category Processor {
+        spec { doc "Processor errors category." }
+        error BAD_FILE display="Processor file is malformed or missing."
+        error BAD_STATE display="Internal error, state mismatch."
+    }
+}
+
+module errors {
+    spec {
+        flat-kinds #false
+        doc "Public errors."
+        doc-from-display #true
+        err-doc "A custom error struct doc."
+        err-kind-doc "A custom error doc."
+        err-cat-doc "A custom category doc."
+        error-trait #true
+        result-from-err #true
+        result-from-err-kind #true
+        err-name McError
+        err-kind-name McErrorKind
+        err-cat-name McErrorCategory
+    }
+    category Parsing {
+        spec { doc "Parsing errors category." }
+        error BAD_TOKEN display="Decoded an invalid token."
+        error QUEUE_FULL display="Parsing queue is full."
+    }
+    category Processing {
+        spec { doc "Processing errors category." }
+        error OUT_OF_MEMORY display="Memory pool is empty."
+        error QUEUE_FULL display="Processing queue is full."
+    }
+    category General {
+        spec { doc "General errors category." }
+        error BAD_ARG display="Invalid argument received." {
+            spec {
+                doc """
+                    An invalid argument was received.
+
+                    # Examples
+
+                    ```rust
+                    # struct Error;
+                    # impl From<u32> for Error {
+                    #     fn from(v: u32) -> Self {
+                    #         Self{}
+                    #     }
+                    # }
+                    # const BAD_ARG: u32 = 0;
+                    let e: Error = BAD_ARG.into();
+                    ```
+                    """
+            }
+        }
+        error TIMEOUT display="Operation timed out."
+    }
+}

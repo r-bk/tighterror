@@ -1,0 +1,47 @@
+spec { output "src/errors.rs" }
+
+module errors {
+    spec {
+        doc-from-display #true
+        doc "Crate errors."
+        err-name TbError
+        err-kind-name TbErrorKind
+        err-cat-name TbErrorCategory
+        flat-kinds #true
+    }
+    category Parser {
+        spec { doc "Parser errors category." }
+        error BAD_IDENTIFIER_CHARACTERS display="Identifier contains unsupported characters."
+        error BAD_IDENTIFIER_CASE display="Identifier is specified in an unsupported case."
+        error BAD_KDL display="KDL deserialization has failed."
+        error BAD_KEYWORD_TYPE display="Specification keyword is not a String."
+        error BAD_MODULE_IDENTIFIER display="Identifier is not valid on module-level."
+        error BAD_NAME display="Invalid name."
+        error BAD_OBJECT_ATTRIBUTE display="An object attribute is invalid."
+        error BAD_SPEC_FILE_EXTENSION display="Specification filename extension is not supported or is missing."
+        error BAD_TOML display="TOML deserialization has failed."
+        error BAD_ROOT_LEVEL_KEYWORD display="Specification contains an invalid root-level keyword."
+        error BAD_VALUE_TYPE display="Specification value type is invalid."
+        error BAD_YAML display="YAML deserialization has failed."
+        error EMPTY_IDENTIFIER display="An identifier cannot be an empty string."
+        error EMPTY_LIST display="Empty list of objects is not allowed."
+        error FAILED_TO_OPEN_SPEC_FILE display="Specification file couldn't be opened."
+        error MISSING_ATTRIBUTE display="Specification lacks a mandatory attribute."
+        error MUTUALLY_EXCLUSIVE_KEYWORDS display="Specification contains mutually exclusive keywords."
+        error NON_UNIQUE_NAME display="A name is not unique."
+        error SPEC_FILE_NOT_FOUND display="Specification file couldn't be found."
+        error NAME_COLLISION display="Collision of names between different items."
+    }
+    category Coder {
+        spec { doc "Coder errors category." }
+        error CATEGORY_REQUIRED display="At least one category must be defined."
+        error ERROR_REQUIRED display="At least one error must be defined."
+        error FAILED_TO_PARSE_TOKENS display="Generated code tokens couldn't be parsed."
+        error FAILED_TO_READ_OUTPUT_FILE display="Output file couldn't be read."
+        error FAILED_TO_WRITE_OUTPUT_FILE display="Output file couldn't be written."
+        error RUSTFMT_FAILED display="Rustfmt tool exited with an error."
+        error RUSTFMT_NOT_FOUND display="Rustfmt tool isn't found."
+        error TOO_MANY_BITS display="The number of required bits exceeds the largest supported type u64."
+        error OUTPUT_PATH_NOT_DIRECTORY display="Output path is not a directory."
+    }
+}
