@@ -1,10 +1,7 @@
 use crate::{
     errors::{TbError, kind::*},
     parser::{ParseMode, helpers::*, kws},
-    spec::{
-        CategorySpec, ErrorSpec, IMPLICIT_CATEGORY_NAME, MainSpec, ModuleSpec, Spec,
-        definitions::DEFAULT_FLAT_KINDS,
-    },
+    spec::{CategorySpec, ErrorSpec, IMPLICIT_CATEGORY_NAME, MainSpec, ModuleSpec, Spec},
 };
 use std::fs::File;
 use toml::{Table, Value, value::Array};
@@ -106,11 +103,7 @@ impl TomlParser {
         }
 
         for m in &spec.modules {
-            if m.flat_kinds.unwrap_or(DEFAULT_FLAT_KINDS) {
-                check_module_error_name_uniqueness(m.errors_iter().map(|e| e.name.as_str()))?;
-            }
-            check_module_variant_types(m)?;
-            check_name_collisions(m)?;
+            check_module(m)?;
         }
 
         Ok(spec)

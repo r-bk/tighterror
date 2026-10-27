@@ -178,6 +178,14 @@ where
     check_name_uniqueness("module", iter)
 }
 
+pub fn check_module(m: &ModuleSpec) -> Result<(), TbError> {
+    if m.flat_kinds() {
+        check_module_error_name_uniqueness(m.errors_iter().map(|e| e.name.as_str()))?;
+    }
+    check_module_variant_types(m)?;
+    check_name_collisions(m)
+}
+
 pub fn check_module_variant_types(m: &ModuleSpec) -> Result<(), TbError> {
     for c in &m.categories {
         let names = variant_type_names(m, c);
