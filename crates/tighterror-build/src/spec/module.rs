@@ -1,11 +1,9 @@
 use super::{CategorySpec, ErrorSpec, OverridableErrorSpec, definitions::*, idents};
 
-pub const IMPLICIT_MODULE_NAME: &str = "errors";
-
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ModuleSpec {
     /// The name of the module
-    pub name: Option<String>,
+    pub name: String,
     /// Module documentation
     pub doc: Option<String>,
     /// Error struct's documentation
@@ -92,7 +90,7 @@ impl ModuleSpec {
     }
 
     pub fn name(&self) -> &str {
-        self.name.as_deref().unwrap_or(IMPLICIT_MODULE_NAME)
+        &self.name
     }
 
     pub fn doc(&self) -> &str {

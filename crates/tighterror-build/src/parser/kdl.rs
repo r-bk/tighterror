@@ -150,7 +150,7 @@ impl<'a> KdlParser<'a> {
         let (name, _) = self.name_arg(n, MODULE, &[])?;
         self.at(n, check_module_name(&name))?;
         let mut m = ModuleSpec {
-            name: Some(name),
+            name,
             ..Default::default()
         };
 
