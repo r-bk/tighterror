@@ -17,7 +17,7 @@ fn check_ident_chars(ident: &str, desc: &str, case: Case) -> Result<(), TbError>
     let rg = Regex::new(rgs).unwrap();
     if !rg.is_match(ident) {
         log::error!(
-            "`{desc}` contains unsupported characters. \
+            "{desc} contains unsupported characters. \
             Only {rgs} is allowed with {case:?} case: {ident}",
         );
         BAD_IDENTIFIER_CHARACTERS.into()
@@ -28,7 +28,7 @@ fn check_ident_chars(ident: &str, desc: &str, case: Case) -> Result<(), TbError>
 
 fn check_ident(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
     if ident.is_empty() {
-        log::error!("`{desc}` cannot be an empty string");
+        log::error!("{desc} cannot be an empty string");
         return EMPTY_IDENTIFIER.into();
     }
 
@@ -36,7 +36,7 @@ fn check_ident(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
 
     if !casing::is_case(ident, case) {
         log::error!(
-            "`{desc}` must be specified in {case:?} case: {ident} -> {}",
+            "{desc} must be specified in {case:?} case: {ident} -> {}",
             casing::convert_case(ident, case, case)
         );
         return BAD_IDENTIFIER_CASE.into();
@@ -46,7 +46,7 @@ fn check_ident(ident: &str, desc: &str, case: Case) -> Result<(), TbError> {
 }
 
 pub fn check_module_ident(ident: &str, kw: &str) -> Result<(), TbError> {
-    check_ident(ident, kw, Case::UpperCamel)?;
+    check_ident(ident, &format!("`{kw}`"), Case::UpperCamel)?;
     if kw == kws::ERR_NAME && ident == idents::ERROR {
         return Ok(());
     }
@@ -68,11 +68,7 @@ fn check_name(name: &str, desc: &str, case: Case) -> Result<(), TbError> {
     check_ident(name, desc, case)?;
     if kws::is_any_kw(name) {
         // double check, in case any logic above changes
-        log::error!(
-            "`{}` cannot be a reserved keyword: `{}`. Use camel case.",
-            kws::NAME,
-            name
-        );
+        log::error!("{desc} cannot be a reserved keyword: `{name}`");
         BAD_NAME.into()
     } else {
         Ok(())
@@ -80,15 +76,15 @@ fn check_name(name: &str, desc: &str, case: Case) -> Result<(), TbError> {
 }
 
 pub fn check_error_name(name: &str) -> Result<(), TbError> {
-    check_name(name, "ErrorObject::name", Case::UpperSnake)
+    check_name(name, "error name", Case::UpperSnake)
 }
 
 pub fn check_category_name(name: &str) -> Result<(), TbError> {
-    check_name(name, "CategoryObject::name", Case::UpperCamel)
+    check_name(name, "category name", Case::UpperCamel)
 }
 
 pub fn check_variant_type_name(name: &str) -> Result<(), TbError> {
-    check_name(name, "ErrorObject::variant_type", Case::UpperCamel)
+    check_name(name, "`variant-type`", Case::UpperCamel)
 }
 
 pub fn check_module_name(name: &str) -> Result<(), TbError> {
@@ -161,14 +157,14 @@ pub fn check_module_error_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {
-    check_name_uniqueness("<flat_kinds> module error", iter)
+    check_name_uniqueness("flat-kinds module error", iter)
 }
 
 fn check_module_variant_type_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
 where
     I: IntoIterator<Item = &'a str>,
 {
-    check_name_uniqueness("<flat_kinds> module variant type", iter)
+    check_name_uniqueness("flat-kinds module variant type", iter)
 }
 
 pub fn check_module_name_uniqueness<'a, I>(iter: I) -> Result<(), TbError>

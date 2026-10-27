@@ -1,33 +1,11 @@
 use crate::{
     errors::{TbError, kind::*},
-    parser::{helpers::*, kws},
+    parser::{helpers::*, kws::*},
     spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec},
 };
 use ::kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
 use log::error;
 use std::{collections::HashSet, fs::File, io::Read, path::Path};
-
-const SPEC: &str = "spec";
-const MODULE: &str = "module";
-const CATEGORY: &str = "category";
-const ERROR: &str = "error";
-
-const OUTPUT: &str = "output";
-const NO_STD: &str = "no-std";
-const DOC: &str = "doc";
-const DISPLAY: &str = "display";
-const DOC_FROM_DISPLAY: &str = "doc-from-display";
-const VARIANT_TYPE: &str = "variant-type";
-const FLAT_KINDS: &str = "flat-kinds";
-const ERR_DOC: &str = "err-doc";
-const ERR_KIND_DOC: &str = "err-kind-doc";
-const ERR_CAT_DOC: &str = "err-cat-doc";
-const ERR_NAME: &str = "err-name";
-const ERR_KIND_NAME: &str = "err-kind-name";
-const ERR_CAT_NAME: &str = "err-cat-name";
-const RESULT_FROM_ERR: &str = "result-from-err";
-const RESULT_FROM_ERR_KIND: &str = "result-from-err-kind";
-const ERROR_TRAIT: &str = "error-trait";
 
 #[derive(Debug)]
 pub struct KdlParser<'a> {
@@ -162,13 +140,9 @@ impl<'a> KdlParser<'a> {
                     ERR_DOC => m.err_doc = Some(self.string(key, sn, v)?),
                     ERR_KIND_DOC => m.err_kind_doc = Some(self.string(key, sn, v)?),
                     ERR_CAT_DOC => m.err_cat_doc = Some(self.string(key, sn, v)?),
-                    ERR_NAME => m.err_name = Some(self.ident(key, kws::ERR_NAME, sn, v)?),
-                    ERR_KIND_NAME => {
-                        m.err_kind_name = Some(self.ident(key, kws::ERR_KIND_NAME, sn, v)?)
-                    }
-                    ERR_CAT_NAME => {
-                        m.err_cat_name = Some(self.ident(key, kws::ERR_CAT_NAME, sn, v)?)
-                    }
+                    ERR_NAME => m.err_name = Some(self.ident(key, sn, v)?),
+                    ERR_KIND_NAME => m.err_kind_name = Some(self.ident(key, sn, v)?),
+                    ERR_CAT_NAME => m.err_cat_name = Some(self.ident(key, sn, v)?),
                     RESULT_FROM_ERR => m.result_from_err = Some(self.boolean(key, sn, v)?),
                     RESULT_FROM_ERR_KIND => {
                         m.result_from_err_kind = Some(self.boolean(key, sn, v)?)
@@ -484,9 +458,9 @@ impl<'a> KdlParser<'a> {
         }
     }
 
-    fn ident(&self, key: &str, kw: &str, n: &KdlNode, v: &KdlValue) -> Result<String, TbError> {
+    fn ident(&self, key: &str, n: &KdlNode, v: &KdlValue) -> Result<String, TbError> {
         let s = self.string(key, n, v)?;
-        self.at(n, check_module_ident(&s, kw))?;
+        self.at(n, check_module_ident(&s, key))?;
         Ok(s)
     }
 }
