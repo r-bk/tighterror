@@ -1,0 +1,10 @@
+[package]
+name = "test_edition_2024"
+edition = "2024"
+version = "0.0.0"
+
+[dependencies]
+tighterror = { path = "../../../../.." }
+
+[build-dependencies]
+tighterror-build = { path = "../../.." }
