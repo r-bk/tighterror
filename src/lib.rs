@@ -161,8 +161,8 @@
 //! of abstraction using the `?` operator.
 //!
 //! When at least one *variant type* is enabled *tighterror* creates a submodule
-//! `variant::types` that contains per-category modules (subject to
-//! `flat_kinds` module setting) with their corresponding variant types.
+//! `variant::types` that contains the variant types, or per-category modules
+//! with them when the `flat_kinds` module setting is disabled.
 //!
 //! ```yaml
 //! ---
@@ -173,26 +173,22 @@
 //!
 //! ```rust
 //! pub mod kind {
-//!     pub mod general {
-//!         // Error kind constants defined here.
-//!         // ...
-//!         // pub const OPERATION_TIMEOUT: ErrorKind = ErrorKind::new(GENERAL, 0);
-//!     }
+//!     // Error kind constants defined here.
+//!     // ...
+//!     // pub const OPERATION_TIMEOUT: ErrorKind = ErrorKind::new(GENERAL, 0);
 //! }
 //!
 //! pub mod variant {
 //!     pub mod types {
 //!         // Variant types defined here.
-//!         pub mod general {
-//!             #[non_exhaustive]
-//!             pub struct OperationTimeout;
+//!         #[non_exhaustive]
+//!         pub struct OperationTimeout;
 //!
-//!             // impl tighterror::VariantType for OperationTimeout  { /* ... */ }
-//!             // impl Debug for OperationTimeout { /* ... */ }
-//!             // impl Display for OperationTimeout { /* ... */ }
-//!             // impl OperationTimeout { /* ... */ }
-//!             // impl std::error::Error for OperationTimeout {}
-//!         }
+//!         // impl tighterror::VariantType for OperationTimeout  { /* ... */ }
+//!         // impl Debug for OperationTimeout { /* ... */ }
+//!         // impl Display for OperationTimeout { /* ... */ }
+//!         // impl OperationTimeout { /* ... */ }
+//!         // impl std::error::Error for OperationTimeout {}
 //!     }
 //! }
 //! ```
@@ -784,38 +780,18 @@
 //!
 //! * `flat_kinds` - bool (optional)
 //!
-//!   Puts the error kind constants directly under the `kind` sub-module
-//!   instead of under `kind::<category-module-name>` sub-sub-module.
+//!   Puts the error kind constants directly under the `kind` sub-module,
+//!   e.g., `kind::ERR`, and the variant types directly under
+//!   `variant::types`. This requires error names, and variant type names, to
+//!   be unique on module level.
 //!
-//!   By default error kind constants are placed in a category-specific
-//!   sub-module. For example:
-//!
-//!   ```yaml
-//!   categories:
-//!     - name: Foo
-//!       errors:
-//!         - ERR
-//!     - name: Baz
-//!       errors:
-//!         - ERR
-//!   ```
-//!   The error kind constants' paths are `kind::foo::ERR` and
-//!   `kind::baz::ERR`. The category-specific sub-modules `foo` and
-//!   `baz` are required because by default error names are required to be
-//!   unique on category level only.
-//!
-//!   There are cases when error names are unique per module. In these
-//!   cases having the category-specific module in the constants' paths
-//!   has no practical function and just makes the paths longer.
-//!
-//!   The `flat_kinds` attribute forces *tighterror* to put the constants
-//!   directly under the `kind` sub-module, e.g., `kind::ERR`.
-//!   Enabling this option requires the error names to be unique
-//!   on module level (and not only on category level).
+//!   When disabled, the constants are placed in a category-specific
+//!   sub-module, so that error names need to be unique on category level
+//!   only. For example:
 //!
 //!   ```yaml
 //!   module:
-//!     flat_kinds: true
+//!     flat_kinds: false
 //!
 //!   categories:
 //!     - name: Foo
@@ -823,10 +799,13 @@
 //!         - ERR
 //!     - name: Baz
 //!       errors:
-//!         - ANOTHER_ERR
+//!         - ERR
 //!   ```
 //!
-//!   Default: `false`<br><br>
+//!   The error kind constants' paths are `kind::foo::ERR` and
+//!   `kind::baz::ERR`.
+//!
+//!   Default: `true`<br><br>
 //!
 //! * `result_from_err` - bool (optional)
 //!
@@ -861,7 +840,7 @@
 //! ```yaml
 //! module:
 //!   name: internal_errors
-//!   flat_kinds: true
+//!   flat_kinds: false
 //! ```
 //!
 //! TOML
