@@ -1659,3 +1659,111 @@ variant_type = false
 "#;
     assert!(TomlParser::parse_str(s).is_ok());
 }
+
+// Checks that variant type names must be unique only among the errors that
+// get a variant type, per category or, with `flat_kinds`, per module. The
+// specs simulate errors whose variant type names coincide, whether derived
+// from an error name or set explicitly.
+#[test]
+fn test_variant_type_name_uniqueness_needs_variant_type() {
+    log_init();
+
+    // only BAZ gets a variant type, so FOO_BAR's derived name is not taken
+    let s = r#"
+[[errors]]
+name = "FOO_BAR"
+
+[[errors]]
+name = "BAZ"
+variant_type = "FooBar"
+"#;
+    assert!(TomlParser::parse_str(s).is_ok());
+
+    // both errors get a variant type named FooBar
+    let s = r#"
+[[errors]]
+name = "FOO_BAR"
+variant_type = true
+
+[[errors]]
+name = "BAZ"
+variant_type = "FooBar"
+"#;
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        NON_UNIQUE_NAME
+    );
+
+    // a category default gives FOO_BAR its derived variant type FooBar
+    let s = r#"
+[category]
+variant_type = true
+
+[[errors]]
+name = "FOO_BAR"
+
+[[errors]]
+name = "BAZ"
+variant_type = "FooBar"
+"#;
+    assert_eq!(
+        TomlParser::parse_str(s).unwrap_err().kind(),
+        NON_UNIQUE_NAME
+    );
+
+    // FOO_BAR turns the module default off
+    let s = r#"
+[module]
+variant_type = true
+
+[[errors]]
+name = "FOO_BAR"
+variant_type = false
+
+[[errors]]
+name = "BAZ"
+variant_type = "FooBar"
+"#;
+    assert!(TomlParser::parse_str(s).is_ok());
+
+    // with flat_kinds, across categories, only BAZ gets a variant type
+    let s = r#"
+[module]
+flat_kinds = true
+
+[[categories]]
+name = "CatOne"
+
+[[categories.errors]]
+name = "FOO_BAR"
+
+[[categories]]
+name = "CatTwo"
+
+[[categories.errors]]
+name = "BAZ"
+variant_type = "FooBar"
+"#;
+    assert!(TomlParser::parse_str(s).is_ok());
+
+    // without flat_kinds, the same name in two categories does not clash
+    let s = r#"
+[module]
+variant_type = true
+
+[[categories]]
+name = "CatOne"
+
+[[categories.errors]]
+name = "ONE"
+variant_type = "Shared"
+
+[[categories]]
+name = "CatTwo"
+
+[[categories.errors]]
+name = "TWO"
+variant_type = "Shared"
+"#;
+    assert!(TomlParser::parse_str(s).is_ok());
+}
