@@ -1,4 +1,4 @@
-use crate::errors::{TbError, kind::coder::TOO_MANY_BITS};
+use crate::errors::{TbError, kind::TOO_MANY_BITS};
 use std::any::type_name;
 
 type LargestReprType = u64;

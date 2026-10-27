@@ -1,6 +1,6 @@
 use crate::{
     coder::CodegenOptions,
-    errors::{TbError, kind::coder::OUTPUT_PATH_NOT_DIRECTORY},
+    errors::{TbError, kind::OUTPUT_PATH_NOT_DIRECTORY},
     spec::{Spec, definitions::*},
 };
 use std::path::PathBuf;

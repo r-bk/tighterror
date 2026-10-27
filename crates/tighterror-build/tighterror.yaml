@@ -8,6 +8,7 @@ module:
   err_name: TbError
   err_kind_name: TbErrorKind
   err_cat_name: TbErrorCategory
+  flat_kinds: true
 
 categories:
   - name: Parser

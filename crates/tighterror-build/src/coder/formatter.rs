@@ -1,6 +1,6 @@
 use crate::errors::{
     TbError,
-    kind::coder::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED, RUSTFMT_NOT_FOUND},
+    kind::{FAILED_TO_PARSE_TOKENS, RUSTFMT_FAILED, RUSTFMT_NOT_FOUND},
 };
 use log::{error, info, warn};
 use proc_macro2::TokenStream;
