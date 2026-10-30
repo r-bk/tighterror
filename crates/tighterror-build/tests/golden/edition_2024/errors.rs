@@ -278,7 +278,7 @@ impl<T> core::convert::From<Error> for core::result::Result<T, Error> {
 }
 
 
-impl std::error::Error for Error {}
+impl core::error::Error for Error {}
 
 mod _cn {
     pub const GENERAL: &str = "GENERAL";
@@ -473,7 +473,7 @@ pub mod variant {
         }
 
 
-        impl std::error::Error for BadArg {}
+        impl core::error::Error for BadArg {}
 
     }
 

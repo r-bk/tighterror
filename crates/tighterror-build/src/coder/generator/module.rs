@@ -493,7 +493,7 @@ impl<'a> ModuleGenerator<'a> {
         };
         let error_trait = if self.module.error_trait(self.spec.main.no_std) {
             quote! {
-                impl std::error::Error for #err_name {}
+                impl core::error::Error for #err_name {}
             }
         } else {
             TokenStream::default()
@@ -777,7 +777,7 @@ impl<'a> ModuleGenerator<'a> {
             quote! { <Self as tighterror::VariantType>::NAME }
         };
         let error_trait = if self.module.error_trait(self.spec.main.no_std) {
-            quote! { impl std::error::Error for #var_type_ident {} }
+            quote! { impl core::error::Error for #var_type_ident {} }
         } else {
             TokenStream::default()
         };

@@ -236,7 +236,7 @@ impl<T> core::convert::From<TbError> for core::result::Result<T, TbError> {
     }
 }
 
-impl std::error::Error for TbError {}
+impl core::error::Error for TbError {}
 
 mod _cn {
     pub const PARSER: &str = "PARSER";

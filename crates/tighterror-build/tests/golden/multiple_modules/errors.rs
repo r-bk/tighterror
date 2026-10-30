@@ -263,7 +263,7 @@ impl<T> core::convert::From<McError> for core::result::Result<T, McError> {
 }
 
 
-impl std::error::Error for McError {}
+impl core::error::Error for McError {}
 
 mod _cn {
     pub const PARSING: &str = "PARSING";
@@ -551,7 +551,7 @@ pub mod variant {
             }
 
 
-            impl std::error::Error for WithoutDisplay {}
+            impl core::error::Error for WithoutDisplay {}
 
             /// An error without doc string.
             #[derive(Clone, Copy)]
@@ -653,7 +653,7 @@ pub mod variant {
             }
 
 
-            impl std::error::Error for WithoutDoc {}
+            impl core::error::Error for WithoutDoc {}
 
         }
 

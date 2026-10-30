@@ -281,7 +281,7 @@ pub mod internal_errors {
     }
 
 
-    impl std::error::Error for Error {}
+    impl core::error::Error for Error {}
 
     mod _cn {
         pub const PARSER: &str = "PARSER";
@@ -795,7 +795,7 @@ pub mod errors {
     }
 
 
-    impl std::error::Error for McError {}
+    impl core::error::Error for McError {}
 
     mod _cn {
         pub const PARSING: &str = "PARSING";
