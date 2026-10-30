@@ -106,11 +106,8 @@ impl ModuleSpec {
             .unwrap_or(DEFAULT_ERR_KIND_INTO_RESULT)
     }
 
-    pub fn error_trait(&self, no_std: Option<bool>) -> bool {
-        no_std
-            .map(|v| !v)
-            .or(self.error_trait)
-            .unwrap_or(DEFAULT_ERROR_TRAIT)
+    pub fn error_trait(&self) -> bool {
+        self.error_trait.unwrap_or(DEFAULT_ERROR_TRAIT)
     }
 
     pub fn err_name(&self) -> &str {
