@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "custom_repr",
     "custom_type_names",
     "edition_2024",
     "flat_kinds",

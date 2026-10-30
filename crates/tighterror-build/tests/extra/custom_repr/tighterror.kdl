@@ -1,0 +1,27 @@
+module errors {
+    spec {
+        repr u32
+        doc-from-display #true
+    }
+    category General {
+        spec { doc "General errors category." }
+        error TIMEOUT display="Operation timed out."
+        error QUEUE_FULL display="Queue is full."
+    }
+    category Io {
+        spec { doc "I/O errors category." }
+        error CONNECTION_REFUSED display="Outgoing network connection was refused."
+    }
+}
+
+module wide_errors {
+    spec {
+        doc-from-display #true
+        repr u64
+    }
+    category General {
+        spec { doc "General errors category." }
+        error TIMEOUT display="Operation timed out."
+        error QUEUE_FULL display="Queue is full."
+    }
+}
