@@ -2,7 +2,7 @@ use crate::{
     coder::idents,
     errors::TbErrorKind,
     parser::{kdl::*, testing::log_init},
-    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, OverridableErrorSpec, Spec},
+    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, OverridableErrorSpec, ReprType, Spec},
 };
 
 fn error(name: &str) -> ErrorSpec {
@@ -145,6 +145,7 @@ module errors {
         flat-kinds #false
         doc-from-display #true
         variant-type #true
+        repr u32
     }
     category General {
         error BAD_FILE
@@ -167,6 +168,47 @@ module errors {
     assert_eq!(m.flat_kinds, Some(false));
     assert_eq!(m.oes.doc_from_display, Some(true));
     assert_eq!(m.oes.variant_type, Some(true));
+    assert_eq!(m.repr, Some(ReprType::U32));
+}
+
+// Checks the values of the `repr` setting: the four unsigned integer types
+// are accepted, quoted or not, and anything else is rejected.
+#[test]
+fn test_repr() {
+    log_init();
+
+    // every unsigned integer type is accepted
+    for (name, repr) in [
+        ("u8", ReprType::U8),
+        ("u16", ReprType::U16),
+        ("u32", ReprType::U32),
+        ("u64", ReprType::U64),
+    ] {
+        let s = with_module_spec(&format!("repr {name}"));
+        assert_eq!(
+            KdlParser::parse_str(&s).unwrap().modules[0].repr,
+            Some(repr)
+        );
+    }
+
+    // a quoted name is the same string
+    let s = with_module_spec("repr \"u16\"");
+    assert_eq!(
+        KdlParser::parse_str(&s).unwrap().modules[0].repr,
+        Some(ReprType::U16)
+    );
+
+    // other types and other spellings are rejected
+    for bad in ["i32", "u128", "usize", "U8"] {
+        let s = with_module_spec(&format!("repr {bad}"));
+        assert_eq!(kind(&s), BAD_ENUM_VALUE, "repr {bad}");
+    }
+
+    // values that are not strings are rejected
+    for bad in ["8", "#true"] {
+        let s = with_module_spec(&format!("repr {bad}"));
+        assert_eq!(kind(&s), BAD_VALUE_TYPE, "repr {bad}");
+    }
 }
 
 // Checks the category settings and that a category holds only errors.

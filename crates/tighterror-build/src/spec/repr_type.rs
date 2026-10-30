@@ -21,6 +21,12 @@ impl ReprType {
         }
     }
 
+    pub fn from_name(name: &str) -> Option<Self> {
+        [Self::U8, Self::U16, Self::U32, Self::U64]
+            .into_iter()
+            .find(|r| r.name() == name)
+    }
+
     pub fn ident(&self) -> syn::Ident {
         quote::format_ident!("{}", self.name())
     }

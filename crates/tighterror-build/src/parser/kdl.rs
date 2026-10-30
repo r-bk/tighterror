@@ -1,7 +1,7 @@
 use crate::{
     errors::{TbError, kind::*},
     parser::{helpers::*, kws::*},
-    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, Spec},
+    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, ReprType, Spec},
 };
 use ::kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
 use log::error;
@@ -151,6 +151,7 @@ impl<'a> KdlParser<'a> {
                     FLAT_KINDS => m.flat_kinds = Some(self.boolean(key, sn, v)?),
                     DOC_FROM_DISPLAY => m.oes.doc_from_display = Some(self.boolean(key, sn, v)?),
                     VARIANT_TYPE => m.oes.variant_type = Some(self.boolean(key, sn, v)?),
+                    REPR => m.repr = Some(self.repr(key, sn, v)?),
                     _ => return self.unknown_setting(MODULE, key, sn),
                 }
             }
@@ -444,6 +445,20 @@ impl<'a> KdlParser<'a> {
                     e.value()
                 );
                 BAD_VALUE_TYPE.into()
+            }
+        }
+    }
+
+    fn repr(&self, key: &str, n: &KdlNode, v: &KdlValue) -> Result<ReprType, TbError> {
+        let name = self.string(key, n, v)?;
+        match ReprType::from_name(&name) {
+            Some(r) => Ok(r),
+            None => {
+                error!(
+                    "{}: `{key}` must be `u8`, `u16`, `u32` or `u64`: {name}",
+                    self.node_pos(n)
+                );
+                BAD_ENUM_VALUE.into()
             }
         }
     }

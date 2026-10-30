@@ -21,12 +21,24 @@ impl Bits {
         assert!(n_variant_bits > 0);
 
         let n_kind_bits = n_category_bits + n_variant_bits;
-        let repr_type = ReprType::from_n_bits(n_kind_bits).inspect_err(|_| {
-            let ltn = ReprType::largest_type_name();
-            log::error!(
-                "not enough bits in largest supported underlying type {ltn}: {n_kind_bits}"
-            );
-        })?;
+        let repr_type = match module.repr {
+            Some(r) if n_kind_bits <= r.bits() => r,
+            Some(r) => {
+                log::error!(
+                    "module `{}`: `repr {}` holds {} bits, but its error kinds need {n_kind_bits}",
+                    module.name(),
+                    r.name(),
+                    r.bits()
+                );
+                return REPR_TOO_NARROW.into();
+            }
+            None => ReprType::from_n_bits(n_kind_bits).inspect_err(|_| {
+                let ltn = ReprType::largest_type_name();
+                log::error!(
+                    "not enough bits in largest supported underlying type {ltn}: {n_kind_bits}"
+                );
+            })?,
+        };
 
         assert!(n_category_bits < repr_type.bits());
         assert!(n_variant_bits <= repr_type.bits());
