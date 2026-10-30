@@ -16,7 +16,7 @@ pub struct ModuleSpec {
     pub result_from_err: Option<bool>,
     /// Add `impl From<ErrorKind> for Result<T, Error>`
     pub result_from_err_kind: Option<bool>,
-    /// Add `impl std::error::Error for Error`
+    /// Add `impl core::error::Error for Error`
     pub error_trait: Option<bool>,
     /// A custom name for the Error struct
     pub err_name: Option<String>,

@@ -278,7 +278,7 @@ impl<T> core::convert::From<Error> for core::result::Result<T, Error> {
 }
 
 
-impl std::error::Error for Error {}
+impl core::error::Error for Error {}
 
 mod _cn {
     pub const CAT_ONE: &str = "CAT_ONE";
@@ -495,7 +495,7 @@ pub mod variant {
         }
 
 
-        impl std::error::Error for CatOneErrOne {}
+        impl core::error::Error for CatOneErrOne {}
 
         /// CatOne error #2
         #[derive(Clone, Copy)]
@@ -595,7 +595,7 @@ pub mod variant {
         }
 
 
-        impl std::error::Error for CatOneErrTwo {}
+        impl core::error::Error for CatOneErrTwo {}
 
         /// CatTwo error #1
         #[derive(Clone, Copy)]
@@ -695,7 +695,7 @@ pub mod variant {
         }
 
 
-        impl std::error::Error for CatTwoErrOne {}
+        impl core::error::Error for CatTwoErrOne {}
 
         /// CatTwo error #2
         #[derive(Clone, Copy)]
@@ -795,7 +795,7 @@ pub mod variant {
         }
 
 
-        impl std::error::Error for CatTwoErrTwo {}
+        impl core::error::Error for CatTwoErrTwo {}
 
         /// A CatTwo error without display string.
         #[derive(Clone, Copy)]
@@ -897,7 +897,7 @@ pub mod variant {
         }
 
 
-        impl std::error::Error for CatTwoCustomVariantTypeName {}
+        impl core::error::Error for CatTwoCustomVariantTypeName {}
 
     }
 
