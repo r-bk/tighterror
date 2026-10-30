@@ -22,4 +22,12 @@ mod tests {
     fn test_result_from_err_kind() {
         let _res: Result<(), Error> = kind::BAD_FILE.into();
     }
+
+    // Checks that a no_std crate gets the error trait by default: the error
+    // implements the trait from core, which needs no std.
+    #[test]
+    fn test_error_trait() {
+        fn is_error<T: core::error::Error>(_: &T) {}
+        is_error(&Error::from(kind::BAD_FILE));
+    }
 }

@@ -276,6 +276,9 @@ impl<T> core::convert::From<Error> for core::result::Result<T, Error> {
 
 }
 
+
+impl core::error::Error for Error {}
+
 mod _cn {
     pub const GENERAL: &str = "GENERAL";
     pub static A: [&str; 1] = [GENERAL];
