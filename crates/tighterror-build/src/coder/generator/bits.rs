@@ -10,12 +10,6 @@ pub struct Bits {
     pub category: usize,
     /// number of variant bits
     pub variant: usize,
-    /// number of kind bits: category + variant
-    pub kind: usize,
-    /// the mask of category bits
-    pub category_mask: u64,
-    /// the mask of variant bits
-    pub variant_mask: u64,
     /// the representation type (calculated or forced)
     pub repr_type: ReprType,
 }
@@ -39,23 +33,9 @@ impl Bits {
         assert!(n_variant_bits <= repr_type.bits());
         assert!(n_kind_bits <= repr_type.bits());
 
-        let variant_mask = 1u64
-            .checked_shl(n_variant_bits as u32)
-            .map(|v| v - 1)
-            .unwrap_or(u64::MAX);
-        let category_mask = 1u64
-            .checked_shl(n_category_bits as u32)
-            .map(|v| v - 1)
-            .unwrap_or(u64::MAX)
-            .checked_shl(n_variant_bits as u32)
-            .unwrap_or(0);
-
         Ok(Bits {
             category: n_category_bits,
             variant: n_variant_bits,
-            kind: n_kind_bits,
-            category_mask,
-            variant_mask,
             repr_type,
         })
     }

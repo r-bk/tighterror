@@ -1330,11 +1330,12 @@ mod _d {
 }
 
 mod _p {
-    pub type R = u8;
-    pub const KIND_BITS: usize = 8;
     pub const CAT_BITS: usize = 0;
+    pub const VAR_BITS: usize = 8;
+    pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
+    pub type R = u8;
     pub const CAT_MAX: R = 0;
-    pub const VAR_MASK: R = 255;
+    pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
     pub static VAR_MAXES: [R; 1] = [255];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
@@ -2972,7 +2973,7 @@ mod test {
             ERR255,
         ];
 
-        let set = HashSet::<u8>::from_iter(errs.iter().map(|ec| ec.value()));
+        let set = HashSet::<_p::R>::from_iter(errs.iter().map(|ec| ec.value()));
         assert_eq!(set.len(), 256);
     }
 
