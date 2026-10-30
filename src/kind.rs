@@ -27,6 +27,8 @@ pub trait Kind: Copy + Clone + Eq + PartialEq + Ord + PartialOrd + Debug + Displ
 
     /// Returns the error kind numerical value as the underlying Rust type.
     ///
+    /// The value is never 0.
+    ///
     /// This function allows embedding one instantiation of `tighterror::Error`
     /// as a single category within another instantiation of the trait.
     ///

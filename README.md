@@ -53,12 +53,13 @@ set of errors in a specification file written in [KDL](https://kdl.dev).
 Generation of Rust source code out of the specification file is done by
 a dedicated tool provided by the framework.
 
-In its basic form a _tighterror_ is a _newtype_ around a small unsigned integer,
-e.g., `u8`, whose value is a unique identifier of the error, the _error kind_.
+In its basic form a _tighterror_ is a _newtype_ around a small non-zero unsigned
+integer, e.g., `NonZeroU8`, whose value is a unique identifier of the error, the
+_error kind_.
 
 ```rust
 #[repr(transparent)]
-pub struct ErrorKind(u8);
+pub struct ErrorKind(NonZeroU8);
 
 #[repr(transparent)]
 pub struct Error(ErrorKind);  // <-- the type to use in Result<T, E>
@@ -73,7 +74,7 @@ Together _category_ and _variant_ comprise a unique identifier of an error
 in a given _tighterror_ instantiation.
 
 The following diagram shows an example layout of _error kind_. This layout
-can represent up to 4 categories with a maximum of 32 errors in each category.
+can represent up to 4 categories with a maximum of 31 errors in each category.
 
 ```text
             ┌───┬───┬───┬───┬───┬───┬───┬───┐
@@ -139,7 +140,7 @@ The following is a stripped-down view of the generated module:
 pub struct ErrorCategory(u8);
 
 #[repr(transparent)]
-pub struct ErrorKind(u8);
+pub struct ErrorKind(NonZeroU8);
 
 #[repr(transparent)]
 pub struct Error(ErrorKind);
@@ -156,8 +157,8 @@ pub mod category {
 pub mod kind {
    use super::category::*;
    use super::ErrorKind;
-   pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 0);
-   pub const BAD_FILE_PATH: ErrorKind = ErrorKind::new(GENERAL, 1);
+   pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 1);
+   pub const BAD_FILE_PATH: ErrorKind = ErrorKind::new(GENERAL, 2);
 }
 ```
 

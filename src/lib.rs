@@ -39,16 +39,17 @@
 //!
 //! ## High-Level Overview
 //!
-//! In its basic form a *tighterror* is a [newtype] around a small unsigned
-//! integer, e.g., `u8`.<br>
+//! In its basic form a *tighterror* is a [newtype] around a small non-zero
+//! unsigned integer, e.g., `NonZeroU8`.<br>
 //! Error conditions are identified by an error [`kind`](Error::kind).
 //! Every *error kind* has a [`category`](Kind::category) that
 //! identifies the logical group the error belongs to.
 //!
 //! ```rust
+//! # use core::num::NonZeroU8;
 //! # #[derive(Debug, Copy, Clone, PartialEq)]
 //! #[repr(transparent)]
-//! pub struct ErrorKind(u8);
+//! pub struct ErrorKind(NonZeroU8);
 //!
 //! # #[derive(Debug, Copy, Clone, PartialEq)]
 //! #[repr(transparent)]
@@ -108,8 +109,8 @@
 //! pub mod kind {
 //! #   use super::*;
 //! #   use super::category::*;
-//!     pub const BAD_FILE: ErrorKind = ErrorKind::new(GENERAL, 0);
-//!     pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 1);
+//!     pub const BAD_FILE: ErrorKind = ErrorKind::new(GENERAL, 1);
+//!     pub const BAD_ARG: ErrorKind = ErrorKind::new(GENERAL, 2);
 //! }
 //! # } // mod _doc
 //! ```
@@ -146,8 +147,9 @@
 //! ```
 //!
 //! Callers handle a whole category with one match arm on its constant, and
-//! single errors with arms on *error kind* constants. A `_` arm is needed,
-//! because the constants don't cover every value of the underlying integer:
+//! single errors with arms on *error kind* constants. A `_` arm is always
+//! needed, because the compiler doesn't know that the constants are the only
+//! values of these types:
 //!
 //! ```rust
 //! # #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -228,7 +230,7 @@
 //! pub mod kind {
 //!     // Error kind constants defined here.
 //!     // ...
-//!     // pub const OPERATION_TIMEOUT: ErrorKind = ErrorKind::new(GENERAL, 0);
+//!     // pub const OPERATION_TIMEOUT: ErrorKind = ErrorKind::new(GENERAL, 1);
 //! }
 //!
 //! pub mod variant {
@@ -259,7 +261,7 @@
 //! to. *Error variant* is a unique identifier of the error within its category.
 //!
 //! The following is an example layout of an *error kind* with
-//! allocation of bits suitable for 4 categories with a maximum of 32 errors
+//! allocation of bits suitable for 4 categories with a maximum of 31 errors
 //! within each category:
 //!
 //! ```text
@@ -273,6 +275,13 @@
 //!
 //! When there is only a single *error category* the number of *category* bits
 //! is 0.
+//!
+//! The value 0 is never an *error kind*: the variants of every category start
+//! at 1. This lets the *error kind* be stored in a `NonZero` integer, e.g.,
+//! `NonZeroU8`, so that `Option<Error>` and `Result<(), Error>` take no more
+//! space than `Error`. Every category takes one variant more for it, which
+//! adds a variant bit when the number of errors in the largest category is a
+//! power of two.
 //!
 //! By default *tighterror* chooses the smallest unsigned integer that is
 //! large enough to accommodate a required layout. Supported underlying
