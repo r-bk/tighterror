@@ -94,11 +94,8 @@ impl<'a> ModuleGenerator<'a> {
         let category_max = self
             .usize_to_repr_type_literal(self.module.category_max())
             .unwrap();
-        let variant_max = |c: &CategorySpec| {
-            let n_errors = c.errors.len();
-            self.usize_to_repr_type_literal(n_errors.checked_sub(1).unwrap())
-                .unwrap()
-        };
+        let variant_max =
+            |c: &CategorySpec| self.usize_to_repr_type_literal(c.errors.len()).unwrap();
         let variant_maxes_iter = self.module.categories.iter().map(variant_max);
 
         let optional_tokens = if self.bits.category == 0 {
@@ -189,20 +186,26 @@ impl<'a> ModuleGenerator<'a> {
                 pub(crate) const #const_ident: &str = #name
             }
         });
-        let arr_iter = c.errors.iter().map(|e| {
-            let const_ident = format_ident!("{}", e.name);
-            quote! { #const_ident }
-        });
-        let n_errors = Literal::usize_unsuffixed(c.errors.len());
+        let arr_iter = self.error_table_entries(c);
+        let n_entries = Literal::usize_unsuffixed(c.errors.len() + 1);
         quote! {
             pub(crate) mod #cat_mod_ident {
                 #(#const_iter);* ;
 
-                pub static A: [&str; #n_errors] = [
+                pub static A: [&str; #n_entries] = [
                     #(#arr_iter),*
                 ];
             }
         }
+    }
+
+    fn error_table_entries(&self, c: &CategorySpec) -> Vec<TokenStream> {
+        std::iter::once(quote! { "" })
+            .chain(c.errors.iter().map(|e| {
+                let const_ident = format_ident!("{}", e.name);
+                quote! { #const_ident }
+            }))
+            .collect()
     }
 
     fn private_error_display(&self) -> TokenStream {
@@ -240,11 +243,8 @@ impl<'a> ModuleGenerator<'a> {
                 }
             }
         });
-        let arr_iter = c.errors.iter().map(|e| {
-            let const_ident = format_ident!("{}", e.name);
-            quote! { #const_ident }
-        });
-        let n_errors = Literal::usize_unsuffixed(c.errors.len());
+        let arr_iter = self.error_table_entries(c);
+        let n_entries = Literal::usize_unsuffixed(c.errors.len() + 1);
 
         let names_mod_import = if add_names_mod_import {
             quote! { use super::super::#error_names_mod; }
@@ -258,7 +258,7 @@ impl<'a> ModuleGenerator<'a> {
 
                 #(#const_iter);* ;
 
-                pub static A: [&str; #n_errors] = [
+                pub static A: [&str; #n_entries] = [
                     #(#arr_iter),*
                 ];
             }
@@ -342,21 +342,26 @@ impl<'a> ModuleGenerator<'a> {
         };
 
         let err_kind_new_tokens = if self.bits.category == 0 {
-            quote! { assert!(cat.0 == #private_mod::CAT_MAX); Self(variant) }
+            quote! {
+                assert!(cat.0 == #private_mod::CAT_MAX);
+                Self(core::num::NonZero::new(variant).unwrap())
+            }
         } else {
-            quote! { Self(cat.0 << #private_mod::VAR_BITS | variant) }
+            quote! {
+                Self(core::num::NonZero::new(cat.0 << #private_mod::VAR_BITS | variant).unwrap())
+            }
         };
 
         let cat_value_tokens = if self.bits.category == 0 {
             quote! { #private_mod::CAT_MAX }
         } else {
-            quote! { (self.0 & #private_mod::CAT_MASK) >> #private_mod::VAR_BITS }
+            quote! { (self.value() & #private_mod::CAT_MASK) >> #private_mod::VAR_BITS }
         };
 
         let from_value_tokens = if self.bits.category == 0 {
             quote! {
                 if value <= #private_mod::VAR_MAXES[0] {
-                    Some(Self::new(#err_cat_name::new(0), value))
+                    core::num::NonZero::new(value).map(Self)
                 } else {
                     None
                 }
@@ -365,8 +370,8 @@ impl<'a> ModuleGenerator<'a> {
             quote! {
                 let cat = value >> #private_mod::VAR_BITS;
                 let variant = value & #private_mod::VAR_MASK;
-                if cat #category_max_comparison #private_mod::CAT_MAX && variant <= #private_mod::VAR_MAXES[cat as usize] {
-                    Some(Self::new(#err_cat_name::new(cat), variant))
+                if cat #category_max_comparison #private_mod::CAT_MAX && variant != 0 && variant <= #private_mod::VAR_MAXES[cat as usize] {
+                    core::num::NonZero::new(value).map(Self)
                 } else {
                     None
                 }
@@ -377,7 +382,7 @@ impl<'a> ModuleGenerator<'a> {
             #err_kind_doc
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct #err_kind_name(#private_mod::R);
+            pub struct #err_kind_name(core::num::NonZero<#private_mod::R>);
 
             impl #err_kind_name {
                 const fn new(cat: #err_cat_name, variant: #private_mod::R) -> Self {
@@ -391,7 +396,7 @@ impl<'a> ModuleGenerator<'a> {
 
                 #[inline]
                 fn variant_value(&self) -> #private_mod::R {
-                    self.0 & #private_mod::VAR_MASK
+                    self.value() & #private_mod::VAR_MASK
                 }
 
                 #[doc = " Returns the error category."]
@@ -414,7 +419,7 @@ impl<'a> ModuleGenerator<'a> {
                 #[doc = " Returns the error kind value as the underlying Rust type."]
                 #[inline]
                 pub fn value(&self) -> #private_mod::R {
-                    self.0
+                    self.0.get()
                 }
 
                 #[doc = " Creates an error kind from a raw value of the underlying Rust type."]
@@ -609,7 +614,7 @@ impl<'a> ModuleGenerator<'a> {
         let mut tokens = TokenStream::default();
         for (i, e) in c.errors.iter().enumerate() {
             let cat_ident = format_ident!("{}", c.ident_name());
-            let err_value = self.usize_to_repr_type_literal(i).unwrap();
+            let err_value = self.usize_to_repr_type_literal(i + 1).unwrap();
             let err_ident = format_ident!("{}", e.name);
             let err_doc = doc_tokens(self.module.err_kind_const_doc(c, e));
             tokens = quote! {

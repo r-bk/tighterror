@@ -13,18 +13,27 @@ pub mod errors {
 
         #[test]
         fn test_constants() {
-            assert_eq!(_p::KIND_BITS, u8::BITS as usize);
+            assert_eq!(_p::KIND_BITS, 9);
             assert_eq!(_p::CAT_BITS, 0);
-            assert_eq!(_p::VAR_MASK, u8::MAX);
+            assert_eq!(_p::VAR_MASK, 0x1ff);
         }
 
-        // Checks that 256 variants of a single category take the whole u8:
-        // the last variant has the largest value of the type.
+        // Checks that 256 variants of a single category take a u16: the
+        // value 0 is not used, so the last variant has the value 256.
         #[test]
-        fn test_last_variant_takes_the_largest_value() {
-            let value: u8 = kind::ERR255.value();
-            assert_eq!(value, u8::MAX);
-            assert_eq!(ErrorKind::from_value(u8::MAX), Some(kind::ERR255));
+        fn test_last_variant_takes_a_wider_type() {
+            // the first and the last variant, in the wider type
+            let value: u16 = kind::ERR255.value();
+            assert_eq!(value, 256);
+            assert_eq!(kind::ERR0.value(), 1);
+            assert_eq!(ErrorKind::from_value(256), Some(kind::ERR255));
+
+            // the value 0 and a value past the last variant are rejected
+            assert_eq!(ErrorKind::from_value(0), None);
+            assert_eq!(ErrorKind::from_value(257), None);
+
+            // the error takes the size of the wider type
+            assert_eq!(core::mem::size_of::<Error>(), 2);
         }
     }
 }

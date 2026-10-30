@@ -53,12 +53,12 @@ impl core::fmt::Debug for IcErrorCategory {
 /// A custom error doc.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct IcErrorKind(_p::R);
+pub struct IcErrorKind(core::num::NonZero<_p::R>);
 
 impl IcErrorKind {
     const fn new(cat: IcErrorCategory, variant: _p::R) -> Self {
         assert!(cat.0 == _p::CAT_MAX);
-        Self(variant)
+        Self(core::num::NonZero::new(variant).unwrap())
     }
 
 
@@ -70,7 +70,7 @@ impl IcErrorKind {
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -97,7 +97,7 @@ impl IcErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -105,7 +105,7 @@ impl IcErrorKind {
     #[inline]
     pub fn from_value(value: _p::R) -> Option<Self> {
         if value <= _p::VAR_MAXES[0] {
-            Some(Self::new(IcErrorCategory::new(0), value))
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -253,7 +253,7 @@ mod _n {
         pub(crate) const FAILED_TO_OPEN_FILE: &str = "FAILED_TO_OPEN_FILE";
         pub(crate) const BAD_INPUT: &str = "BAD_INPUT";
         pub(crate) const LONG_DESCRIPTION: &str = "LONG_DESCRIPTION";
-        pub static A: [&str; 3] = [FAILED_TO_OPEN_FILE, BAD_INPUT, LONG_DESCRIPTION];
+        pub static A: [&str; 4] = ["", FAILED_TO_OPEN_FILE, BAD_INPUT, LONG_DESCRIPTION];
     }
 
     pub static A: [&[&str]; 1] = [&general::A];
@@ -265,7 +265,7 @@ mod _d {
         pub(crate) const FAILED_TO_OPEN_FILE: &str = "Input file could not be open.";
         pub(crate) const BAD_INPUT: &str = "Input file has invalid format.";
         const LONG_DESCRIPTION: &str = _n::general::LONG_DESCRIPTION;
-        pub static A: [&str; 3] = [FAILED_TO_OPEN_FILE, BAD_INPUT, LONG_DESCRIPTION];
+        pub static A: [&str; 4] = ["", FAILED_TO_OPEN_FILE, BAD_INPUT, LONG_DESCRIPTION];
     }
 
     pub static A: [&[&str]; 1] = [&general::A];
@@ -278,7 +278,7 @@ mod _p {
     pub type R = u8;
     pub const CAT_MAX: R = 0;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 1] = [2];
+    pub static VAR_MAXES: [R; 1] = [3];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
@@ -309,10 +309,10 @@ pub mod kind {
     use super::category as c;
 
     /// Input file could not be open.
-    pub const FAILED_TO_OPEN_FILE: EK = EK::new(c::GENERAL, 0);
+    pub const FAILED_TO_OPEN_FILE: EK = EK::new(c::GENERAL, 1);
 
     /// Input file has invalid format.
-    pub const BAD_INPUT: EK = EK::new(c::GENERAL, 1);
+    pub const BAD_INPUT: EK = EK::new(c::GENERAL, 2);
 
     /**
  * This is an example for a long doc string.
@@ -320,7 +320,7 @@ pub mod kind {
  * It continues on several lines. And can include Rust doc-string
  * formatting [`String`].
  */
-    pub const LONG_DESCRIPTION: EK = EK::new(c::GENERAL, 2);
+    pub const LONG_DESCRIPTION: EK = EK::new(c::GENERAL, 3);
 }
 
 

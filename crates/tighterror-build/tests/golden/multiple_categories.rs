@@ -53,23 +53,23 @@ impl core::fmt::Debug for McErrorCategory {
 /// A custom error doc.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct McErrorKind(_p::R);
+pub struct McErrorKind(core::num::NonZero<_p::R>);
 
 impl McErrorKind {
     const fn new(cat: McErrorCategory, variant: _p::R) -> Self {
-        Self(cat.0 << _p::VAR_BITS | variant)
+        Self(core::num::NonZero::new(cat.0 << _p::VAR_BITS | variant).unwrap())
     }
 
 
     #[inline]
     fn category_value(&self) -> _p::R {
-        (self.0 & _p::CAT_MASK) >> _p::VAR_BITS
+        (self.value() & _p::CAT_MASK) >> _p::VAR_BITS
     }
 
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -96,7 +96,7 @@ impl McErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -105,8 +105,8 @@ impl McErrorKind {
     pub fn from_value(value: _p::R) -> Option<Self> {
         let cat = value >> _p::VAR_BITS;
         let variant = value & _p::VAR_MASK;
-        if cat <= _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
-            Some(Self::new(McErrorCategory::new(cat), variant))
+        if cat <= _p::CAT_MAX && variant != 0 && variant <= _p::VAR_MAXES[cat as usize] {
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -276,19 +276,19 @@ mod _n {
     pub(crate) mod parsing {
         pub(crate) const BAD_TOKEN: &str = "BAD_TOKEN";
         pub(crate) const QUEUE_FULL: &str = "QUEUE_FULL";
-        pub static A: [&str; 2] = [BAD_TOKEN, QUEUE_FULL];
+        pub static A: [&str; 3] = ["", BAD_TOKEN, QUEUE_FULL];
     }
 
     pub(crate) mod processing {
         pub(crate) const OUT_OF_MEMORY: &str = "OUT_OF_MEMORY";
         pub(crate) const QUEUE_FULL: &str = "QUEUE_FULL";
-        pub static A: [&str; 2] = [OUT_OF_MEMORY, QUEUE_FULL];
+        pub static A: [&str; 3] = ["", OUT_OF_MEMORY, QUEUE_FULL];
     }
 
     pub(crate) mod general {
         pub(crate) const BAD_ARG: &str = "BAD_ARG";
         pub(crate) const TIMEOUT: &str = "TIMEOUT";
-        pub static A: [&str; 2] = [BAD_ARG, TIMEOUT];
+        pub static A: [&str; 3] = ["", BAD_ARG, TIMEOUT];
     }
 
     pub static A: [&[&str]; 3] = [&parsing::A, &processing::A, &general::A];
@@ -298,19 +298,19 @@ mod _d {
     pub(crate) mod parsing {
         pub(crate) const BAD_TOKEN: &str = "Decoded an invalid token.";
         pub(crate) const QUEUE_FULL: &str = "Parsing queue is full.";
-        pub static A: [&str; 2] = [BAD_TOKEN, QUEUE_FULL];
+        pub static A: [&str; 3] = ["", BAD_TOKEN, QUEUE_FULL];
     }
 
     pub(crate) mod processing {
         pub(crate) const OUT_OF_MEMORY: &str = "Memory pool is empty.";
         pub(crate) const QUEUE_FULL: &str = "Processing queue is full.";
-        pub static A: [&str; 2] = [OUT_OF_MEMORY, QUEUE_FULL];
+        pub static A: [&str; 3] = ["", OUT_OF_MEMORY, QUEUE_FULL];
     }
 
     pub(crate) mod general {
         pub(crate) const BAD_ARG: &str = "Invalid argument received.";
         pub(crate) const TIMEOUT: &str = "Operation timed out.";
-        pub static A: [&str; 2] = [BAD_ARG, TIMEOUT];
+        pub static A: [&str; 3] = ["", BAD_ARG, TIMEOUT];
     }
 
     pub static A: [&[&str]; 3] = [&parsing::A, &processing::A, &general::A];
@@ -318,12 +318,12 @@ mod _d {
 
 mod _p {
     pub const CAT_BITS: usize = 2;
-    pub const VAR_BITS: usize = 1;
+    pub const VAR_BITS: usize = 2;
     pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
     pub type R = u8;
     pub const CAT_MAX: R = 2;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 3] = [1, 1, 1];
+    pub static VAR_MAXES: [R; 3] = [2, 2, 2];
     pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
@@ -366,10 +366,10 @@ pub mod kind {
         use super::EK;
 
         /// Decoded an invalid token.
-        pub const BAD_TOKEN: EK = EK::new(c::PARSING, 0);
+        pub const BAD_TOKEN: EK = EK::new(c::PARSING, 1);
 
         /// Parsing queue is full.
-        pub const QUEUE_FULL: EK = EK::new(c::PARSING, 1);
+        pub const QUEUE_FULL: EK = EK::new(c::PARSING, 2);
     }
 
 
@@ -379,10 +379,10 @@ pub mod kind {
         use super::EK;
 
         /// Memory pool is empty.
-        pub const OUT_OF_MEMORY: EK = EK::new(c::PROCESSING, 0);
+        pub const OUT_OF_MEMORY: EK = EK::new(c::PROCESSING, 1);
 
         /// Processing queue is full.
-        pub const QUEUE_FULL: EK = EK::new(c::PROCESSING, 1);
+        pub const QUEUE_FULL: EK = EK::new(c::PROCESSING, 2);
     }
 
 
@@ -407,10 +407,10 @@ pub mod kind {
  * let e: Error = BAD_ARG.into();
  * ```
  */
-        pub const BAD_ARG: EK = EK::new(c::GENERAL, 0);
+        pub const BAD_ARG: EK = EK::new(c::GENERAL, 1);
 
         /// Operation timed out.
-        pub const TIMEOUT: EK = EK::new(c::GENERAL, 1);
+        pub const TIMEOUT: EK = EK::new(c::GENERAL, 2);
     }
 
 }

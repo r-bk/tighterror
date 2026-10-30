@@ -63,12 +63,12 @@ impl core::fmt::Debug for ErrorCategory {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct ErrorKind(_p::R);
+pub struct ErrorKind(core::num::NonZero<_p::R>);
 
 impl ErrorKind {
     const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
         assert!(cat.0 == _p::CAT_MAX);
-        Self(variant)
+        Self(core::num::NonZero::new(variant).unwrap())
     }
 
 
@@ -80,7 +80,7 @@ impl ErrorKind {
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -107,7 +107,7 @@ impl ErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -115,7 +115,7 @@ impl ErrorKind {
     #[inline]
     pub fn from_value(value: _p::R) -> Option<Self> {
         if value <= _p::VAR_MAXES[0] {
-            Some(Self::new(ErrorCategory::new(0), value))
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -542,7 +542,8 @@ mod _n {
         pub(crate) const ERR253: &str = "ERR253";
         pub(crate) const ERR254: &str = "ERR254";
         pub(crate) const ERR255: &str = "ERR255";
-        pub static A: [&str; 256] = [
+        pub static A: [&str; 257] = [
+            "",
             ERR0,
             ERR1,
             ERR2,
@@ -1065,7 +1066,8 @@ mod _d {
         const ERR253: &str = _n::general::ERR253;
         const ERR254: &str = _n::general::ERR254;
         const ERR255: &str = _n::general::ERR255;
-        pub static A: [&str; 256] = [
+        pub static A: [&str; 257] = [
+            "",
             ERR0,
             ERR1,
             ERR2,
@@ -1331,12 +1333,12 @@ mod _d {
 
 mod _p {
     pub const CAT_BITS: usize = 0;
-    pub const VAR_BITS: usize = 8;
+    pub const VAR_BITS: usize = 9;
     pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
-    pub type R = u8;
+    pub type R = u16;
     pub const CAT_MAX: R = 0;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 1] = [255];
+    pub static VAR_MAXES: [R; 1] = [256];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
@@ -1363,262 +1365,262 @@ pub mod category {
 pub mod kind {
     use super::ErrorKind as EK;
     use super::category as c;
-    pub const ERR0: EK = EK::new(c::GENERAL, 0);
-    pub const ERR1: EK = EK::new(c::GENERAL, 1);
-    pub const ERR2: EK = EK::new(c::GENERAL, 2);
-    pub const ERR3: EK = EK::new(c::GENERAL, 3);
-    pub const ERR4: EK = EK::new(c::GENERAL, 4);
-    pub const ERR5: EK = EK::new(c::GENERAL, 5);
-    pub const ERR6: EK = EK::new(c::GENERAL, 6);
-    pub const ERR7: EK = EK::new(c::GENERAL, 7);
-    pub const ERR8: EK = EK::new(c::GENERAL, 8);
-    pub const ERR9: EK = EK::new(c::GENERAL, 9);
-    pub const ERR10: EK = EK::new(c::GENERAL, 10);
-    pub const ERR11: EK = EK::new(c::GENERAL, 11);
-    pub const ERR12: EK = EK::new(c::GENERAL, 12);
-    pub const ERR13: EK = EK::new(c::GENERAL, 13);
-    pub const ERR14: EK = EK::new(c::GENERAL, 14);
-    pub const ERR15: EK = EK::new(c::GENERAL, 15);
-    pub const ERR16: EK = EK::new(c::GENERAL, 16);
-    pub const ERR17: EK = EK::new(c::GENERAL, 17);
-    pub const ERR18: EK = EK::new(c::GENERAL, 18);
-    pub const ERR19: EK = EK::new(c::GENERAL, 19);
-    pub const ERR20: EK = EK::new(c::GENERAL, 20);
-    pub const ERR21: EK = EK::new(c::GENERAL, 21);
-    pub const ERR22: EK = EK::new(c::GENERAL, 22);
-    pub const ERR23: EK = EK::new(c::GENERAL, 23);
-    pub const ERR24: EK = EK::new(c::GENERAL, 24);
-    pub const ERR25: EK = EK::new(c::GENERAL, 25);
-    pub const ERR26: EK = EK::new(c::GENERAL, 26);
-    pub const ERR27: EK = EK::new(c::GENERAL, 27);
-    pub const ERR28: EK = EK::new(c::GENERAL, 28);
-    pub const ERR29: EK = EK::new(c::GENERAL, 29);
-    pub const ERR30: EK = EK::new(c::GENERAL, 30);
-    pub const ERR31: EK = EK::new(c::GENERAL, 31);
-    pub const ERR32: EK = EK::new(c::GENERAL, 32);
-    pub const ERR33: EK = EK::new(c::GENERAL, 33);
-    pub const ERR34: EK = EK::new(c::GENERAL, 34);
-    pub const ERR35: EK = EK::new(c::GENERAL, 35);
-    pub const ERR36: EK = EK::new(c::GENERAL, 36);
-    pub const ERR37: EK = EK::new(c::GENERAL, 37);
-    pub const ERR38: EK = EK::new(c::GENERAL, 38);
-    pub const ERR39: EK = EK::new(c::GENERAL, 39);
-    pub const ERR40: EK = EK::new(c::GENERAL, 40);
-    pub const ERR41: EK = EK::new(c::GENERAL, 41);
-    pub const ERR42: EK = EK::new(c::GENERAL, 42);
-    pub const ERR43: EK = EK::new(c::GENERAL, 43);
-    pub const ERR44: EK = EK::new(c::GENERAL, 44);
-    pub const ERR45: EK = EK::new(c::GENERAL, 45);
-    pub const ERR46: EK = EK::new(c::GENERAL, 46);
-    pub const ERR47: EK = EK::new(c::GENERAL, 47);
-    pub const ERR48: EK = EK::new(c::GENERAL, 48);
-    pub const ERR49: EK = EK::new(c::GENERAL, 49);
-    pub const ERR50: EK = EK::new(c::GENERAL, 50);
-    pub const ERR51: EK = EK::new(c::GENERAL, 51);
-    pub const ERR52: EK = EK::new(c::GENERAL, 52);
-    pub const ERR53: EK = EK::new(c::GENERAL, 53);
-    pub const ERR54: EK = EK::new(c::GENERAL, 54);
-    pub const ERR55: EK = EK::new(c::GENERAL, 55);
-    pub const ERR56: EK = EK::new(c::GENERAL, 56);
-    pub const ERR57: EK = EK::new(c::GENERAL, 57);
-    pub const ERR58: EK = EK::new(c::GENERAL, 58);
-    pub const ERR59: EK = EK::new(c::GENERAL, 59);
-    pub const ERR60: EK = EK::new(c::GENERAL, 60);
-    pub const ERR61: EK = EK::new(c::GENERAL, 61);
-    pub const ERR62: EK = EK::new(c::GENERAL, 62);
-    pub const ERR63: EK = EK::new(c::GENERAL, 63);
-    pub const ERR64: EK = EK::new(c::GENERAL, 64);
-    pub const ERR65: EK = EK::new(c::GENERAL, 65);
-    pub const ERR66: EK = EK::new(c::GENERAL, 66);
-    pub const ERR67: EK = EK::new(c::GENERAL, 67);
-    pub const ERR68: EK = EK::new(c::GENERAL, 68);
-    pub const ERR69: EK = EK::new(c::GENERAL, 69);
-    pub const ERR70: EK = EK::new(c::GENERAL, 70);
-    pub const ERR71: EK = EK::new(c::GENERAL, 71);
-    pub const ERR72: EK = EK::new(c::GENERAL, 72);
-    pub const ERR73: EK = EK::new(c::GENERAL, 73);
-    pub const ERR74: EK = EK::new(c::GENERAL, 74);
-    pub const ERR75: EK = EK::new(c::GENERAL, 75);
-    pub const ERR76: EK = EK::new(c::GENERAL, 76);
-    pub const ERR77: EK = EK::new(c::GENERAL, 77);
-    pub const ERR78: EK = EK::new(c::GENERAL, 78);
-    pub const ERR79: EK = EK::new(c::GENERAL, 79);
-    pub const ERR80: EK = EK::new(c::GENERAL, 80);
-    pub const ERR81: EK = EK::new(c::GENERAL, 81);
-    pub const ERR82: EK = EK::new(c::GENERAL, 82);
-    pub const ERR83: EK = EK::new(c::GENERAL, 83);
-    pub const ERR84: EK = EK::new(c::GENERAL, 84);
-    pub const ERR85: EK = EK::new(c::GENERAL, 85);
-    pub const ERR86: EK = EK::new(c::GENERAL, 86);
-    pub const ERR87: EK = EK::new(c::GENERAL, 87);
-    pub const ERR88: EK = EK::new(c::GENERAL, 88);
-    pub const ERR89: EK = EK::new(c::GENERAL, 89);
-    pub const ERR90: EK = EK::new(c::GENERAL, 90);
-    pub const ERR91: EK = EK::new(c::GENERAL, 91);
-    pub const ERR92: EK = EK::new(c::GENERAL, 92);
-    pub const ERR93: EK = EK::new(c::GENERAL, 93);
-    pub const ERR94: EK = EK::new(c::GENERAL, 94);
-    pub const ERR95: EK = EK::new(c::GENERAL, 95);
-    pub const ERR96: EK = EK::new(c::GENERAL, 96);
-    pub const ERR97: EK = EK::new(c::GENERAL, 97);
-    pub const ERR98: EK = EK::new(c::GENERAL, 98);
-    pub const ERR99: EK = EK::new(c::GENERAL, 99);
-    pub const ERR100: EK = EK::new(c::GENERAL, 100);
-    pub const ERR101: EK = EK::new(c::GENERAL, 101);
-    pub const ERR102: EK = EK::new(c::GENERAL, 102);
-    pub const ERR103: EK = EK::new(c::GENERAL, 103);
-    pub const ERR104: EK = EK::new(c::GENERAL, 104);
-    pub const ERR105: EK = EK::new(c::GENERAL, 105);
-    pub const ERR106: EK = EK::new(c::GENERAL, 106);
-    pub const ERR107: EK = EK::new(c::GENERAL, 107);
-    pub const ERR108: EK = EK::new(c::GENERAL, 108);
-    pub const ERR109: EK = EK::new(c::GENERAL, 109);
-    pub const ERR110: EK = EK::new(c::GENERAL, 110);
-    pub const ERR111: EK = EK::new(c::GENERAL, 111);
-    pub const ERR112: EK = EK::new(c::GENERAL, 112);
-    pub const ERR113: EK = EK::new(c::GENERAL, 113);
-    pub const ERR114: EK = EK::new(c::GENERAL, 114);
-    pub const ERR115: EK = EK::new(c::GENERAL, 115);
-    pub const ERR116: EK = EK::new(c::GENERAL, 116);
-    pub const ERR117: EK = EK::new(c::GENERAL, 117);
-    pub const ERR118: EK = EK::new(c::GENERAL, 118);
-    pub const ERR119: EK = EK::new(c::GENERAL, 119);
-    pub const ERR120: EK = EK::new(c::GENERAL, 120);
-    pub const ERR121: EK = EK::new(c::GENERAL, 121);
-    pub const ERR122: EK = EK::new(c::GENERAL, 122);
-    pub const ERR123: EK = EK::new(c::GENERAL, 123);
-    pub const ERR124: EK = EK::new(c::GENERAL, 124);
-    pub const ERR125: EK = EK::new(c::GENERAL, 125);
-    pub const ERR126: EK = EK::new(c::GENERAL, 126);
-    pub const ERR127: EK = EK::new(c::GENERAL, 127);
-    pub const ERR128: EK = EK::new(c::GENERAL, 128);
-    pub const ERR129: EK = EK::new(c::GENERAL, 129);
-    pub const ERR130: EK = EK::new(c::GENERAL, 130);
-    pub const ERR131: EK = EK::new(c::GENERAL, 131);
-    pub const ERR132: EK = EK::new(c::GENERAL, 132);
-    pub const ERR133: EK = EK::new(c::GENERAL, 133);
-    pub const ERR134: EK = EK::new(c::GENERAL, 134);
-    pub const ERR135: EK = EK::new(c::GENERAL, 135);
-    pub const ERR136: EK = EK::new(c::GENERAL, 136);
-    pub const ERR137: EK = EK::new(c::GENERAL, 137);
-    pub const ERR138: EK = EK::new(c::GENERAL, 138);
-    pub const ERR139: EK = EK::new(c::GENERAL, 139);
-    pub const ERR140: EK = EK::new(c::GENERAL, 140);
-    pub const ERR141: EK = EK::new(c::GENERAL, 141);
-    pub const ERR142: EK = EK::new(c::GENERAL, 142);
-    pub const ERR143: EK = EK::new(c::GENERAL, 143);
-    pub const ERR144: EK = EK::new(c::GENERAL, 144);
-    pub const ERR145: EK = EK::new(c::GENERAL, 145);
-    pub const ERR146: EK = EK::new(c::GENERAL, 146);
-    pub const ERR147: EK = EK::new(c::GENERAL, 147);
-    pub const ERR148: EK = EK::new(c::GENERAL, 148);
-    pub const ERR149: EK = EK::new(c::GENERAL, 149);
-    pub const ERR150: EK = EK::new(c::GENERAL, 150);
-    pub const ERR151: EK = EK::new(c::GENERAL, 151);
-    pub const ERR152: EK = EK::new(c::GENERAL, 152);
-    pub const ERR153: EK = EK::new(c::GENERAL, 153);
-    pub const ERR154: EK = EK::new(c::GENERAL, 154);
-    pub const ERR155: EK = EK::new(c::GENERAL, 155);
-    pub const ERR156: EK = EK::new(c::GENERAL, 156);
-    pub const ERR157: EK = EK::new(c::GENERAL, 157);
-    pub const ERR158: EK = EK::new(c::GENERAL, 158);
-    pub const ERR159: EK = EK::new(c::GENERAL, 159);
-    pub const ERR160: EK = EK::new(c::GENERAL, 160);
-    pub const ERR161: EK = EK::new(c::GENERAL, 161);
-    pub const ERR162: EK = EK::new(c::GENERAL, 162);
-    pub const ERR163: EK = EK::new(c::GENERAL, 163);
-    pub const ERR164: EK = EK::new(c::GENERAL, 164);
-    pub const ERR165: EK = EK::new(c::GENERAL, 165);
-    pub const ERR166: EK = EK::new(c::GENERAL, 166);
-    pub const ERR167: EK = EK::new(c::GENERAL, 167);
-    pub const ERR168: EK = EK::new(c::GENERAL, 168);
-    pub const ERR169: EK = EK::new(c::GENERAL, 169);
-    pub const ERR170: EK = EK::new(c::GENERAL, 170);
-    pub const ERR171: EK = EK::new(c::GENERAL, 171);
-    pub const ERR172: EK = EK::new(c::GENERAL, 172);
-    pub const ERR173: EK = EK::new(c::GENERAL, 173);
-    pub const ERR174: EK = EK::new(c::GENERAL, 174);
-    pub const ERR175: EK = EK::new(c::GENERAL, 175);
-    pub const ERR176: EK = EK::new(c::GENERAL, 176);
-    pub const ERR177: EK = EK::new(c::GENERAL, 177);
-    pub const ERR178: EK = EK::new(c::GENERAL, 178);
-    pub const ERR179: EK = EK::new(c::GENERAL, 179);
-    pub const ERR180: EK = EK::new(c::GENERAL, 180);
-    pub const ERR181: EK = EK::new(c::GENERAL, 181);
-    pub const ERR182: EK = EK::new(c::GENERAL, 182);
-    pub const ERR183: EK = EK::new(c::GENERAL, 183);
-    pub const ERR184: EK = EK::new(c::GENERAL, 184);
-    pub const ERR185: EK = EK::new(c::GENERAL, 185);
-    pub const ERR186: EK = EK::new(c::GENERAL, 186);
-    pub const ERR187: EK = EK::new(c::GENERAL, 187);
-    pub const ERR188: EK = EK::new(c::GENERAL, 188);
-    pub const ERR189: EK = EK::new(c::GENERAL, 189);
-    pub const ERR190: EK = EK::new(c::GENERAL, 190);
-    pub const ERR191: EK = EK::new(c::GENERAL, 191);
-    pub const ERR192: EK = EK::new(c::GENERAL, 192);
-    pub const ERR193: EK = EK::new(c::GENERAL, 193);
-    pub const ERR194: EK = EK::new(c::GENERAL, 194);
-    pub const ERR195: EK = EK::new(c::GENERAL, 195);
-    pub const ERR196: EK = EK::new(c::GENERAL, 196);
-    pub const ERR197: EK = EK::new(c::GENERAL, 197);
-    pub const ERR198: EK = EK::new(c::GENERAL, 198);
-    pub const ERR199: EK = EK::new(c::GENERAL, 199);
-    pub const ERR200: EK = EK::new(c::GENERAL, 200);
-    pub const ERR201: EK = EK::new(c::GENERAL, 201);
-    pub const ERR202: EK = EK::new(c::GENERAL, 202);
-    pub const ERR203: EK = EK::new(c::GENERAL, 203);
-    pub const ERR204: EK = EK::new(c::GENERAL, 204);
-    pub const ERR205: EK = EK::new(c::GENERAL, 205);
-    pub const ERR206: EK = EK::new(c::GENERAL, 206);
-    pub const ERR207: EK = EK::new(c::GENERAL, 207);
-    pub const ERR208: EK = EK::new(c::GENERAL, 208);
-    pub const ERR209: EK = EK::new(c::GENERAL, 209);
-    pub const ERR210: EK = EK::new(c::GENERAL, 210);
-    pub const ERR211: EK = EK::new(c::GENERAL, 211);
-    pub const ERR212: EK = EK::new(c::GENERAL, 212);
-    pub const ERR213: EK = EK::new(c::GENERAL, 213);
-    pub const ERR214: EK = EK::new(c::GENERAL, 214);
-    pub const ERR215: EK = EK::new(c::GENERAL, 215);
-    pub const ERR216: EK = EK::new(c::GENERAL, 216);
-    pub const ERR217: EK = EK::new(c::GENERAL, 217);
-    pub const ERR218: EK = EK::new(c::GENERAL, 218);
-    pub const ERR219: EK = EK::new(c::GENERAL, 219);
-    pub const ERR220: EK = EK::new(c::GENERAL, 220);
-    pub const ERR221: EK = EK::new(c::GENERAL, 221);
-    pub const ERR222: EK = EK::new(c::GENERAL, 222);
-    pub const ERR223: EK = EK::new(c::GENERAL, 223);
-    pub const ERR224: EK = EK::new(c::GENERAL, 224);
-    pub const ERR225: EK = EK::new(c::GENERAL, 225);
-    pub const ERR226: EK = EK::new(c::GENERAL, 226);
-    pub const ERR227: EK = EK::new(c::GENERAL, 227);
-    pub const ERR228: EK = EK::new(c::GENERAL, 228);
-    pub const ERR229: EK = EK::new(c::GENERAL, 229);
-    pub const ERR230: EK = EK::new(c::GENERAL, 230);
-    pub const ERR231: EK = EK::new(c::GENERAL, 231);
-    pub const ERR232: EK = EK::new(c::GENERAL, 232);
-    pub const ERR233: EK = EK::new(c::GENERAL, 233);
-    pub const ERR234: EK = EK::new(c::GENERAL, 234);
-    pub const ERR235: EK = EK::new(c::GENERAL, 235);
-    pub const ERR236: EK = EK::new(c::GENERAL, 236);
-    pub const ERR237: EK = EK::new(c::GENERAL, 237);
-    pub const ERR238: EK = EK::new(c::GENERAL, 238);
-    pub const ERR239: EK = EK::new(c::GENERAL, 239);
-    pub const ERR240: EK = EK::new(c::GENERAL, 240);
-    pub const ERR241: EK = EK::new(c::GENERAL, 241);
-    pub const ERR242: EK = EK::new(c::GENERAL, 242);
-    pub const ERR243: EK = EK::new(c::GENERAL, 243);
-    pub const ERR244: EK = EK::new(c::GENERAL, 244);
-    pub const ERR245: EK = EK::new(c::GENERAL, 245);
-    pub const ERR246: EK = EK::new(c::GENERAL, 246);
-    pub const ERR247: EK = EK::new(c::GENERAL, 247);
-    pub const ERR248: EK = EK::new(c::GENERAL, 248);
-    pub const ERR249: EK = EK::new(c::GENERAL, 249);
-    pub const ERR250: EK = EK::new(c::GENERAL, 250);
-    pub const ERR251: EK = EK::new(c::GENERAL, 251);
-    pub const ERR252: EK = EK::new(c::GENERAL, 252);
-    pub const ERR253: EK = EK::new(c::GENERAL, 253);
-    pub const ERR254: EK = EK::new(c::GENERAL, 254);
-    pub const ERR255: EK = EK::new(c::GENERAL, 255);
+    pub const ERR0: EK = EK::new(c::GENERAL, 1);
+    pub const ERR1: EK = EK::new(c::GENERAL, 2);
+    pub const ERR2: EK = EK::new(c::GENERAL, 3);
+    pub const ERR3: EK = EK::new(c::GENERAL, 4);
+    pub const ERR4: EK = EK::new(c::GENERAL, 5);
+    pub const ERR5: EK = EK::new(c::GENERAL, 6);
+    pub const ERR6: EK = EK::new(c::GENERAL, 7);
+    pub const ERR7: EK = EK::new(c::GENERAL, 8);
+    pub const ERR8: EK = EK::new(c::GENERAL, 9);
+    pub const ERR9: EK = EK::new(c::GENERAL, 10);
+    pub const ERR10: EK = EK::new(c::GENERAL, 11);
+    pub const ERR11: EK = EK::new(c::GENERAL, 12);
+    pub const ERR12: EK = EK::new(c::GENERAL, 13);
+    pub const ERR13: EK = EK::new(c::GENERAL, 14);
+    pub const ERR14: EK = EK::new(c::GENERAL, 15);
+    pub const ERR15: EK = EK::new(c::GENERAL, 16);
+    pub const ERR16: EK = EK::new(c::GENERAL, 17);
+    pub const ERR17: EK = EK::new(c::GENERAL, 18);
+    pub const ERR18: EK = EK::new(c::GENERAL, 19);
+    pub const ERR19: EK = EK::new(c::GENERAL, 20);
+    pub const ERR20: EK = EK::new(c::GENERAL, 21);
+    pub const ERR21: EK = EK::new(c::GENERAL, 22);
+    pub const ERR22: EK = EK::new(c::GENERAL, 23);
+    pub const ERR23: EK = EK::new(c::GENERAL, 24);
+    pub const ERR24: EK = EK::new(c::GENERAL, 25);
+    pub const ERR25: EK = EK::new(c::GENERAL, 26);
+    pub const ERR26: EK = EK::new(c::GENERAL, 27);
+    pub const ERR27: EK = EK::new(c::GENERAL, 28);
+    pub const ERR28: EK = EK::new(c::GENERAL, 29);
+    pub const ERR29: EK = EK::new(c::GENERAL, 30);
+    pub const ERR30: EK = EK::new(c::GENERAL, 31);
+    pub const ERR31: EK = EK::new(c::GENERAL, 32);
+    pub const ERR32: EK = EK::new(c::GENERAL, 33);
+    pub const ERR33: EK = EK::new(c::GENERAL, 34);
+    pub const ERR34: EK = EK::new(c::GENERAL, 35);
+    pub const ERR35: EK = EK::new(c::GENERAL, 36);
+    pub const ERR36: EK = EK::new(c::GENERAL, 37);
+    pub const ERR37: EK = EK::new(c::GENERAL, 38);
+    pub const ERR38: EK = EK::new(c::GENERAL, 39);
+    pub const ERR39: EK = EK::new(c::GENERAL, 40);
+    pub const ERR40: EK = EK::new(c::GENERAL, 41);
+    pub const ERR41: EK = EK::new(c::GENERAL, 42);
+    pub const ERR42: EK = EK::new(c::GENERAL, 43);
+    pub const ERR43: EK = EK::new(c::GENERAL, 44);
+    pub const ERR44: EK = EK::new(c::GENERAL, 45);
+    pub const ERR45: EK = EK::new(c::GENERAL, 46);
+    pub const ERR46: EK = EK::new(c::GENERAL, 47);
+    pub const ERR47: EK = EK::new(c::GENERAL, 48);
+    pub const ERR48: EK = EK::new(c::GENERAL, 49);
+    pub const ERR49: EK = EK::new(c::GENERAL, 50);
+    pub const ERR50: EK = EK::new(c::GENERAL, 51);
+    pub const ERR51: EK = EK::new(c::GENERAL, 52);
+    pub const ERR52: EK = EK::new(c::GENERAL, 53);
+    pub const ERR53: EK = EK::new(c::GENERAL, 54);
+    pub const ERR54: EK = EK::new(c::GENERAL, 55);
+    pub const ERR55: EK = EK::new(c::GENERAL, 56);
+    pub const ERR56: EK = EK::new(c::GENERAL, 57);
+    pub const ERR57: EK = EK::new(c::GENERAL, 58);
+    pub const ERR58: EK = EK::new(c::GENERAL, 59);
+    pub const ERR59: EK = EK::new(c::GENERAL, 60);
+    pub const ERR60: EK = EK::new(c::GENERAL, 61);
+    pub const ERR61: EK = EK::new(c::GENERAL, 62);
+    pub const ERR62: EK = EK::new(c::GENERAL, 63);
+    pub const ERR63: EK = EK::new(c::GENERAL, 64);
+    pub const ERR64: EK = EK::new(c::GENERAL, 65);
+    pub const ERR65: EK = EK::new(c::GENERAL, 66);
+    pub const ERR66: EK = EK::new(c::GENERAL, 67);
+    pub const ERR67: EK = EK::new(c::GENERAL, 68);
+    pub const ERR68: EK = EK::new(c::GENERAL, 69);
+    pub const ERR69: EK = EK::new(c::GENERAL, 70);
+    pub const ERR70: EK = EK::new(c::GENERAL, 71);
+    pub const ERR71: EK = EK::new(c::GENERAL, 72);
+    pub const ERR72: EK = EK::new(c::GENERAL, 73);
+    pub const ERR73: EK = EK::new(c::GENERAL, 74);
+    pub const ERR74: EK = EK::new(c::GENERAL, 75);
+    pub const ERR75: EK = EK::new(c::GENERAL, 76);
+    pub const ERR76: EK = EK::new(c::GENERAL, 77);
+    pub const ERR77: EK = EK::new(c::GENERAL, 78);
+    pub const ERR78: EK = EK::new(c::GENERAL, 79);
+    pub const ERR79: EK = EK::new(c::GENERAL, 80);
+    pub const ERR80: EK = EK::new(c::GENERAL, 81);
+    pub const ERR81: EK = EK::new(c::GENERAL, 82);
+    pub const ERR82: EK = EK::new(c::GENERAL, 83);
+    pub const ERR83: EK = EK::new(c::GENERAL, 84);
+    pub const ERR84: EK = EK::new(c::GENERAL, 85);
+    pub const ERR85: EK = EK::new(c::GENERAL, 86);
+    pub const ERR86: EK = EK::new(c::GENERAL, 87);
+    pub const ERR87: EK = EK::new(c::GENERAL, 88);
+    pub const ERR88: EK = EK::new(c::GENERAL, 89);
+    pub const ERR89: EK = EK::new(c::GENERAL, 90);
+    pub const ERR90: EK = EK::new(c::GENERAL, 91);
+    pub const ERR91: EK = EK::new(c::GENERAL, 92);
+    pub const ERR92: EK = EK::new(c::GENERAL, 93);
+    pub const ERR93: EK = EK::new(c::GENERAL, 94);
+    pub const ERR94: EK = EK::new(c::GENERAL, 95);
+    pub const ERR95: EK = EK::new(c::GENERAL, 96);
+    pub const ERR96: EK = EK::new(c::GENERAL, 97);
+    pub const ERR97: EK = EK::new(c::GENERAL, 98);
+    pub const ERR98: EK = EK::new(c::GENERAL, 99);
+    pub const ERR99: EK = EK::new(c::GENERAL, 100);
+    pub const ERR100: EK = EK::new(c::GENERAL, 101);
+    pub const ERR101: EK = EK::new(c::GENERAL, 102);
+    pub const ERR102: EK = EK::new(c::GENERAL, 103);
+    pub const ERR103: EK = EK::new(c::GENERAL, 104);
+    pub const ERR104: EK = EK::new(c::GENERAL, 105);
+    pub const ERR105: EK = EK::new(c::GENERAL, 106);
+    pub const ERR106: EK = EK::new(c::GENERAL, 107);
+    pub const ERR107: EK = EK::new(c::GENERAL, 108);
+    pub const ERR108: EK = EK::new(c::GENERAL, 109);
+    pub const ERR109: EK = EK::new(c::GENERAL, 110);
+    pub const ERR110: EK = EK::new(c::GENERAL, 111);
+    pub const ERR111: EK = EK::new(c::GENERAL, 112);
+    pub const ERR112: EK = EK::new(c::GENERAL, 113);
+    pub const ERR113: EK = EK::new(c::GENERAL, 114);
+    pub const ERR114: EK = EK::new(c::GENERAL, 115);
+    pub const ERR115: EK = EK::new(c::GENERAL, 116);
+    pub const ERR116: EK = EK::new(c::GENERAL, 117);
+    pub const ERR117: EK = EK::new(c::GENERAL, 118);
+    pub const ERR118: EK = EK::new(c::GENERAL, 119);
+    pub const ERR119: EK = EK::new(c::GENERAL, 120);
+    pub const ERR120: EK = EK::new(c::GENERAL, 121);
+    pub const ERR121: EK = EK::new(c::GENERAL, 122);
+    pub const ERR122: EK = EK::new(c::GENERAL, 123);
+    pub const ERR123: EK = EK::new(c::GENERAL, 124);
+    pub const ERR124: EK = EK::new(c::GENERAL, 125);
+    pub const ERR125: EK = EK::new(c::GENERAL, 126);
+    pub const ERR126: EK = EK::new(c::GENERAL, 127);
+    pub const ERR127: EK = EK::new(c::GENERAL, 128);
+    pub const ERR128: EK = EK::new(c::GENERAL, 129);
+    pub const ERR129: EK = EK::new(c::GENERAL, 130);
+    pub const ERR130: EK = EK::new(c::GENERAL, 131);
+    pub const ERR131: EK = EK::new(c::GENERAL, 132);
+    pub const ERR132: EK = EK::new(c::GENERAL, 133);
+    pub const ERR133: EK = EK::new(c::GENERAL, 134);
+    pub const ERR134: EK = EK::new(c::GENERAL, 135);
+    pub const ERR135: EK = EK::new(c::GENERAL, 136);
+    pub const ERR136: EK = EK::new(c::GENERAL, 137);
+    pub const ERR137: EK = EK::new(c::GENERAL, 138);
+    pub const ERR138: EK = EK::new(c::GENERAL, 139);
+    pub const ERR139: EK = EK::new(c::GENERAL, 140);
+    pub const ERR140: EK = EK::new(c::GENERAL, 141);
+    pub const ERR141: EK = EK::new(c::GENERAL, 142);
+    pub const ERR142: EK = EK::new(c::GENERAL, 143);
+    pub const ERR143: EK = EK::new(c::GENERAL, 144);
+    pub const ERR144: EK = EK::new(c::GENERAL, 145);
+    pub const ERR145: EK = EK::new(c::GENERAL, 146);
+    pub const ERR146: EK = EK::new(c::GENERAL, 147);
+    pub const ERR147: EK = EK::new(c::GENERAL, 148);
+    pub const ERR148: EK = EK::new(c::GENERAL, 149);
+    pub const ERR149: EK = EK::new(c::GENERAL, 150);
+    pub const ERR150: EK = EK::new(c::GENERAL, 151);
+    pub const ERR151: EK = EK::new(c::GENERAL, 152);
+    pub const ERR152: EK = EK::new(c::GENERAL, 153);
+    pub const ERR153: EK = EK::new(c::GENERAL, 154);
+    pub const ERR154: EK = EK::new(c::GENERAL, 155);
+    pub const ERR155: EK = EK::new(c::GENERAL, 156);
+    pub const ERR156: EK = EK::new(c::GENERAL, 157);
+    pub const ERR157: EK = EK::new(c::GENERAL, 158);
+    pub const ERR158: EK = EK::new(c::GENERAL, 159);
+    pub const ERR159: EK = EK::new(c::GENERAL, 160);
+    pub const ERR160: EK = EK::new(c::GENERAL, 161);
+    pub const ERR161: EK = EK::new(c::GENERAL, 162);
+    pub const ERR162: EK = EK::new(c::GENERAL, 163);
+    pub const ERR163: EK = EK::new(c::GENERAL, 164);
+    pub const ERR164: EK = EK::new(c::GENERAL, 165);
+    pub const ERR165: EK = EK::new(c::GENERAL, 166);
+    pub const ERR166: EK = EK::new(c::GENERAL, 167);
+    pub const ERR167: EK = EK::new(c::GENERAL, 168);
+    pub const ERR168: EK = EK::new(c::GENERAL, 169);
+    pub const ERR169: EK = EK::new(c::GENERAL, 170);
+    pub const ERR170: EK = EK::new(c::GENERAL, 171);
+    pub const ERR171: EK = EK::new(c::GENERAL, 172);
+    pub const ERR172: EK = EK::new(c::GENERAL, 173);
+    pub const ERR173: EK = EK::new(c::GENERAL, 174);
+    pub const ERR174: EK = EK::new(c::GENERAL, 175);
+    pub const ERR175: EK = EK::new(c::GENERAL, 176);
+    pub const ERR176: EK = EK::new(c::GENERAL, 177);
+    pub const ERR177: EK = EK::new(c::GENERAL, 178);
+    pub const ERR178: EK = EK::new(c::GENERAL, 179);
+    pub const ERR179: EK = EK::new(c::GENERAL, 180);
+    pub const ERR180: EK = EK::new(c::GENERAL, 181);
+    pub const ERR181: EK = EK::new(c::GENERAL, 182);
+    pub const ERR182: EK = EK::new(c::GENERAL, 183);
+    pub const ERR183: EK = EK::new(c::GENERAL, 184);
+    pub const ERR184: EK = EK::new(c::GENERAL, 185);
+    pub const ERR185: EK = EK::new(c::GENERAL, 186);
+    pub const ERR186: EK = EK::new(c::GENERAL, 187);
+    pub const ERR187: EK = EK::new(c::GENERAL, 188);
+    pub const ERR188: EK = EK::new(c::GENERAL, 189);
+    pub const ERR189: EK = EK::new(c::GENERAL, 190);
+    pub const ERR190: EK = EK::new(c::GENERAL, 191);
+    pub const ERR191: EK = EK::new(c::GENERAL, 192);
+    pub const ERR192: EK = EK::new(c::GENERAL, 193);
+    pub const ERR193: EK = EK::new(c::GENERAL, 194);
+    pub const ERR194: EK = EK::new(c::GENERAL, 195);
+    pub const ERR195: EK = EK::new(c::GENERAL, 196);
+    pub const ERR196: EK = EK::new(c::GENERAL, 197);
+    pub const ERR197: EK = EK::new(c::GENERAL, 198);
+    pub const ERR198: EK = EK::new(c::GENERAL, 199);
+    pub const ERR199: EK = EK::new(c::GENERAL, 200);
+    pub const ERR200: EK = EK::new(c::GENERAL, 201);
+    pub const ERR201: EK = EK::new(c::GENERAL, 202);
+    pub const ERR202: EK = EK::new(c::GENERAL, 203);
+    pub const ERR203: EK = EK::new(c::GENERAL, 204);
+    pub const ERR204: EK = EK::new(c::GENERAL, 205);
+    pub const ERR205: EK = EK::new(c::GENERAL, 206);
+    pub const ERR206: EK = EK::new(c::GENERAL, 207);
+    pub const ERR207: EK = EK::new(c::GENERAL, 208);
+    pub const ERR208: EK = EK::new(c::GENERAL, 209);
+    pub const ERR209: EK = EK::new(c::GENERAL, 210);
+    pub const ERR210: EK = EK::new(c::GENERAL, 211);
+    pub const ERR211: EK = EK::new(c::GENERAL, 212);
+    pub const ERR212: EK = EK::new(c::GENERAL, 213);
+    pub const ERR213: EK = EK::new(c::GENERAL, 214);
+    pub const ERR214: EK = EK::new(c::GENERAL, 215);
+    pub const ERR215: EK = EK::new(c::GENERAL, 216);
+    pub const ERR216: EK = EK::new(c::GENERAL, 217);
+    pub const ERR217: EK = EK::new(c::GENERAL, 218);
+    pub const ERR218: EK = EK::new(c::GENERAL, 219);
+    pub const ERR219: EK = EK::new(c::GENERAL, 220);
+    pub const ERR220: EK = EK::new(c::GENERAL, 221);
+    pub const ERR221: EK = EK::new(c::GENERAL, 222);
+    pub const ERR222: EK = EK::new(c::GENERAL, 223);
+    pub const ERR223: EK = EK::new(c::GENERAL, 224);
+    pub const ERR224: EK = EK::new(c::GENERAL, 225);
+    pub const ERR225: EK = EK::new(c::GENERAL, 226);
+    pub const ERR226: EK = EK::new(c::GENERAL, 227);
+    pub const ERR227: EK = EK::new(c::GENERAL, 228);
+    pub const ERR228: EK = EK::new(c::GENERAL, 229);
+    pub const ERR229: EK = EK::new(c::GENERAL, 230);
+    pub const ERR230: EK = EK::new(c::GENERAL, 231);
+    pub const ERR231: EK = EK::new(c::GENERAL, 232);
+    pub const ERR232: EK = EK::new(c::GENERAL, 233);
+    pub const ERR233: EK = EK::new(c::GENERAL, 234);
+    pub const ERR234: EK = EK::new(c::GENERAL, 235);
+    pub const ERR235: EK = EK::new(c::GENERAL, 236);
+    pub const ERR236: EK = EK::new(c::GENERAL, 237);
+    pub const ERR237: EK = EK::new(c::GENERAL, 238);
+    pub const ERR238: EK = EK::new(c::GENERAL, 239);
+    pub const ERR239: EK = EK::new(c::GENERAL, 240);
+    pub const ERR240: EK = EK::new(c::GENERAL, 241);
+    pub const ERR241: EK = EK::new(c::GENERAL, 242);
+    pub const ERR242: EK = EK::new(c::GENERAL, 243);
+    pub const ERR243: EK = EK::new(c::GENERAL, 244);
+    pub const ERR244: EK = EK::new(c::GENERAL, 245);
+    pub const ERR245: EK = EK::new(c::GENERAL, 246);
+    pub const ERR246: EK = EK::new(c::GENERAL, 247);
+    pub const ERR247: EK = EK::new(c::GENERAL, 248);
+    pub const ERR248: EK = EK::new(c::GENERAL, 249);
+    pub const ERR249: EK = EK::new(c::GENERAL, 250);
+    pub const ERR250: EK = EK::new(c::GENERAL, 251);
+    pub const ERR251: EK = EK::new(c::GENERAL, 252);
+    pub const ERR252: EK = EK::new(c::GENERAL, 253);
+    pub const ERR253: EK = EK::new(c::GENERAL, 254);
+    pub const ERR254: EK = EK::new(c::GENERAL, 255);
+    pub const ERR255: EK = EK::new(c::GENERAL, 256);
 }
 
 

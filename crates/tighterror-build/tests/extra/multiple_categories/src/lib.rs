@@ -13,29 +13,37 @@ pub mod errors {
         use super::*;
 
         // Checks the layout of an error kind with three categories: two
-        // category bits above one variant bit, in a u8. It pins the values
+        // category bits above two variant bits, in a u8. Every category
+        // takes a third variant for the unused variant 0. It pins the values
         // that the generated code holds for this spec.
         #[test]
         fn test_layout() {
             // the bits and the masks
             assert_eq!(_p::CAT_BITS, 2);
-            assert_eq!(_p::VAR_BITS, 1);
-            assert_eq!(_p::KIND_BITS, 3);
-            assert_eq!(_p::VAR_MASK, 0b001);
-            assert_eq!(_p::CAT_MASK, 0b110);
+            assert_eq!(_p::VAR_BITS, 2);
+            assert_eq!(_p::KIND_BITS, 4);
+            assert_eq!(_p::VAR_MASK, 0b0011);
+            assert_eq!(_p::CAT_MASK, 0b1100);
 
             // the kind values, in the underlying type
             let value: u8 = kind::parsing::BAD_TOKEN.value();
-            assert_eq!(value, 0b000);
-            assert_eq!(kind::processing::QUEUE_FULL.value(), 0b011);
-            assert_eq!(kind::general::TIMEOUT.value(), 0b101);
+            assert_eq!(value, 0b0001);
+            assert_eq!(kind::processing::QUEUE_FULL.value(), 0b0110);
+            assert_eq!(kind::general::TIMEOUT.value(), 0b1010);
 
-            // the unused fourth category is rejected
-            assert_eq!(McErrorKind::from_value(0b110), None);
+            // the variant 0 of every category is rejected, the value 0
+            // included
+            assert_eq!(McErrorKind::from_value(0), None);
+            assert_eq!(McErrorKind::from_value(0b0100), None);
+            assert_eq!(McErrorKind::from_value(0b1000), None);
+
+            // the unused variant 3 and the unused fourth category are rejected
+            assert_eq!(McErrorKind::from_value(0b0111), None);
+            assert_eq!(McErrorKind::from_value(0b1101), None);
 
             // a bit above the kind bits is rejected, rather than dropped
-            assert_eq!(McErrorKind::from_value(0b1000), None);
-            assert_eq!(McErrorKind::from_value(0b1101), None);
+            assert_eq!(McErrorKind::from_value(0b10001), None);
+            assert_eq!(McErrorKind::from_value(0b11010), None);
         }
     }
 }

@@ -63,12 +63,12 @@ impl core::fmt::Debug for ErrorCategory {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct ErrorKind(_p::R);
+pub struct ErrorKind(core::num::NonZero<_p::R>);
 
 impl ErrorKind {
     const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
         assert!(cat.0 == _p::CAT_MAX);
-        Self(variant)
+        Self(core::num::NonZero::new(variant).unwrap())
     }
 
 
@@ -80,7 +80,7 @@ impl ErrorKind {
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -107,7 +107,7 @@ impl ErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -115,7 +115,7 @@ impl ErrorKind {
     #[inline]
     pub fn from_value(value: _p::R) -> Option<Self> {
         if value <= _p::VAR_MAXES[0] {
-            Some(Self::new(ErrorCategory::new(0), value))
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -288,7 +288,7 @@ mod _n {
     pub(crate) mod general {
         pub(crate) const TIMEOUT: &str = "TIMEOUT";
         pub(crate) const QUEUE_FULL: &str = "QUEUE_FULL";
-        pub static A: [&str; 2] = [TIMEOUT, QUEUE_FULL];
+        pub static A: [&str; 3] = ["", TIMEOUT, QUEUE_FULL];
     }
 
     pub static A: [&[&str]; 1] = [&general::A];
@@ -298,7 +298,7 @@ mod _d {
     pub(crate) mod general {
         pub(crate) const TIMEOUT: &str = "Operation timed out.";
         pub(crate) const QUEUE_FULL: &str = "Queue is full.";
-        pub static A: [&str; 2] = [TIMEOUT, QUEUE_FULL];
+        pub static A: [&str; 3] = ["", TIMEOUT, QUEUE_FULL];
     }
 
     pub static A: [&[&str]; 1] = [&general::A];
@@ -306,12 +306,12 @@ mod _d {
 
 mod _p {
     pub const CAT_BITS: usize = 0;
-    pub const VAR_BITS: usize = 1;
+    pub const VAR_BITS: usize = 2;
     pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
     pub type R = u64;
     pub const CAT_MAX: R = 0;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 1] = [1];
+    pub static VAR_MAXES: [R; 1] = [2];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
@@ -342,10 +342,10 @@ pub mod kind {
     use super::category as c;
 
     /// Operation timed out.
-    pub const TIMEOUT: EK = EK::new(c::GENERAL, 0);
+    pub const TIMEOUT: EK = EK::new(c::GENERAL, 1);
 
     /// Queue is full.
-    pub const QUEUE_FULL: EK = EK::new(c::GENERAL, 1);
+    pub const QUEUE_FULL: EK = EK::new(c::GENERAL, 2);
 }
 
 
