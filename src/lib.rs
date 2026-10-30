@@ -276,13 +276,15 @@
 //!
 //! By default *tighterror* chooses the smallest unsigned integer that is
 //! large enough to accommodate a required layout. Supported underlying
-//! types are `u8`, `u16`, `u32` and `u64`.
+//! types are `u8`, `u16`, `u32` and `u64`. A module can set one of them
+//! with the `repr` [module setting](#module-settings).
 //!
 //! Note that the layout of *error kind* is packed and may change
 //! during project's lifetime. For example, addition of a new *error variant*
 //! may lead to a left-shift of *category* bits, thus changing the numeric
 //! value of all *error kinds* of the project, and possibly changing the
-//! underlying Rust type to a wider unsigned integer.
+//! underlying Rust type to a wider unsigned integer, unless the module sets
+//! `repr`.
 //! Consequently, *error kinds* should be matched only using named constants
 //! defined by their origin crate. No assumption should be made about a named
 //! constant having any specific numeric value.
@@ -386,11 +388,17 @@
 //! | `result-from-err`      | bool   | `#true`         | Implement `From<Error> for Result<T, Error>`.       |
 //! | `result-from-err-kind` | bool   | `#true`         | Implement `From<ErrorKind> for Result<T, Error>`.   |
 //! | `flat-kinds`           | bool   | `#true`         | Put all error kinds of the module in one namespace. |
+//! | `repr`                 | string | see below       | Underlying type of the [Kind] struct.               |
 //! | `doc-from-display`     | bool   | `#false`        | Default for the errors of the module.               |
 //! | `variant-type`         | bool   | `#false`        | Default for the errors of the module.               |
 //!
 //! The struct names are UpperCamelCase. The default struct docs name the
 //! struct and point at the `kind` or `category` module.
+//!
+//! `repr` is `u8`, `u16`, `u32` or `u64`. By default it is the smallest of
+//! them that holds the error kinds of the module. A set type keeps the type
+//! of `value()` and `from_value()` as the module gains errors, and the
+//! generation fails when the kinds need more bits than it has.
 //!
 //! With `flat-kinds`, the error kinds are `kind::NAME` and the variant
 //! types `variant::types::Name`, so their names are unique in the module.
