@@ -31,8 +31,9 @@ pub mod errors {
             assert_eq!(kind::QUEUE_FULL.value(), 0b010);
             assert_eq!(kind::CONNECTION_REFUSED.value(), 0b101);
 
-            // the error takes the size of the set type
+            // the error, and an Option of it, take the size of the set type
             assert_eq!(core::mem::size_of::<Error>(), 4);
+            assert_eq!(core::mem::size_of::<Option<Error>>(), 4);
 
             // the value 0 and the unused variants of the second category are
             // rejected
@@ -71,8 +72,9 @@ pub mod wide_errors {
             assert_eq!(value, 1);
             assert_eq!(kind::QUEUE_FULL.value(), 2);
 
-            // the error takes the size of the set type
+            // the error, and an Option of it, take the size of the set type
             assert_eq!(core::mem::size_of::<Error>(), 8);
+            assert_eq!(core::mem::size_of::<Option<Error>>(), 8);
 
             // the value 0 and a value past the last variant are rejected
             assert_eq!(ErrorKind::from_value(0), None);

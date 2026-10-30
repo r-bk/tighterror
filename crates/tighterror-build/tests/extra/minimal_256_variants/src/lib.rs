@@ -32,8 +32,9 @@ pub mod errors {
             assert_eq!(ErrorKind::from_value(0), None);
             assert_eq!(ErrorKind::from_value(257), None);
 
-            // the error takes the size of the wider type
+            // the error, and an Option of it, take the size of the wider type
             assert_eq!(core::mem::size_of::<Error>(), 2);
+            assert_eq!(core::mem::size_of::<Option<Error>>(), 2);
         }
     }
 }

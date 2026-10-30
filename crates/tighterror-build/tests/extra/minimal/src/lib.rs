@@ -36,4 +36,16 @@ mod tests {
         let e: anyhow::Error = Error::from(kind::BAD_FILE).into();
         assert_eq!(format!("{e}"), "BAD_FILE");
     }
+
+    // Checks that an Option or a Result of an error takes no more space than
+    // the error: the compiler stores None and Ok(()) in the value that no
+    // error kind uses.
+    #[test]
+    fn test_option_takes_no_extra_space() {
+        use core::mem::size_of;
+        assert_eq!(size_of::<Error>(), 1);
+        assert_eq!(size_of::<Option<Error>>(), 1);
+        assert_eq!(size_of::<Result<(), Error>>(), 1);
+        assert_eq!(size_of::<Option<ErrorKind>>(), 1);
+    }
 }
