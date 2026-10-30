@@ -241,7 +241,7 @@
 //!         // impl Debug for OperationTimeout { /* ... */ }
 //!         // impl Display for OperationTimeout { /* ... */ }
 //!         // impl OperationTimeout { /* ... */ }
-//!         // impl std::error::Error for OperationTimeout {}
+//!         // impl core::error::Error for OperationTimeout {}
 //!     }
 //! }
 //! ```
@@ -369,7 +369,7 @@
 //! file per module in [*separate files* mode](#separate-files-mode). The
 //! `-o, --output` argument of *cargo-tighterror* overrides it.
 //!
-//! `no-std` also turns off `error-trait` and the unit tests that need `std`.
+//! `no-std` turns off the unit tests that need `std`.
 //!
 //! ## Module Settings
 //!
@@ -382,7 +382,7 @@
 //! | `err-doc`              | string | see below       | Doc comment of the [Error] struct.                  |
 //! | `err-kind-doc`         | string | see below       | Doc comment of the [Kind] struct.                   |
 //! | `err-cat-doc`          | string | see below       | Doc comment of the [Category] struct.               |
-//! | `error-trait`          | bool   | `#true`         | Implement `std::error::Error` for the error struct. |
+//! | `error-trait`          | bool   | `#true`         | Implement `core::error::Error` for the error type.  |
 //! | `result-from-err`      | bool   | `#true`         | Implement `From<Error> for Result<T, Error>`.       |
 //! | `result-from-err-kind` | bool   | `#true`         | Implement `From<ErrorKind> for Result<T, Error>`.   |
 //! | `flat-kinds`           | bool   | `#true`         | Put all error kinds of the module in one namespace. |
