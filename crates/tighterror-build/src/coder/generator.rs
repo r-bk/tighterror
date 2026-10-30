@@ -9,6 +9,8 @@ use quote::{format_ident, quote};
 mod bits;
 mod helpers;
 mod module;
+#[cfg(test)]
+mod test_bits;
 
 use module::ModuleGenerator;
 

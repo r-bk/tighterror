@@ -262,7 +262,8 @@ mod _n {
         pub(crate) const NON_UNIQUE_NAME: &str = "NON_UNIQUE_NAME";
         pub(crate) const SPEC_FILE_NOT_FOUND: &str = "SPEC_FILE_NOT_FOUND";
         pub(crate) const NAME_COLLISION: &str = "NAME_COLLISION";
-        pub static A: [&str; 16] = [
+        pub(crate) const BAD_ENUM_VALUE: &str = "BAD_ENUM_VALUE";
+        pub static A: [&str; 17] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
             BAD_KDL,
@@ -279,6 +280,7 @@ mod _n {
             NON_UNIQUE_NAME,
             SPEC_FILE_NOT_FOUND,
             NAME_COLLISION,
+            BAD_ENUM_VALUE,
         ];
     }
 
@@ -293,7 +295,8 @@ mod _n {
         pub(crate) const TOO_MANY_BITS: &str = "TOO_MANY_BITS";
         pub(crate) const OUTPUT_PATH_NOT_DIRECTORY: &str = "OUTPUT_PATH_NOT_DIRECTORY";
         pub(crate) const OUT_DIR_NOT_SET: &str = "OUT_DIR_NOT_SET";
-        pub static A: [&str; 10] = [
+        pub(crate) const REPR_TOO_NARROW: &str = "REPR_TOO_NARROW";
+        pub static A: [&str; 11] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
@@ -304,6 +307,7 @@ mod _n {
             TOO_MANY_BITS,
             OUTPUT_PATH_NOT_DIRECTORY,
             OUT_DIR_NOT_SET,
+            REPR_TOO_NARROW,
         ];
     }
 
@@ -332,7 +336,9 @@ mod _d {
         pub(crate) const NON_UNIQUE_NAME: &str = "A name is not unique.";
         pub(crate) const SPEC_FILE_NOT_FOUND: &str = "Specification file couldn't be found.";
         pub(crate) const NAME_COLLISION: &str = "Collision of names between different items.";
-        pub static A: [&str; 16] = [
+        pub(crate) const BAD_ENUM_VALUE: &str =
+            "Specification value is not one of the allowed values.";
+        pub static A: [&str; 17] = [
             BAD_IDENTIFIER_CHARACTERS,
             BAD_IDENTIFIER_CASE,
             BAD_KDL,
@@ -349,6 +355,7 @@ mod _d {
             NON_UNIQUE_NAME,
             SPEC_FILE_NOT_FOUND,
             NAME_COLLISION,
+            BAD_ENUM_VALUE,
         ];
     }
 
@@ -364,7 +371,9 @@ mod _d {
             "The number of required bits exceeds the largest supported type u64.";
         pub(crate) const OUTPUT_PATH_NOT_DIRECTORY: &str = "Output path is not a directory.";
         pub(crate) const OUT_DIR_NOT_SET: &str = "Environment variable OUT_DIR isn't set.";
-        pub static A: [&str; 10] = [
+        pub(crate) const REPR_TOO_NARROW: &str =
+            "The underlying type has too few bits for the error kinds.";
+        pub static A: [&str; 11] = [
             CATEGORY_REQUIRED,
             ERROR_REQUIRED,
             FAILED_TO_PARSE_TOKENS,
@@ -375,6 +384,7 @@ mod _d {
             TOO_MANY_BITS,
             OUTPUT_PATH_NOT_DIRECTORY,
             OUT_DIR_NOT_SET,
+            REPR_TOO_NARROW,
         ];
     }
 
@@ -383,12 +393,12 @@ mod _d {
 
 mod _p {
     pub const CAT_BITS: usize = 1;
-    pub const VAR_BITS: usize = 4;
+    pub const VAR_BITS: usize = 5;
     pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
     pub type R = u8;
     pub const CAT_MAX: R = 1;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 2] = [15, 9];
+    pub static VAR_MAXES: [R; 2] = [16, 10];
     pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
@@ -466,6 +476,9 @@ pub mod kind {
     /// Collision of names between different items.
     pub const NAME_COLLISION: EK = EK::new(c::PARSER, 15);
 
+    /// Specification value is not one of the allowed values.
+    pub const BAD_ENUM_VALUE: EK = EK::new(c::PARSER, 16);
+
     /// At least one category must be defined.
     pub const CATEGORY_REQUIRED: EK = EK::new(c::CODER, 0);
 
@@ -495,4 +508,7 @@ pub mod kind {
 
     /// Environment variable OUT_DIR isn't set.
     pub const OUT_DIR_NOT_SET: EK = EK::new(c::CODER, 9);
+
+    /// The underlying type has too few bits for the error kinds.
+    pub const REPR_TOO_NARROW: EK = EK::new(c::CODER, 10);
 }

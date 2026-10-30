@@ -1,4 +1,4 @@
-use super::{CategorySpec, ErrorSpec, OverridableErrorSpec, definitions::*, idents};
+use super::{CategorySpec, ErrorSpec, OverridableErrorSpec, ReprType, definitions::*, idents};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ModuleSpec {
@@ -29,6 +29,8 @@ pub struct ModuleSpec {
     /// and not under `mod kind::<category_mod>`.
     /// Requires all error names to be unique per module.
     pub flat_kinds: Option<bool>,
+    /// The underlying type of the error kind
+    pub repr: Option<ReprType>,
     /// Module categories
     pub categories: Vec<CategorySpec>,
 }

@@ -19,8 +19,9 @@ pub const ERR_CAT_NAME: &str = "err-cat-name";
 pub const RESULT_FROM_ERR: &str = "result-from-err";
 pub const RESULT_FROM_ERR_KIND: &str = "result-from-err-kind";
 pub const ERROR_TRAIT: &str = "error-trait";
+pub const REPR: &str = "repr";
 
-pub const ALL_KWS: [&str; 20] = [
+pub const ALL_KWS: [&str; 21] = [
     SPEC,
     MODULE,
     CATEGORY,
@@ -41,6 +42,7 @@ pub const ALL_KWS: [&str; 20] = [
     RESULT_FROM_ERR,
     RESULT_FROM_ERR_KIND,
     ERROR_TRAIT,
+    REPR,
 ];
 
 #[inline]
