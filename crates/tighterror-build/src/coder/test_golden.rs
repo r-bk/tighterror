@@ -54,6 +54,10 @@ const CASES: &[Case] = &[
         ..case("tests/multiple_modules/tighterror.kdl", "multiple_modules")
     },
     build_case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
+    Case {
+        separate_files: true,
+        ..build_case("tests/extra/custom_repr/tighterror.kdl", "custom_repr")
+    },
     case(
         "tests/extra/custom_type_names/tighterror.kdl",
         "custom_type_names.rs",
