@@ -103,7 +103,7 @@ impl McErrorKind {
     /// Creates an error kind from a raw value of the underlying Rust type.
     #[inline]
     pub fn from_value(value: _p::R) -> Option<Self> {
-        let cat = (value & _p::CAT_MASK) >> _p::VAR_BITS;
+        let cat = value >> _p::VAR_BITS;
         let variant = value & _p::VAR_MASK;
         if cat <= _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
             Some(Self::new(McErrorCategory::new(cat), variant))
