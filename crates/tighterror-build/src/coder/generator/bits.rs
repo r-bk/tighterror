@@ -77,8 +77,7 @@ fn calc_n_variant_bits(module: &ModuleSpec) -> Result<usize, TbError> {
             log::error!("at least one error must be defined");
             ERROR_REQUIRED.into()
         }
-        1 => Ok(1),
-        n => calc_n_bits(n, "errors in largest category"),
+        n => calc_n_bits(n + 1, "errors in largest category"),
     }
 }
 

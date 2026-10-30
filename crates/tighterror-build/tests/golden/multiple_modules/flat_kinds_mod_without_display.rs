@@ -63,23 +63,23 @@ impl core::fmt::Debug for ErrorCategory {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct ErrorKind(_p::R);
+pub struct ErrorKind(core::num::NonZero<_p::R>);
 
 impl ErrorKind {
     const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
-        Self(cat.0 << _p::VAR_BITS | variant)
+        Self(core::num::NonZero::new(cat.0 << _p::VAR_BITS | variant).unwrap())
     }
 
 
     #[inline]
     fn category_value(&self) -> _p::R {
-        (self.0 & _p::CAT_MASK) >> _p::VAR_BITS
+        (self.value() & _p::CAT_MASK) >> _p::VAR_BITS
     }
 
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -106,7 +106,7 @@ impl ErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -115,8 +115,8 @@ impl ErrorKind {
     pub fn from_value(value: _p::R) -> Option<Self> {
         let cat = value >> _p::VAR_BITS;
         let variant = value & _p::VAR_MASK;
-        if cat <= _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
-            Some(Self::new(ErrorCategory::new(cat), variant))
+        if cat <= _p::CAT_MAX && variant != 0 && variant <= _p::VAR_MAXES[cat as usize] {
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -290,14 +290,15 @@ mod _n {
     pub(crate) mod cat_one {
         pub(crate) const CAT_ONE_ERR_ONE: &str = "CAT_ONE_ERR_ONE";
         pub(crate) const CAT_ONE_ERR_TWO: &str = "CAT_ONE_ERR_TWO";
-        pub static A: [&str; 2] = [CAT_ONE_ERR_ONE, CAT_ONE_ERR_TWO];
+        pub static A: [&str; 3] = ["", CAT_ONE_ERR_ONE, CAT_ONE_ERR_TWO];
     }
 
     pub(crate) mod cat_two {
         pub(crate) const CAT_TWO_ERR_ONE: &str = "CAT_TWO_ERR_ONE";
         pub(crate) const CAT_TWO_ERR_TWO: &str = "CAT_TWO_ERR_TWO";
         pub(crate) const CAT_TWO_CUSTOM_NAME: &str = "CAT_TWO_CUSTOM_NAME";
-        pub static A: [&str; 3] = [
+        pub static A: [&str; 4] = [
+            "",
             CAT_TWO_ERR_ONE,
             CAT_TWO_ERR_TWO,
             CAT_TWO_CUSTOM_NAME,
@@ -313,7 +314,7 @@ mod _d {
         use super::super::_n;
         const CAT_ONE_ERR_ONE: &str = _n::cat_one::CAT_ONE_ERR_ONE;
         const CAT_ONE_ERR_TWO: &str = _n::cat_one::CAT_ONE_ERR_TWO;
-        pub static A: [&str; 2] = [CAT_ONE_ERR_ONE, CAT_ONE_ERR_TWO];
+        pub static A: [&str; 3] = ["", CAT_ONE_ERR_ONE, CAT_ONE_ERR_TWO];
     }
 
     pub(crate) mod cat_two {
@@ -321,7 +322,8 @@ mod _d {
         const CAT_TWO_ERR_ONE: &str = _n::cat_two::CAT_TWO_ERR_ONE;
         const CAT_TWO_ERR_TWO: &str = _n::cat_two::CAT_TWO_ERR_TWO;
         const CAT_TWO_CUSTOM_NAME: &str = _n::cat_two::CAT_TWO_CUSTOM_NAME;
-        pub static A: [&str; 3] = [
+        pub static A: [&str; 4] = [
+            "",
             CAT_TWO_ERR_ONE,
             CAT_TWO_ERR_TWO,
             CAT_TWO_CUSTOM_NAME,
@@ -339,7 +341,7 @@ mod _p {
     pub type R = u8;
     pub const CAT_MAX: R = 1;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 2] = [1, 2];
+    pub static VAR_MAXES: [R; 2] = [2, 3];
     pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
@@ -374,19 +376,19 @@ pub mod kind {
     use super::category as c;
 
     /// CatOne error #1
-    pub const CAT_ONE_ERR_ONE: EK = EK::new(c::CAT_ONE, 0);
+    pub const CAT_ONE_ERR_ONE: EK = EK::new(c::CAT_ONE, 1);
 
     /// CatOne error #2
-    pub const CAT_ONE_ERR_TWO: EK = EK::new(c::CAT_ONE, 1);
+    pub const CAT_ONE_ERR_TWO: EK = EK::new(c::CAT_ONE, 2);
 
     /// CatTwo error #1
-    pub const CAT_TWO_ERR_ONE: EK = EK::new(c::CAT_TWO, 0);
+    pub const CAT_TWO_ERR_ONE: EK = EK::new(c::CAT_TWO, 1);
 
     /// CatTwo error #2
-    pub const CAT_TWO_ERR_TWO: EK = EK::new(c::CAT_TWO, 1);
+    pub const CAT_TWO_ERR_TWO: EK = EK::new(c::CAT_TWO, 2);
 
     /// A CatTwo error without display string.
-    pub const CAT_TWO_CUSTOM_NAME: EK = EK::new(c::CAT_TWO, 2);
+    pub const CAT_TWO_CUSTOM_NAME: EK = EK::new(c::CAT_TWO, 3);
 }
 
 

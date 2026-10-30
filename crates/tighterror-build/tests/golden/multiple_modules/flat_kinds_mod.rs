@@ -63,23 +63,23 @@ impl core::fmt::Debug for ErrorCategory {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct ErrorKind(_p::R);
+pub struct ErrorKind(core::num::NonZero<_p::R>);
 
 impl ErrorKind {
     const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
-        Self(cat.0 << _p::VAR_BITS | variant)
+        Self(core::num::NonZero::new(cat.0 << _p::VAR_BITS | variant).unwrap())
     }
 
 
     #[inline]
     fn category_value(&self) -> _p::R {
-        (self.0 & _p::CAT_MASK) >> _p::VAR_BITS
+        (self.value() & _p::CAT_MASK) >> _p::VAR_BITS
     }
 
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -106,7 +106,7 @@ impl ErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -115,8 +115,8 @@ impl ErrorKind {
     pub fn from_value(value: _p::R) -> Option<Self> {
         let cat = value >> _p::VAR_BITS;
         let variant = value & _p::VAR_MASK;
-        if cat <= _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
-            Some(Self::new(ErrorCategory::new(cat), variant))
+        if cat <= _p::CAT_MAX && variant != 0 && variant <= _p::VAR_MAXES[cat as usize] {
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -292,7 +292,8 @@ mod _n {
         pub(crate) const CAT_ONE_ERR_TWO: &str = "CAT_ONE_ERR_TWO";
         pub(crate) const CAT_ONE_WITHOUT_DISPLAY: &str = "CAT_ONE_WITHOUT_DISPLAY";
         pub(crate) const CAT_ONE_WITHOUT_DOC: &str = "CAT_ONE_WITHOUT_DOC";
-        pub static A: [&str; 4] = [
+        pub static A: [&str; 5] = [
+            "",
             CAT_ONE_ERR_ONE,
             CAT_ONE_ERR_TWO,
             CAT_ONE_WITHOUT_DISPLAY,
@@ -305,7 +306,8 @@ mod _n {
         pub(crate) const CAT_TWO_ERR_ONE: &str = "CAT_TWO_ERR_ONE";
         pub(crate) const CAT_TWO_ERR_TWO: &str = "CAT_TWO_ERR_TWO";
         pub(crate) const CAT_TWO_WITHOUT_DISPLAY: &str = "CAT_TWO_WITHOUT_DISPLAY";
-        pub static A: [&str; 3] = [
+        pub static A: [&str; 4] = [
+            "",
             CAT_TWO_ERR_ONE,
             CAT_TWO_ERR_TWO,
             CAT_TWO_WITHOUT_DISPLAY,
@@ -323,7 +325,8 @@ mod _d {
         pub(crate) const CAT_ONE_ERR_TWO: &str = "CatOne error #2";
         const CAT_ONE_WITHOUT_DISPLAY: &str = _n::cat_one::CAT_ONE_WITHOUT_DISPLAY;
         pub(crate) const CAT_ONE_WITHOUT_DOC: &str = "An error without doc string.";
-        pub static A: [&str; 4] = [
+        pub static A: [&str; 5] = [
+            "",
             CAT_ONE_ERR_ONE,
             CAT_ONE_ERR_TWO,
             CAT_ONE_WITHOUT_DISPLAY,
@@ -337,7 +340,8 @@ mod _d {
         pub(crate) const CAT_TWO_ERR_ONE: &str = "CatTwo error #1";
         pub(crate) const CAT_TWO_ERR_TWO: &str = "CatTwo error #2";
         const CAT_TWO_WITHOUT_DISPLAY: &str = _n::cat_two::CAT_TWO_WITHOUT_DISPLAY;
-        pub static A: [&str; 3] = [
+        pub static A: [&str; 4] = [
+            "",
             CAT_TWO_ERR_ONE,
             CAT_TWO_ERR_TWO,
             CAT_TWO_WITHOUT_DISPLAY,
@@ -350,12 +354,12 @@ mod _d {
 
 mod _p {
     pub const CAT_BITS: usize = 1;
-    pub const VAR_BITS: usize = 2;
+    pub const VAR_BITS: usize = 3;
     pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
     pub type R = u8;
     pub const CAT_MAX: R = 1;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 2] = [3, 2];
+    pub static VAR_MAXES: [R; 2] = [4, 3];
     pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
@@ -390,25 +394,25 @@ pub mod kind {
     use super::category as c;
 
     /// CatOne error #1
-    pub const CAT_ONE_ERR_ONE: EK = EK::new(c::CAT_ONE, 0);
+    pub const CAT_ONE_ERR_ONE: EK = EK::new(c::CAT_ONE, 1);
 
     /// CatOne error #2
-    pub const CAT_ONE_ERR_TWO: EK = EK::new(c::CAT_ONE, 1);
+    pub const CAT_ONE_ERR_TWO: EK = EK::new(c::CAT_ONE, 2);
 
     /// A CatOne error without display string.
-    pub const CAT_ONE_WITHOUT_DISPLAY: EK = EK::new(c::CAT_ONE, 2);
+    pub const CAT_ONE_WITHOUT_DISPLAY: EK = EK::new(c::CAT_ONE, 3);
 
     /// An error without doc string.
-    pub const CAT_ONE_WITHOUT_DOC: EK = EK::new(c::CAT_ONE, 3);
+    pub const CAT_ONE_WITHOUT_DOC: EK = EK::new(c::CAT_ONE, 4);
 
     /// CatTwo error #1
-    pub const CAT_TWO_ERR_ONE: EK = EK::new(c::CAT_TWO, 0);
+    pub const CAT_TWO_ERR_ONE: EK = EK::new(c::CAT_TWO, 1);
 
     /// CatTwo error #2
-    pub const CAT_TWO_ERR_TWO: EK = EK::new(c::CAT_TWO, 1);
+    pub const CAT_TWO_ERR_TWO: EK = EK::new(c::CAT_TWO, 2);
 
     /// A CatTwo error without display string.
-    pub const CAT_TWO_WITHOUT_DISPLAY: EK = EK::new(c::CAT_TWO, 2);
+    pub const CAT_TWO_WITHOUT_DISPLAY: EK = EK::new(c::CAT_TWO, 3);
 }
 
 

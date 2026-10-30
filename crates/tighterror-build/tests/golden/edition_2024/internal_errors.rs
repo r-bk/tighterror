@@ -63,23 +63,23 @@ impl core::fmt::Debug for ErrorCategory {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct ErrorKind(_p::R);
+pub struct ErrorKind(core::num::NonZero<_p::R>);
 
 impl ErrorKind {
     const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
-        Self(cat.0 << _p::VAR_BITS | variant)
+        Self(core::num::NonZero::new(cat.0 << _p::VAR_BITS | variant).unwrap())
     }
 
 
     #[inline]
     fn category_value(&self) -> _p::R {
-        (self.0 & _p::CAT_MASK) >> _p::VAR_BITS
+        (self.value() & _p::CAT_MASK) >> _p::VAR_BITS
     }
 
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -106,7 +106,7 @@ impl ErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -115,8 +115,8 @@ impl ErrorKind {
     pub fn from_value(value: _p::R) -> Option<Self> {
         let cat = value >> _p::VAR_BITS;
         let variant = value & _p::VAR_MASK;
-        if cat <= _p::CAT_MAX && variant <= _p::VAR_MAXES[cat as usize] {
-            Some(Self::new(ErrorCategory::new(cat), variant))
+        if cat <= _p::CAT_MAX && variant != 0 && variant <= _p::VAR_MAXES[cat as usize] {
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -289,12 +289,12 @@ mod _cn {
 mod _n {
     pub(crate) mod parser {
         pub(crate) const BAD_FILE: &str = "BAD_FILE";
-        pub static A: [&str; 1] = [BAD_FILE];
+        pub static A: [&str; 2] = ["", BAD_FILE];
     }
 
     pub(crate) mod processor {
         pub(crate) const BAD_FILE: &str = "BAD_FILE";
-        pub static A: [&str; 1] = [BAD_FILE];
+        pub static A: [&str; 2] = ["", BAD_FILE];
     }
 
     pub static A: [&[&str]; 2] = [&parser::A, &processor::A];
@@ -303,12 +303,12 @@ mod _n {
 mod _d {
     pub(crate) mod parser {
         pub(crate) const BAD_FILE: &str = "Configuration file is malformed.";
-        pub static A: [&str; 1] = [BAD_FILE];
+        pub static A: [&str; 2] = ["", BAD_FILE];
     }
 
     pub(crate) mod processor {
         pub(crate) const BAD_FILE: &str = "Processor file is malformed or missing.";
-        pub static A: [&str; 1] = [BAD_FILE];
+        pub static A: [&str; 2] = ["", BAD_FILE];
     }
 
     pub static A: [&[&str]; 2] = [&parser::A, &processor::A];
@@ -321,7 +321,7 @@ mod _p {
     pub type R = u8;
     pub const CAT_MAX: R = 1;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 2] = [0, 0];
+    pub static VAR_MAXES: [R; 2] = [1, 1];
     pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
@@ -361,7 +361,7 @@ pub mod kind {
         use super::EK;
 
         /// Configuration file is malformed.
-        pub const BAD_FILE: EK = EK::new(c::PARSER, 0);
+        pub const BAD_FILE: EK = EK::new(c::PARSER, 1);
     }
 
 
@@ -371,7 +371,7 @@ pub mod kind {
         use super::EK;
 
         /// Processor file is malformed or missing.
-        pub const BAD_FILE: EK = EK::new(c::PROCESSOR, 0);
+        pub const BAD_FILE: EK = EK::new(c::PROCESSOR, 1);
     }
 
 }

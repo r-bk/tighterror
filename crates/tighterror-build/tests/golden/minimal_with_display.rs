@@ -63,12 +63,12 @@ impl core::fmt::Debug for ErrorCategory {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(transparent)]
-pub struct ErrorKind(_p::R);
+pub struct ErrorKind(core::num::NonZero<_p::R>);
 
 impl ErrorKind {
     const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
         assert!(cat.0 == _p::CAT_MAX);
-        Self(variant)
+        Self(core::num::NonZero::new(variant).unwrap())
     }
 
 
@@ -80,7 +80,7 @@ impl ErrorKind {
 
     #[inline]
     fn variant_value(&self) -> _p::R {
-        self.0 & _p::VAR_MASK
+        self.value() & _p::VAR_MASK
     }
 
 
@@ -107,7 +107,7 @@ impl ErrorKind {
     /// Returns the error kind value as the underlying Rust type.
     #[inline]
     pub fn value(&self) -> _p::R {
-        self.0
+        self.0.get()
     }
 
 
@@ -115,7 +115,7 @@ impl ErrorKind {
     #[inline]
     pub fn from_value(value: _p::R) -> Option<Self> {
         if value <= _p::VAR_MAXES[0] {
-            Some(Self::new(ErrorCategory::new(0), value))
+            core::num::NonZero::new(value).map(Self)
         } else {
             None
         }
@@ -289,7 +289,7 @@ mod _n {
         pub(crate) const BAD_CONF_FILE: &str = "BAD_CONF_FILE";
         pub(crate) const BAD_ARG: &str = "BAD_ARG";
         pub(crate) const IO_ERROR: &str = "IO_ERROR";
-        pub static A: [&str; 3] = [BAD_CONF_FILE, BAD_ARG, IO_ERROR];
+        pub static A: [&str; 4] = ["", BAD_CONF_FILE, BAD_ARG, IO_ERROR];
     }
 
     pub static A: [&[&str]; 1] = [&general::A];
@@ -300,7 +300,7 @@ mod _d {
         pub(crate) const BAD_CONF_FILE: &str = "Configuration file is malformed.";
         pub(crate) const BAD_ARG: &str = "Invalid argument.";
         pub(crate) const IO_ERROR: &str = "An IO error occurred.";
-        pub static A: [&str; 3] = [BAD_CONF_FILE, BAD_ARG, IO_ERROR];
+        pub static A: [&str; 4] = ["", BAD_CONF_FILE, BAD_ARG, IO_ERROR];
     }
 
     pub static A: [&[&str]; 1] = [&general::A];
@@ -313,7 +313,7 @@ mod _p {
     pub type R = u8;
     pub const CAT_MAX: R = 0;
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
-    pub static VAR_MAXES: [R; 1] = [2];
+    pub static VAR_MAXES: [R; 1] = [3];
     const _: () = assert!(KIND_BITS <= R::BITS as usize);
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
@@ -342,13 +342,13 @@ pub mod kind {
     use super::category as c;
 
     /// Configuration file is malformed.
-    pub const BAD_CONF_FILE: EK = EK::new(c::GENERAL, 0);
+    pub const BAD_CONF_FILE: EK = EK::new(c::GENERAL, 1);
 
     /// Invalid argument.
-    pub const BAD_ARG: EK = EK::new(c::GENERAL, 1);
+    pub const BAD_ARG: EK = EK::new(c::GENERAL, 2);
 
     /// An IO error occurred.
-    pub const IO_ERROR: EK = EK::new(c::GENERAL, 2);
+    pub const IO_ERROR: EK = EK::new(c::GENERAL, 3);
 }
 
 
