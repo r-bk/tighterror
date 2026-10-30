@@ -15,6 +15,9 @@ pub use main::*;
 mod module;
 pub use module::*;
 
+mod repr_type;
+pub use repr_type::*;
+
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Spec {
     /// The specification file path
