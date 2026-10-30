@@ -363,7 +363,7 @@ impl<'a> ModuleGenerator<'a> {
             }
         } else {
             quote! {
-                let cat = (value & #private_mod::CAT_MASK) >> #private_mod::VAR_BITS;
+                let cat = value >> #private_mod::VAR_BITS;
                 let variant = value & #private_mod::VAR_MASK;
                 if cat #category_max_comparison #private_mod::CAT_MAX && variant <= #private_mod::VAR_MAXES[cat as usize] {
                     Some(Self::new(#err_cat_name::new(cat), variant))

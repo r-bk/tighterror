@@ -36,6 +36,10 @@ pub mod errors {
 
             // the unused variant of the second category is rejected
             assert_eq!(ErrorKind::from_value(0b11), None);
+
+            // bits above the kind bits are rejected, rather than dropped
+            assert_eq!(ErrorKind::from_value(0b100), None);
+            assert_eq!(ErrorKind::from_value(1 << 31), None);
         }
     }
 }
