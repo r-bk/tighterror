@@ -9,7 +9,6 @@ use quote::{format_ident, quote};
 mod bits;
 mod helpers;
 mod module;
-mod repr_type;
 
 use module::ModuleGenerator;
 
