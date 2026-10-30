@@ -88,16 +88,9 @@ impl<'a> ModuleGenerator<'a> {
 
     fn private_constants_tokens(&self) -> TokenStream {
         let repr_type = self.bits.repr_type.ident();
-        let n_kind_bits = Literal::usize_unsuffixed(self.bits.kind);
         let n_category_bits = Literal::usize_unsuffixed(self.bits.category);
         let n_variant_bits = Literal::usize_unsuffixed(self.bits.variant);
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
-        let variant_mask = self
-            .u64_to_repr_type_literal(self.bits.variant_mask)
-            .unwrap();
-        let category_mask = self
-            .u64_to_repr_type_literal(self.bits.category_mask)
-            .unwrap();
         let category_max = self
             .usize_to_repr_type_literal(self.module.category_max())
             .unwrap();
@@ -112,17 +105,17 @@ impl<'a> ModuleGenerator<'a> {
             quote! {}
         } else {
             quote! {
-                pub const CAT_MASK: R = #category_mask;
-                pub const VAR_BITS: usize = #n_variant_bits;
+                pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
             }
         };
 
         quote! {
-            pub type R = #repr_type;
-            pub const KIND_BITS: usize = #n_kind_bits;
             pub const CAT_BITS: usize = #n_category_bits;
+            pub const VAR_BITS: usize = #n_variant_bits;
+            pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
+            pub type R = #repr_type;
             pub const CAT_MAX: R = #category_max;
-            pub const VAR_MASK: R = #variant_mask;
+            pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
             pub static VAR_MAXES: [R; #n_categories] = [
                 #(#variant_maxes_iter),*
             ];
@@ -1088,7 +1081,7 @@ impl<'a> ModuleGenerator<'a> {
         }
         let err_kind_name = self.err_kind_name_ident();
         let err_kinds_mod = error_kinds_mod_ident();
-        let repr_type = self.bits.repr_type.ident();
+        let private_mod = private_mod_ident();
         let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
             Literal::usize_unsuffixed(self.module.categories.iter().map(|c| c.errors.len()).sum());
@@ -1098,7 +1091,7 @@ impl<'a> ModuleGenerator<'a> {
                 use #err_kinds_mod::*;
                 use std::collections::HashSet;
                 let errs: [#err_kind_name; #n_errors] = #err_kind_arr;
-                let set = HashSet::<#repr_type>::from_iter(errs.iter().map(|ec| ec.value()));
+                let set = HashSet::<#private_mod::R>::from_iter(errs.iter().map(|ec| ec.value()));
                 assert_eq!(set.len(), #n_errors);
             }
         }
@@ -1341,24 +1334,6 @@ impl<'a> ModuleGenerator<'a> {
 
     fn err_kind_name_ident(&self) -> Ident {
         format_ident!("{}", self.module.err_kind_name())
-    }
-
-    fn u64_to_repr_type_literal(&self, v: u64) -> Result<Literal, TryFromIntError> {
-        match self.bits.repr_type {
-            ReprType::U8 => {
-                let v: u8 = u8::try_from(v)?;
-                Ok(Literal::u8_unsuffixed(v))
-            }
-            ReprType::U16 => {
-                let v: u16 = u16::try_from(v)?;
-                Ok(Literal::u16_unsuffixed(v))
-            }
-            ReprType::U32 => {
-                let v: u32 = u32::try_from(v)?;
-                Ok(Literal::u32_unsuffixed(v))
-            }
-            ReprType::U64 => Ok(Literal::u64_unsuffixed(v)),
-        }
     }
 
     fn usize_to_repr_type_literal(&self, v: usize) -> Result<Literal, TryFromIntError> {
