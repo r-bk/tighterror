@@ -19,17 +19,76 @@
 //!
 //! # Table Of Contents
 //!
-//! 1. [High-Level Overview](#high-level-overview)
+//! 1. [Quick Start](#quick-start)
+//! 1. [Concepts](#concepts)
+//!     * [Layout](#layout)
+//! 1. [Generated API](#generated-api)
 //!     * [Variant Types](#variant-types)
 //!     * [Wrapped Errors](#wrapped-errors)
-//! 1. [Implementation Details](#implementation-details)
-//! 1. [tighterror-build](#tighterror-build)
 //! 1. [Motivation](#motivation)
 //!     * [Error as Trait Object](#error-as-trait-object)
 //!     * [Error as Enum](#error-as-enum)
 //!     * [Source Code Readability](#source-code-readability)
 //!
-//! ## High-Level Overview
+//! # Quick Start
+//!
+//! The errors of a crate are defined in a specification file written in
+//! [KDL](https://kdl.dev), e.g., `tighterror.kdl` in the root directory of
+//! the crate:
+//!
+//! ```kdl
+//! module errors {
+//!     category General {
+//!         error BAD_FILE display="File is invalid."
+//!         error BAD_ARG
+//!     }
+//! }
+//! ```
+//!
+//! The crate depends on *tighterror*, and on [tighterror-build] at build
+//! time:
+//!
+//! ```shell
+//! cargo add tighterror
+//! cargo add --build tighterror-build
+//! ```
+//!
+//! Its build script generates the code:
+//!
+//! ```rust,ignore
+//! // build.rs
+//! fn main() -> Result<(), tighterror_build::errors::TbError> {
+//!     tighterror_build::build()
+//! }
+//! ```
+//!
+//! and [`include_errors`] includes it in a module of the crate:
+//!
+//! ```rust,ignore
+//! /// Crate errors.
+//! pub mod errors {
+//!     tighterror::include_errors!(errors);
+//! }
+//!
+//! use errors::{Error, kind};
+//!
+//! fn check(arg: &str) -> Result<(), Error> {
+//!     if arg.is_empty() {
+//!         return kind::BAD_ARG.into();
+//!     }
+//!     Ok(())
+//! }
+//! ```
+//!
+//! The [specification reference] is in *tighterror-build*.
+//! [cargo-tighterror] writes the code into the source tree instead of a
+//! build script, to keep it under source control.
+//!
+//! [tighterror-build]: https://docs.rs/tighterror-build/latest/tighterror_build
+//! [specification reference]: https://docs.rs/tighterror-build/latest/tighterror_build/#specification-file-reference
+//! [cargo-tighterror]: https://crates.io/crates/cargo-tighterror
+//!
+//! # Concepts
 //!
 //! In its basic form a *tighterror* is a [newtype] around a small non-zero
 //! unsigned integer, e.g., `NonZeroU8`.<br>
@@ -58,34 +117,73 @@
 //! - [`Kind`] for `ErrorKind`
 //! - [`Error`] for `Error`
 //!
-//! The concrete types are auto-generated from a specification file defined in
-//! the user project. The specification file is written in
-//! [KDL](https://kdl.dev). For example, `tighterror.kdl`:
+//! The concrete types are generated from the specification file of the
+//! crate.
 //!
-//! ```kdl
-//! module errors {
-//!     category General {
-//!         error BAD_FILE
-//!         error BAD_ARG
-//!     }
-//! }
+//! An *error kind* is composed of two parts, *error category* and *error
+//! variant*. The *error category* is the group of errors that the *error
+//! kind* belongs to, and lets a caller handle the whole group in one match
+//! arm. The *error variant* identifies the error within its category.
+//!
+//! *Error kind* is an unsigned integer rather than an enum, so that both
+//! parts, and more information in the future, fit in its bits.
+//!
+//! [newtype]: https://doc.rust-lang.org/rust-by-example/generics/new_types.html
+//!
+//! ## Layout
+//!
+//! The following is an example layout of an *error kind* with
+//! allocation of bits suitable for 4 categories with a maximum of 31 errors
+//! within each category:
+//!
+//! ```text
+//!           ┌───┬───┬───┬───┬───┬───┬───┬───┐                      
+//!           │   │   │   │   │   │   │   │   │ (0-4) 5 variant bits
+//!         u8│ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │ (5-6) 2 category bits
+//!           │   │   │   │   │   │   │   │   │ (7-7) 1 reserved bit
+//!           └───┼───┴───┼───┴───┴───┴───┴───┤                      
+//!               │  cat  │      variant      │                      
 //! ```
 //!
-//! The [specification reference] is in the *tighterror-build* crate.
+//! When there is only a single *error category* the number of *category* bits
+//! is 0.
 //!
-//! [specification reference]: https://docs.rs/tighterror-build/latest/tighterror_build/#specification-file-reference
+//! A [wrapped](#wrapped-errors) category stores the whole value of a wrapped
+//! *error kind* as its variant. The variant bits are then at least the
+//! [`Kind::BITS`] of the wrapped kinds, which is known only when the module
+//! is compiled, so the module's kinds grow when the wrapped crate's do. A
+//! module that wraps and sets no `repr` takes its underlying type from
+//! [`Repr`] at compile time.
 //!
-//! The specification file is translated to Rust using a dedicated command
-//! line tool [`cargo-tighterror`] or
-//! using the [`tighterror-build`](#tighterror-build) library:
+//! The value 0 is never an *error kind*: the variants of every category start
+//! at 1. This lets the *error kind* be stored in a `NonZero` integer, e.g.,
+//! `NonZeroU8`, so that `Option<Error>` and `Result<(), Error>` take no more
+//! space than `Error`. Every category takes one variant more for it, which
+//! adds a variant bit when the number of errors in the largest category is a
+//! power of two.
 //!
-//! ```shell
-//! cargo tighterror -o src/errors.rs
-//! ```
+//! By default *tighterror* chooses the smallest unsigned integer that is
+//! large enough to accommodate a required layout. Supported underlying
+//! types are `u8`, `u16`, `u32` and `u64`. A module can set one of them
+//! with the `repr` [module setting][module-settings].
 //!
-//! This creates a module with all the concrete Rust types and
-//! corresponding trait implementations. The error categories and kinds are
-//! placed in the `category` and `kind` sub-modules respectively:
+//! Note that the layout of *error kind* is packed and may change
+//! during project's lifetime. For example, addition of a new *error variant*
+//! may lead to a left-shift of *category* bits, thus changing the numeric
+//! value of all *error kinds* of the project, and possibly changing the
+//! underlying Rust type to a wider unsigned integer, unless the module sets
+//! `repr`.
+//! Consequently, *error kinds* should be matched only using named constants
+//! defined by their origin crate. No assumption should be made about a named
+//! constant having any specific numeric value.
+//!
+//! [module-settings]: https://docs.rs/tighterror-build/latest/tighterror_build/#module-settings
+//!
+//! # Generated API
+//!
+//! The generated module holds the concrete types and their trait
+//! implementations. The error categories and kinds are constants in its
+//! `category` and `kind` sub-modules:
 //!
 //! ```rust
 //! # mod _doc {
@@ -192,7 +290,7 @@
 //! # }
 //! ```
 //!
-//! ### Variant Types
+//! ## Variant Types
 //!
 //! There are many cases when a function has only a single error condition.
 //! Returning an `Error` from such function may be excessive because it causes
@@ -244,7 +342,7 @@
 //! }
 //! ```
 //!
-//! ### Wrapped Errors
+//! ## Wrapped Errors
 //!
 //! A crate can wrap the *tighterror* of a crate it builds on in a category
 //! of its own. The category names the `Error` and `ErrorKind` types of that
@@ -297,100 +395,17 @@
 //! same error converted directly, and it comes back with one `wrapped()` per
 //! crate on the way.
 //!
-//! [newtype]: https://doc.rust-lang.org/rust-by-example/generics/new_types.html
-//!
-//!
-//! ## Implementation Details
-//!
-//! *Error kind* is implemented with an unsigned integer (rather than an enum).
-//! This allows us to embed some additional information in its bits.
-//!
-//! It is composed of two main parts - *error category* and *error variant*.
-//! *Error category* denotes the group of errors a specific *error kind* belongs
-//! to. *Error variant* is a unique identifier of the error within its category.
-//!
-//! The following is an example layout of an *error kind* with
-//! allocation of bits suitable for 4 categories with a maximum of 31 errors
-//! within each category:
-//!
-//! ```text
-//!           ┌───┬───┬───┬───┬───┬───┬───┬───┐                      
-//!           │   │   │   │   │   │   │   │   │ (0-4) 5 variant bits
-//!         u8│ 7 │ 6 │ 5 │ 4 │ 3 │ 2 │ 1 │ 0 │ (5-6) 2 category bits
-//!           │   │   │   │   │   │   │   │   │ (7-7) 1 reserved bit
-//!           └───┼───┴───┼───┴───┴───┴───┴───┤                      
-//!               │  cat  │      variant      │                      
-//! ```
-//!
-//! When there is only a single *error category* the number of *category* bits
-//! is 0.
-//!
-//! A [wrapped](#wrapped-errors) category stores the whole value of a wrapped
-//! *error kind* as its variant. The variant bits are then at least the
-//! [`Kind::BITS`] of the wrapped kinds, which is known only when the module
-//! is compiled, so the module's kinds grow when the wrapped crate's do. A
-//! module that wraps and sets no `repr` takes its underlying type from
-//! [`Repr`] at compile time.
-//!
-//! The value 0 is never an *error kind*: the variants of every category start
-//! at 1. This lets the *error kind* be stored in a `NonZero` integer, e.g.,
-//! `NonZeroU8`, so that `Option<Error>` and `Result<(), Error>` take no more
-//! space than `Error`. Every category takes one variant more for it, which
-//! adds a variant bit when the number of errors in the largest category is a
-//! power of two.
-//!
-//! By default *tighterror* chooses the smallest unsigned integer that is
-//! large enough to accommodate a required layout. Supported underlying
-//! types are `u8`, `u16`, `u32` and `u64`. A module can set one of them
-//! with the `repr` [module setting][module-settings].
-//!
-//! Note that the layout of *error kind* is packed and may change
-//! during project's lifetime. For example, addition of a new *error variant*
-//! may lead to a left-shift of *category* bits, thus changing the numeric
-//! value of all *error kinds* of the project, and possibly changing the
-//! underlying Rust type to a wider unsigned integer, unless the module sets
-//! `repr`.
-//! Consequently, *error kinds* should be matched only using named constants
-//! defined by their origin crate. No assumption should be made about a named
-//! constant having any specific numeric value.
-//!
-//! [`tighterror-build`]: #tighterror-build
-//! [`cargo-tighterror`]: https://crates.io/crates/cargo-tighterror
-//! [module-settings]: https://docs.rs/tighterror-build/latest/tighterror_build/#module-settings
-//!
-//! # tighterror-build
-//!
-//! [tighterror-build][tb-docs] is a library that implements *tighterror*
-//! specification file parsing, processing, and code generation.
-//! The library is usually not a direct dependency of a project that uses the
-//! *tighterror* framework, i.e., it is needed at project's build time,
-//! rather than at project's runtime.
-//! The recommended way to use it is through
-//! [`cargo-tighterror`] command-line utility.
-//! In special cases, when the cargo plugin cannot be used, the library can be
-//! used as a build-dependency of the project, i.e., in `build.rs`.
-//!
-//! See the [library documentation][tb-docs] for more details.
-//!
-//! [tb-docs]: https://docs.rs/tighterror-build/latest/tighterror_build
-//!
 //! # Motivation
 //!
-//! Error handling in general and error representation/reporting in particular
-//! are non-trivial topics in many programming languages.
-//!
-//! Rust simplifies error reporting by introduction of [`Result`] which is
-//! [`must_use`]. This is great, as forgetting to check an error condition
-//! becomes a compilation error. However, a programmer still has a lot of
-//! decisions to make.
+//! Rust makes error reporting hard to forget with [`Result`], which is
+//! [`must_use`]. Choosing the error type is still up to the programmer, and
+//! this section explains the choices that led to *tighterror*.
 //!
 //! [`must_use`]: https://doc.rust-lang.org/reference/attributes/diagnostics.html#the-must_use-attribute
 //!
-//! This rather large section describes the reasons for *tighterror* creation.
-//!
 //! ## Error as Trait Object
 //!
-//! Lets take a look at a function with multiple error conditions:
+//! Let's take a look at a function with multiple error conditions:
 //!
 //! ```compile_fail
 //! use std::{error::Error, fmt::Write, fs::File, io::Read};
@@ -405,147 +420,30 @@
 //! }
 //! ```
 //!
-//! This function has three error cases: `File::open` on line 4,
-//! `Read::read_to_string` on line 6, and `write!` on line 8.
-//! The first two have `io::Error` as the error type, while the third has
-//! `fmt::Error`.
-//! As a consequence this function doesn't compile because the error type
-//! `fmt::Error` is not implicitly convertible to `io::Error` by the `?`
-//! operator:
+//! The function fails to compile: `File::open` and `Read::read_to_string`
+//! fail with `io::Error`, while `write!` fails with `fmt::Error`, which `?`
+//! can't convert into `io::Error`.
 //!
-//! ```text
-//! ---- src/lib.rs - (line 37) stdout ----
-//! error[E0277]: `?` couldn't convert the error to `std::io::Error`
-//!   --> src/lib.rs:45:37
-//!    |
-//! 5  | fn foo() -> Result<String, std::io::Error> {
-//!    |             ------------------------------ expected `std::io::Error` because of this
-//! ...
-//! 10 |     write!(v, "hosts = {:?}", hosts)?;
-//!    |                                     ^ the trait `From<std::fmt::Error>` is not implemented for `std::io::Error`
-//!    |
-//!    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
-//! ...
-//! error: aborting due to previous error
-//! ```
+//! A common solution is an error type that holds any error behind a trait
+//! object, such as `Box<dyn Error>` or [`anyhow::Error`]: every type that
+//! implements `std::error::Error` converts into it. It keeps the
+//! information of the original error, at a cost:
 //!
-//! So, what should be the error type of `foo`?
+//! 1. The conversion allocates memory on the heap.
+//! 1. The error may be much larger than the original one, e.g., when the
+//!    original one is a ZST.
+//! 1. Calling methods of the original error involves dynamic dispatch.
 //!
-//! One solution is to return a type that can "wrap" any type
-//! that implements the `std::error::Error` trait.<br>
-//! For example, `Box<dyn Error>`:
+//! In *tighterror* an error condition is a small unsigned integer, the
+//! *error kind*. A conversion returns a constant value, which is usually
+//! inlined.
 //!
-//! ```rust
-//! use std::{boxed::Box, error::Error, fmt::Write, fs::File, io::Read};
-//!
-//! fn foo() -> Result<String, Box<dyn Error>> {
-//!     let mut f = File::options().read(true).open("/etc/hosts")?;
-//!     let mut hosts = String::new();
-//!     f.read_to_string(&mut hosts)?;
-//!     let mut v = String::new();
-//!     write!(v, "hosts = {:?}", hosts)?;
-//!     Ok(v)
-//! }
-//! ```
-//!
-//! This example compiles successfully because any type that implements
-//! `std::error::Error` is convertible to `Box<dyn Error>` via the
-//! implementations of `From`
-//! [here](https://doc.rust-lang.org/std/boxed/struct.Box.html#impl-From%3CE%3E-for-Box%3Cdyn+Error%3E)
-//! and
-//! [here](https://doc.rust-lang.org/std/boxed/struct.Box.html#impl-From%3CE%3E-for-Box%3Cdyn+Error+%2B+Send+%2B+Sync%3E).
-//!
-//! A more feature-rich solution is provided by the very popular [`anyhow`]
-//! crate:
-//!
-//! [`anyhow`]: https://docs.rs/anyhow/latest/anyhow
-//!
-//! ```rust
-//! use std::{fmt::Write, fs::File, io::Read};
-//!
-//! fn foo() -> Result<String, anyhow::Error> {
-//!     let mut f = File::options().read(true).open("/etc/hosts")?;
-//!     let mut hosts = String::new();
-//!     f.read_to_string(&mut hosts)?;
-//!     let mut v = String::new();
-//!     write!(v, "hosts = {:?}", hosts)?;
-//!     Ok(v)
-//! }
-//! ```
-//!
-//! This works because `anyhow::Error` can be created from any type that
-//! implements `std::error::Error` as implemented
-//! [here](https://docs.rs/anyhow/latest/anyhow/struct.Error.html#impl-From%3CE%3E-for-Error).
-//!
-//! The common technique to both of these solutions is to "hide" a real
-//! error instance behind a trait object allocated on the heap.
-//! This works great in the common case, and also preserves the information
-//! contained in the original error instance.
-//!
-//! However, this convenience has a cost:
-//!
-//! 1. Dynamic memory allocation is made to construct the target error instance.
-//! 1. The size of the target instance (even without the heap-allocated memory)
-//!    may be different from that of the original one, and in some cases may be
-//!    significantly larger, e.g., when the original instance is a ZST.
-//! 1. Calling methods of the "hidden" instance involves dynamic dispatch.
-//!
-//! These costs may be negligible in many projects, but not in all of them.
-//!
-//! In *tighterror* an error condition is identified by a small unique unsigned
-//! integer, i.e., an *error kind*.
-//! Conversion into *tighterror* is very cheap as it entails only a function
-//! call that returns a constant value (which in many cases may be inlined).
+//! [`anyhow::Error`]: https://docs.rs/anyhow/latest/anyhow/struct.Error.html
 //!
 //! ## Error as Enum
 //!
-//! Another solution to support multiple error conditions in a given function
-//! is to enumerate them, i.e., the error type of the function is an `enum`
-//! which has a distinct variant for every error case of the function.
-//!
-//! For example:
-//!
-//! ```rust
-//! use std::{fmt::Write, fs::File, io::Read};
-//!
-//! #[derive(Debug)]
-//! enum Error {
-//!     IoError(std::io::Error),
-//!     FmtError(std::fmt::Error),
-//! }
-//!
-//! impl std::fmt::Display for Error {
-//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-//!         write!(f, "{:?}", self)
-//!     }
-//! }
-//!
-//! impl std::convert::From<std::io::Error> for Error {
-//!     fn from(value: std::io::Error) -> Self {
-//!         Error::IoError(value)
-//!     }
-//! }
-//!
-//! impl std::convert::From<std::fmt::Error> for Error {
-//!     fn from(value: std::fmt::Error) -> Self {
-//!         Error::FmtError(value)
-//!     }
-//! }
-//!
-//! impl std::error::Error for Error {}
-//!
-//! fn foo() -> Result<String, Error> {
-//!     let mut f = File::options().read(true).open("/etc/hosts")?;
-//!     let mut hosts = String::new();
-//!     f.read_to_string(&mut hosts)?;
-//!     let mut v = String::new();
-//!     write!(v, "hosts = {:?}", hosts)?;
-//!     Ok(v)
-//! }
-//! ```
-//! This is a lot of coding to support a single function with two error
-//! conditions. Fortunately, we have [`thiserror`] crate which
-//! makes all of this much shorter:
+//! Another solution is an `enum` with a variant for every error case, which
+//! [`thiserror`] makes short:
 //!
 //! [`thiserror`]: https://docs.rs/thiserror/latest/thiserror
 //!
@@ -570,10 +468,7 @@
 //! }
 //! ```
 //!
-//! This code is pretty short and clean. It preserves the information
-//! contained in the inner errors, and there is no dynamic memory
-//! allocation in translation of inner errors into the outer one.
-//!
+//! It keeps the information of the inner errors without allocating memory.
 //! However, in our opinion, this solution works well only in case of small
 //! units with low amount of error conditions (up to three).
 //! For a large unit, e.g., a library entrypoint, which can fail on numerous
@@ -608,34 +503,14 @@
 //!
 //! ## Source Code Readability
 //!
-//! To mitigate issues 1-3 in [error as enum](#error-as-enum) one can use
-//! `thiserror` to create error kinds from a simple enum without data fields,
-//! like so:
-//!
-//! ```rust
-//! #[derive(thiserror::Error, Debug)]
-//! enum Error {
-//!     #[error("io error")]
-//!     IoError,
-//!     #[error("formatting error")]
-//!     FmtError,
-//! }
-//! ```
-//!
-//! This is simple and clean, and can work well even with a high number of
-//! error variants in the same enum.
-//!
-//! Nevertheless, in our opinion, using constants for error kinds is much more
-//! readable than enum variants. Because constants by Rust coding
-//! convention are written in capital-snake case, e.g., `CONNECTION_REFUSED`,
-//! while enum variants are written in upper-camel case, e.g.,
-//! `ConnectionRefused`, just like structs, traits, unions and enums themselves.
-//! Thus, using constants on error path is more intuitive and easier to spot
-//! during code review because (a) an error kind is expected to be a constant
-//! value, and (b) it stands out and makes the code less cluttered,
-//! i.e., it doesn't add more items of the same
-//! case as structs/traits/unions/enums that themselves appear in source code
-//! pretty frequently.
+//! An enum without data fields mitigates issues 1-3 of [error as
+//! enum](#error-as-enum), and `thiserror` makes it short too. Still, in our
+//! opinion, constants read better than enum variants as error kinds. By Rust
+//! convention constants are written in upper snake case, e.g.,
+//! `CONNECTION_REFUSED`, while enum variants are written in upper camel case,
+//! e.g., `ConnectionRefused`, like structs, traits and enums. An error kind is
+//! expected to be a constant value, and a constant stands out on the error path
+//! during code review.
 
 #![no_std]
 #![forbid(missing_docs)]
