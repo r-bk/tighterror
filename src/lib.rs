@@ -21,6 +21,7 @@
 //!
 //! 1. [High-Level Overview](#high-level-overview)
 //!     * [Variant Types](#variant-types)
+//!     * [Wrapped Errors](#wrapped-errors)
 //! 1. [Implementation Details](#implementation-details)
 //! 1. [Specification File Reference](#specification-file-reference)
 //!     * [Filename](#filename)
@@ -248,6 +249,59 @@
 //! }
 //! ```
 //!
+//! ### Wrapped Errors
+//!
+//! A crate can wrap the *tighterror* of a crate it builds on in a category
+//! of its own. The category names the `Error` and `ErrorKind` types of that
+//! crate, and holds no errors:
+//!
+//! ```kdl
+//! module errors {
+//!     category General {
+//!         error TIMEOUT
+//!     }
+//!     category Text {
+//!         spec {
+//!             error-type text::errors::Error
+//!             kind-type text::errors::ErrorKind
+//!         }
+//!     }
+//! }
+//! ```
+//!
+//! `?` then converts a `text::errors::Error` into the module's `Error`, in
+//! the `TEXT` category. A wrapped error kind keeps the name and the display
+//! text it has in its crate.
+//!
+//! A caller matches a wrapped error kind with the constants of its crate
+//! through `wrapped()`. It gives the wrapped kind back by its type, or
+//! `None` when the kind is in another category, e.g. in a match guard next
+//! to the arms on the module's own kinds:
+//!
+//! ```rust,ignore
+//! match e.kind() {
+//!     k if let Some(t) = k.wrapped() => match t {
+//!         text::errors::kind::NO_FONT => retry(),
+//!         _ => fail(),
+//!     },
+//!     kind::TIMEOUT => wait(),
+//!     _ => fail(),
+//! }
+//! ```
+//!
+//! `wrapped()` is generated only in a module that wraps the errors of
+//! another crate, along with an implementation of [`Wraps`] for every
+//! wrapped kind type.
+//!
+//! The wrapped crate must export both types. A *variant type* of the wrapped
+//! crate converts through that crate's `Error`, as in
+//! `.map_err(text::errors::Error::from)?`.
+//!
+//! An error that reaches the module through another wrapping crate is in
+//! the category of that crate. So it is a different *error kind* than the
+//! same error converted directly, and it comes back with one `wrapped()` per
+//! crate on the way.
+//!
 //! [newtype]: https://doc.rust-lang.org/rust-by-example/generics/new_types.html
 //!
 //!
@@ -275,6 +329,13 @@
 //!
 //! When there is only a single *error category* the number of *category* bits
 //! is 0.
+//!
+//! A [wrapped](#wrapped-errors) category stores the whole value of a wrapped
+//! *error kind* as its variant. The variant bits are then at least the
+//! [`Kind::BITS`] of the wrapped kinds, which is known only when the module
+//! is compiled, so the module's kinds grow when the wrapped crate's do. A
+//! module that wraps and sets no `repr` takes its underlying type from
+//! [`Repr`] at compile time.
 //!
 //! The value 0 is never an *error kind*: the variants of every category start
 //! at 1. This lets the *error kind* be stored in a `NonZero` integer, e.g.,
@@ -314,8 +375,9 @@
 //! ## Structure
 //!
 //! A specification holds one or more `module` nodes. A module holds one or
-//! more `category` nodes, and a category holds one or more `error` nodes.
-//! Each of them takes its name as its single argument.
+//! more `category` nodes, and a category holds one or more `error` nodes,
+//! unless it [wraps](#wrapped-errors) the errors of another crate. Each of
+//! them takes its name as its single argument.
 //!
 //! ```kdl
 //! spec {
@@ -407,7 +469,9 @@
 //! `repr` is `u8`, `u16`, `u32` or `u64`. By default it is the smallest of
 //! them that holds the error kinds of the module. A set type keeps the type
 //! of `value()` and `from_value()` as the module gains errors, and the
-//! generation fails when the kinds need more bits than it has.
+//! generation fails when the kinds need more bits than it has. When the
+//! [wrapped](#wrapped-errors) kinds make them too wide, the compilation
+//! fails instead.
 //!
 //! With `flat-kinds`, the error kinds are `kind::NAME` and the variant
 //! types `variant::types::Name`, so their names are unique in the module.
@@ -422,6 +486,15 @@
 //! | `doc`              | string | none     | Doc comment of the category constant.   |
 //! | `doc-from-display` | bool   | `#false` | Default for the errors of the category. |
 //! | `variant-type`     | bool   | `#false` | Default for the errors of the category. |
+//! | `error-type`       | string | none     | Path of the wrapped [Error] struct.     |
+//! | `kind-type`        | string | none     | Path of the wrapped [Kind] struct.      |
+//!
+//! A category that sets `error-type` and `kind-type`
+//! [wraps](#wrapped-errors) the errors of another crate. It sets both, holds
+//! no errors, sets neither `doc-from-display` nor `variant-type`, and is not
+//! the only category of its module. The paths resolve in the module that
+//! holds the generated code, e.g. `text::errors::Error` for a dependency
+//! `text`.
 //!
 //! ## Error Settings
 //!
@@ -805,7 +878,8 @@
 //! error-specific information, except for the optional meta-data,
 //! e.g., `Location` or `Backtrace`. Representation of 3'rd party *tighterrors*
 //! is done by dedicating an *error category* to the 3'rd party type and
-//! embedding its bits as *error variant* in the outer type.
+//! embedding its bits as *error variant* in the outer type, see
+//! [Wrapped Errors](#wrapped-errors).
 //!
 //! ## Source Code Readability
 //!
