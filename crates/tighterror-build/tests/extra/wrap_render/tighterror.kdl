@@ -10,8 +10,8 @@ module errors {
     category Text {
         spec {
             doc "Errors of the text crate."
-            error-type test_wrap_text::errors::Error
-            kind-type test_wrap_text::errors::ErrorKind
+            wrap-error-type test_wrap_text::errors::Error
+            wrap-kind-type test_wrap_text::errors::ErrorKind
         }
     }
 }

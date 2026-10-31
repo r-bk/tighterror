@@ -262,8 +262,8 @@
 //!     }
 //!     category Text {
 //!         spec {
-//!             error-type text::errors::Error
-//!             kind-type text::errors::ErrorKind
+//!             wrap-error-type text::errors::Error
+//!             wrap-kind-type text::errors::ErrorKind
 //!         }
 //!     }
 //! }
@@ -486,10 +486,10 @@
 //! | `doc`              | string | none     | Doc comment of the category constant.   |
 //! | `doc-from-display` | bool   | `#false` | Default for the errors of the category. |
 //! | `variant-type`     | bool   | `#false` | Default for the errors of the category. |
-//! | `error-type`       | string | none     | Path of the wrapped [Error] struct.     |
-//! | `kind-type`        | string | none     | Path of the wrapped [Kind] struct.      |
+//! | `wrap-error-type`  | string | none     | Path of the wrapped [Error] struct.     |
+//! | `wrap-kind-type`   | string | none     | Path of the wrapped [Kind] struct.      |
 //!
-//! A category that sets `error-type` and `kind-type`
+//! A category that sets `wrap-error-type` and `wrap-kind-type`
 //! [wraps](#wrapped-errors) the errors of another crate. It sets both, holds
 //! no errors, sets neither `doc-from-display` nor `variant-type`, and is not
 //! the only category of its module. The paths resolve in the module that

@@ -255,7 +255,7 @@ fn test_wrapped_category() {
 
     // both types, bare and quoted
     let s = with_wrapping_category(
-        "spec { error-type text::Error; kind-type \"crate::text::ErrorKind\" }",
+        "spec { wrap-error-type text::Error; wrap-kind-type \"crate::text::ErrorKind\" }",
         "",
     );
     let m = &KdlParser::parse_str(&s).unwrap().modules[0];
@@ -269,8 +269,8 @@ fn test_wrapped_category() {
 
     // one type without the other is rejected
     for spec in [
-        "spec { error-type text::Error }",
-        "spec { kind-type text::ErrorKind }",
+        "spec { wrap-error-type text::Error }",
+        "spec { wrap-kind-type text::ErrorKind }",
     ] {
         assert_eq!(
             kind(&with_wrapping_category(spec, "")),
@@ -281,7 +281,7 @@ fn test_wrapped_category() {
 
     // a value that is not a type path is rejected
     for bad in ["\"text::\"", "\"text Error\"", "\"\"", "#true"] {
-        let spec = format!("spec {{ error-type {bad}; kind-type text::ErrorKind }}");
+        let spec = format!("spec {{ wrap-error-type {bad}; wrap-kind-type text::ErrorKind }}");
         let expected = if bad == "#true" {
             BAD_VALUE_TYPE
         } else {
@@ -291,12 +291,13 @@ fn test_wrapped_category() {
     }
 
     // errors, and defaults for errors, are rejected in a wrapping category
-    let spec = "spec { error-type text::Error; kind-type text::ErrorKind }";
+    let spec = "spec { wrap-error-type text::Error; wrap-kind-type text::ErrorKind }";
     let s = with_wrapping_category(spec, "error BAD_GLYPH");
     assert_eq!(kind(&s), BAD_OBJECT_ATTRIBUTE);
     for default in ["doc-from-display #true", "variant-type #false"] {
-        let spec =
-            format!("spec {{ error-type text::Error; kind-type text::ErrorKind; {default} }}");
+        let spec = format!(
+            "spec {{ wrap-error-type text::Error; wrap-kind-type text::ErrorKind; {default} }}"
+        );
         assert_eq!(
             kind(&with_wrapping_category(&spec, "")),
             BAD_OBJECT_ATTRIBUTE,
@@ -310,7 +311,7 @@ fn test_wrapped_category() {
 
     // a module of wrapping categories alone is accepted
     let s = format!(
-        "module errors {{\n category Text {{ {spec} }}\n category Font {{ spec {{ error-type font::Error; kind-type font::ErrorKind }} }}\n}}\n"
+        "module errors {{\n category Text {{ {spec} }}\n category Font {{ spec {{ wrap-error-type font::Error; wrap-kind-type font::ErrorKind }} }}\n}}\n"
     );
     assert_eq!(
         KdlParser::parse_str(&s).unwrap().modules[0]
@@ -321,8 +322,8 @@ fn test_wrapped_category() {
 
     // a type that two categories wrap is rejected
     for other in [
-        "error-type text::Error; kind-type font::ErrorKind",
-        "error-type font::Error; kind-type text::ErrorKind",
+        "wrap-error-type text::Error; wrap-kind-type font::ErrorKind",
+        "wrap-error-type font::Error; wrap-kind-type text::ErrorKind",
     ] {
         let s = format!(
             "module errors {{\n category Text {{ {spec} }}\n category Font {{ spec {{ {other} }} }}\n}}\n"
