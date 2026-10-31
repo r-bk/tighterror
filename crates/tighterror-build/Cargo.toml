@@ -1,6 +1,6 @@
 [package]
 name = "tighterror-build"
-version = "0.0.23"
+version = "0.0.24"
 authors = ["Rafael Buchbinder <rafi@rbk.io>"]
 edition = "2024"
 rust-version = "1.99.1"
@@ -21,7 +21,7 @@ quote = "1.0"
 regex = "1.10"
 syn = { version = "3.0", default-features = false, features = ["derive", "parsing"] }
 tempfile = "3.10.0"
-tighterror = { path = "../..", version = "0.0.23" }
+tighterror = { path = "../..", version = "0.0.24" }
 
 [dev-dependencies]
 env_logger = "0.11.1"
