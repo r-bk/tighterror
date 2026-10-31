@@ -862,4 +862,7 @@ pub use repr::*;
 mod variant_type;
 pub use variant_type::*;
 
+mod wraps;
+pub use wraps::*;
+
 mod macros;
