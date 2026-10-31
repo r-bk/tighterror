@@ -7,15 +7,15 @@ module errors {
     category Render {
         spec {
             doc "Errors of the render crate."
-            error-type test_wrap_render::errors::Error
-            kind-type test_wrap_render::errors::ErrorKind
+            wrap-error-type test_wrap_render::errors::Error
+            wrap-kind-type test_wrap_render::errors::ErrorKind
         }
     }
     category Text {
         spec {
             doc "Errors of the text crate."
-            error-type test_wrap_text::errors::Error
-            kind-type test_wrap_text::errors::ErrorKind
+            wrap-error-type test_wrap_text::errors::Error
+            wrap-kind-type test_wrap_text::errors::ErrorKind
         }
     }
     category Io {
@@ -28,15 +28,15 @@ module relay {
     category Render {
         spec {
             doc "Errors of the render crate."
-            error-type test_wrap_render::errors::Error
-            kind-type test_wrap_render::errors::ErrorKind
+            wrap-error-type test_wrap_render::errors::Error
+            wrap-kind-type test_wrap_render::errors::ErrorKind
         }
     }
     category Text {
         spec {
             doc "Errors of the text crate."
-            error-type test_wrap_text::errors::Error
-            kind-type test_wrap_text::errors::ErrorKind
+            wrap-error-type test_wrap_text::errors::Error
+            wrap-kind-type test_wrap_text::errors::ErrorKind
         }
     }
 }

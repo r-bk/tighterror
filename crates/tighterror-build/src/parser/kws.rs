@@ -20,8 +20,8 @@ pub const RESULT_FROM_ERR: &str = "result-from-err";
 pub const RESULT_FROM_ERR_KIND: &str = "result-from-err-kind";
 pub const ERROR_TRAIT: &str = "error-trait";
 pub const REPR: &str = "repr";
-pub const ERROR_TYPE: &str = "error-type";
-pub const KIND_TYPE: &str = "kind-type";
+pub const WRAP_ERROR_TYPE: &str = "wrap-error-type";
+pub const WRAP_KIND_TYPE: &str = "wrap-kind-type";
 
 pub const ALL_KWS: [&str; 23] = [
     SPEC,
@@ -45,8 +45,8 @@ pub const ALL_KWS: [&str; 23] = [
     RESULT_FROM_ERR_KIND,
     ERROR_TRAIT,
     REPR,
-    ERROR_TYPE,
-    KIND_TYPE,
+    WRAP_ERROR_TYPE,
+    WRAP_KIND_TYPE,
 ];
 
 #[inline]

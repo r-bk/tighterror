@@ -222,8 +222,8 @@ impl<'a> KdlParser<'a> {
                     DOC => c.doc = Some(self.string(key, sn, v)?),
                     DOC_FROM_DISPLAY => c.oes.doc_from_display = Some(self.boolean(key, sn, v)?),
                     VARIANT_TYPE => c.oes.variant_type = Some(self.boolean(key, sn, v)?),
-                    ERROR_TYPE => error_type = Some(self.type_path(key, sn, v)?),
-                    KIND_TYPE => kind_type = Some(self.type_path(key, sn, v)?),
+                    WRAP_ERROR_TYPE => error_type = Some(self.type_path(key, sn, v)?),
+                    WRAP_KIND_TYPE => kind_type = Some(self.type_path(key, sn, v)?),
                     _ => return self.unknown_setting(CATEGORY, key, sn),
                 }
             }
@@ -237,7 +237,7 @@ impl<'a> KdlParser<'a> {
             (None, None) => None,
             (Some(_), None) | (None, Some(_)) => {
                 error!(
-                    "{}: category `{}` sets one of `{ERROR_TYPE}` and `{KIND_TYPE}` without the other",
+                    "{}: category `{}` sets one of `{WRAP_ERROR_TYPE}` and `{WRAP_KIND_TYPE}` without the other",
                     self.node_pos(n),
                     c.name
                 );
