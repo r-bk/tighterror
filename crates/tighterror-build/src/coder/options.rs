@@ -76,7 +76,9 @@ impl CodegenOptions {
     /// Sets the output path.
     ///
     /// This can be either an absolute path, a relative path, or hyphen `-`.
-    /// A relative path is relative to the location of the specification file.
+    /// A relative path is relative to the working directory, unlike the
+    /// `output` setting of the specification file, which is relative to the
+    /// file.
     ///
     /// If the path points to an existing directory the behavior depends on
     /// *separate files* mode. If *separate files* is disabled the output is
