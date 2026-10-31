@@ -1,0 +1,15 @@
+module errors {
+    spec {
+        doc-from-display #true
+        repr u64
+    }
+    category Glyph {
+        spec { doc "Glyph errors category." }
+        error BAD_GLYPH display="Glyph is invalid."
+        error NO_FONT display="Font is missing."
+    }
+    category Layout {
+        spec { doc "Layout errors category." }
+        error OVERFLOW display="Line overflows."
+    }
+}

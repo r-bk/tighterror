@@ -1,0 +1,708 @@
+
+/**
+ * Error category type.
+ *
+ * See the [category] module for category constants.
+ */
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
+pub struct ErrorCategory(_p::R);
+
+impl ErrorCategory {
+    #[inline]
+    const fn new(v: _p::R) -> Self {
+        Self(v)
+    }
+
+
+    /// Returns the name of the error category.
+    #[inline]
+    pub fn name(&self) -> &'static str {
+        _cn::A[self.0 as usize]
+    }
+
+}
+
+
+impl tighterror::Category for ErrorCategory {
+    type R = _p::R;
+    const BITS: usize = _p::CAT_BITS;
+
+    #[inline]
+    fn name(&self) -> &'static str {
+        self.name()
+    }
+
+}
+
+
+impl core::fmt::Display for ErrorCategory {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.pad(self.name())
+    }
+
+}
+
+
+impl core::fmt::Debug for ErrorCategory {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("ErrorCategory").field(&_p::Ident(self.name())).finish()
+    }
+
+}
+
+
+/**
+ * Error kind type.
+ *
+ * See the [kind] module for error kind constants.
+ */
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
+pub struct ErrorKind(core::num::NonZero<_p::R>);
+
+impl ErrorKind {
+    const fn new(cat: ErrorCategory, variant: _p::R) -> Self {
+        Self(core::num::NonZero::new(cat.0 << _p::VAR_BITS | variant).unwrap())
+    }
+
+    const WRAPPED_BITS: [usize; 1] = [
+        <test_wrap_text::errors::ErrorKind as tighterror::Kind>::BITS,
+    ];
+
+
+    #[inline]
+    fn wrapped_kind<K>(variant: _p::R) -> Option<K>
+    where
+        K: tighterror::Kind,
+        K::R: core::convert::TryFrom<_p::R>,
+    {
+        <K::R as core::convert::TryFrom<_p::R>>::try_from(variant)
+            .ok()
+            .and_then(K::from_value)
+    }
+
+
+    /// Returns the wrapped error kind of type `K`, or `None` for a kind of another category.
+    #[inline]
+    pub fn wrapped<K>(&self) -> Option<K>
+    where
+        Self: tighterror::Wraps<K>,
+        K: tighterror::Kind,
+        K::R: core::convert::TryFrom<_p::R>,
+    {
+        if self.category() == <Self as tighterror::Wraps<K>>::CATEGORY {
+            Self::wrapped_kind(self.variant_value())
+        } else {
+            None
+        }
+
+    }
+
+
+    #[inline]
+    fn category_value(&self) -> _p::R {
+        (self.value() & _p::CAT_MASK) >> _p::VAR_BITS
+    }
+
+
+    #[inline]
+    fn variant_value(&self) -> _p::R {
+        self.value() & _p::VAR_MASK
+    }
+
+
+    /// Returns the error category.
+    #[inline]
+    pub fn category(&self) -> ErrorCategory {
+        ErrorCategory::new(self.category_value())
+    }
+
+
+    /// Returns the error kind name.
+    #[inline]
+    pub fn name(&self) -> &'static str {
+        match self.category() {
+            category::TEXT => {
+                tighterror::Kind::name(
+                    &self.wrapped::<test_wrap_text::errors::ErrorKind>().unwrap(),
+                )
+            }
+
+            _ => _n::A[self.category_value() as usize][self.variant_value() as usize],
+        }
+
+    }
+
+
+    #[inline]
+    fn display(&self) -> &'static str {
+        _d::A[self.category_value() as usize][self.variant_value() as usize]
+    }
+
+
+    /// Returns the error kind value as the underlying Rust type.
+    #[inline]
+    pub fn value(&self) -> _p::R {
+        self.0.get()
+    }
+
+
+    /// Creates an error kind from a raw value of the underlying Rust type.
+    #[inline]
+    pub fn from_value(value: _p::R) -> Option<Self> {
+        let cat = value >> _p::VAR_BITS;
+        let variant = value & _p::VAR_MASK;
+        match ErrorCategory::new(cat) {
+            category::TEXT => {
+                Self::wrapped_kind::<test_wrap_text::errors::ErrorKind>(variant)?;
+                core::num::NonZero::new(value).map(Self)
+            }
+
+            _ => {
+                if cat <= _p::CAT_MAX && variant != 0
+                    && variant <= _p::VAR_MAXES[cat as usize]
+                {
+                    core::num::NonZero::new(value).map(Self)
+                } else {
+                    None
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
+
+impl tighterror::Kind for ErrorKind {
+    type R = _p::R;
+    type Category = ErrorCategory;
+    const BITS: usize = _p::KIND_BITS;
+
+    #[inline]
+    fn category(&self) -> Self::Category {
+        self.category()
+    }
+
+
+    #[inline]
+    fn name(&self) -> &'static str {
+        self.name()
+    }
+
+
+    #[inline]
+    fn value(&self) -> Self::R {
+        self.value()
+    }
+
+
+    #[inline]
+    fn from_value(value: Self::R) -> Option<Self> {
+        Self::from_value(value)
+    }
+
+}
+
+
+impl core::fmt::Display for ErrorKind {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.pad(self.name())
+    }
+
+}
+
+
+impl core::fmt::Debug for ErrorKind {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("ErrorKind")
+            .field("cat", &_p::Ident(self.category().name()))
+            .field("var", &_p::Ident(self.name()))
+            .field("val", &self.0)
+            .finish()
+    }
+
+}
+
+
+impl<T> core::convert::From<ErrorKind> for Result<T, Error> {
+    #[inline]
+    fn from(v: ErrorKind) -> Self {
+        Err(v.into())
+    }
+
+}
+
+
+impl tighterror::Wraps<test_wrap_text::errors::ErrorKind> for ErrorKind {
+    const CATEGORY: ErrorCategory = category::TEXT;
+}
+
+
+impl core::convert::From<test_wrap_text::errors::ErrorKind> for ErrorKind {
+    #[inline]
+    fn from(k: test_wrap_text::errors::ErrorKind) -> Self {
+        Self::new(category::TEXT, tighterror::Kind::value(&k) as _p::R)
+    }
+
+}
+
+
+/**
+ * Error type.
+ *
+ * See the [kind] module for error kind constants.
+ */
+
+#[derive(Debug)]
+#[repr(transparent)]
+pub struct Error(ErrorKind);
+
+impl Error {
+    /// Returns the error kind.
+    #[inline]
+    pub fn kind(&self) -> ErrorKind {
+        self.0
+    }
+
+
+    /// Returns the error category.
+    #[inline]
+    pub fn category(&self) -> ErrorCategory {
+        self.0.category()
+    }
+
+
+    /// Returns the error origin location.
+    #[inline]
+    pub fn location(&self) -> tighterror::Location {
+        tighterror::Location::undefined()
+    }
+
+}
+
+
+impl tighterror::Error for Error {
+    type R = _p::R;
+    type Category = ErrorCategory;
+    type Kind = ErrorKind;
+
+    #[inline]
+    fn kind(&self) -> Self::Kind {
+        self.kind()
+    }
+
+
+    #[inline]
+    fn location(&self) -> tighterror::Location {
+        self.location()
+    }
+
+}
+
+
+impl core::convert::From<ErrorKind> for Error {
+    #[inline]
+    fn from(kind: ErrorKind) -> Self {
+        Self(kind)
+    }
+
+}
+
+
+impl core::fmt::Display for Error {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self.category() {
+            category::TEXT => {
+                let e = <test_wrap_text::errors::Error as core::convert::From<
+                    test_wrap_text::errors::ErrorKind,
+                >>::from(self.0.wrapped().unwrap());
+                core::fmt::Display::fmt(&e, f)
+            }
+
+            _ => f.pad(self.kind().display()),
+        }
+
+    }
+
+}
+
+
+impl core::cmp::PartialEq for Error {
+    /// Checks equality based on the error kind only.
+    #[inline]
+    fn eq(&self, other: &Error) -> bool {
+        self.0 == other.0
+    }
+
+}
+
+
+impl<T> core::convert::From<Error> for core::result::Result<T, Error> {
+    #[inline]
+    fn from(err: Error) -> Self {
+        Err(err)
+    }
+
+}
+
+
+impl core::error::Error for Error {}
+
+const _: fn(&test_wrap_text::errors::Error) -> test_wrap_text::errors::ErrorKind = <test_wrap_text::errors::Error as tighterror::Error>::kind;
+
+impl core::convert::From<test_wrap_text::errors::Error> for Error {
+    #[inline]
+    fn from(e: test_wrap_text::errors::Error) -> Self {
+        Self(tighterror::Error::kind(&e).into())
+    }
+
+}
+
+mod _cn {
+    pub const GENERAL: &str = "GENERAL";
+    pub const TEXT: &str = "TEXT";
+    pub static A: [&str; 2] = [GENERAL, TEXT];
+}
+
+mod _n {
+    pub(crate) mod general {
+        pub(crate) const TIMEOUT: &str = "TIMEOUT";
+        pub(crate) const BAD_ARG: &str = "BAD_ARG";
+        pub static A: [&str; 3] = ["", TIMEOUT, BAD_ARG];
+    }
+
+    pub static A: [&[&str]; 2] = [&general::A, &[]];
+}
+
+mod _d {
+    pub(crate) mod general {
+        pub(crate) const TIMEOUT: &str = "Operation timed out.";
+        pub(crate) const BAD_ARG: &str = "Invalid argument received.";
+        pub static A: [&str; 3] = ["", TIMEOUT, BAD_ARG];
+    }
+
+    pub static A: [&[&str]; 2] = [&general::A, &[]];
+}
+
+mod _p {
+    pub const CAT_BITS: usize = 1;
+    pub const VAR_BITS: usize = var_bits(2, &super::ErrorKind::WRAPPED_BITS);
+    pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
+    pub type R = <tighterror::Bits<KIND_BITS> as tighterror::Repr>::R;
+    pub const CAT_MAX: R = 1;
+    pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
+    pub static VAR_MAXES: [R; 2] = [2, 0];
+    pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
+    const _: () = assert!(KIND_BITS <= R::BITS as usize);
+    const _: () = assert!(CAT_BITS <= usize::BITS as usize);
+
+    const fn var_bits(own: usize, wrapped: &[usize]) -> usize {
+        let mut bits = own;
+        let mut i = 0;
+        while i < wrapped.len() {
+            if wrapped[i] > bits {
+                bits = wrapped[i];
+            }
+
+            i += 1;
+        }
+
+        bits
+    }
+
+    pub(super) struct Ident<'a>(pub(super) &'a str);
+
+    impl core::fmt::Debug for Ident<'_> {
+        #[inline]
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            f.pad(self.0)
+        }
+
+    }
+
+}
+
+
+/// Error category constants.
+pub mod category {
+    use super::ErrorCategory as C;
+
+    /// General errors category.
+    pub const GENERAL: C = C::new(0);
+
+    /// Errors of the text crate.
+    pub const TEXT: C = C::new(1);
+}
+
+
+/// Error kind constants.
+pub mod kind {
+    use super::ErrorKind as EK;
+    use super::category as c;
+
+    /// Operation timed out.
+    pub const TIMEOUT: EK = EK::new(c::GENERAL, 1);
+
+    /// Invalid argument received.
+    pub const BAD_ARG: EK = EK::new(c::GENERAL, 2);
+}
+
+
+/// Error variant types and constants.
+pub mod variant {
+
+    /// Error variant types.
+    pub mod types {
+        use super::super::{
+            _d, _p, _cn, _n, category, kind, ErrorKind, Error, ErrorCategory,
+        };
+
+        /// Invalid argument received.
+        #[derive(Clone, Copy)]
+        #[non_exhaustive]
+        pub struct BadArg;
+
+        impl BadArg {
+            /// Returns the struct name.
+            #[inline]
+            pub fn name(&self) -> &'static str {
+                <BadArg as tighterror::VariantType>::NAME
+            }
+
+
+            /// Returns the error kind constant.
+            #[inline]
+            pub fn kind(&self) -> ErrorKind {
+                <BadArg as tighterror::VariantType>::KIND
+            }
+
+
+            /// Returns the error category constant.
+            #[inline]
+            pub fn category(&self) -> ErrorCategory {
+                <BadArg as tighterror::VariantType>::CATEGORY
+            }
+
+        }
+
+
+        impl core::fmt::Display for BadArg {
+            #[inline]
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                f.pad(_d::general::BAD_ARG)
+            }
+
+        }
+
+
+        impl core::fmt::Debug for BadArg {
+            #[inline]
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                f.debug_struct("BadArg")
+                    .field("cat", &_p::Ident(_cn::GENERAL))
+                    .field("var", &_p::Ident(_n::general::BAD_ARG))
+                    .finish()
+            }
+
+        }
+
+
+        impl tighterror::VariantType for BadArg {
+            type R = _p::R;
+            type Category = ErrorCategory;
+            type Kind = ErrorKind;
+            const CATEGORY: Self::Category = category::GENERAL;
+            const KIND: Self::Kind = kind::BAD_ARG;
+            const NAME: &'static str = "BadArg";
+        }
+
+
+        impl core::convert::From<BadArg> for ErrorKind {
+            #[inline]
+            fn from(_: BadArg) -> ErrorKind {
+                <BadArg as tighterror::VariantType>::KIND
+            }
+
+        }
+
+
+        impl core::convert::From<BadArg> for Error {
+            #[inline]
+            fn from(_: BadArg) -> Self {
+                <BadArg as tighterror::VariantType>::KIND.into()
+            }
+
+        }
+
+
+        impl<T> core::convert::From<BadArg> for core::result::Result<T, Error> {
+            #[inline]
+            fn from(_: BadArg) -> Self {
+                <BadArg as tighterror::VariantType>::KIND.into()
+            }
+
+        }
+
+
+        impl<T> core::convert::From<BadArg> for core::result::Result<T, BadArg> {
+            #[inline]
+            fn from(v: BadArg) -> Self {
+                Err(v)
+            }
+
+        }
+
+
+        impl core::error::Error for BadArg {}
+
+    }
+
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_category_name() {
+        use category::*;
+        assert_eq!(GENERAL.name(), "GENERAL");
+        assert_eq!(tighterror::Category::name(& GENERAL), "GENERAL");
+        assert_eq!(TEXT.name(), "TEXT");
+        assert_eq!(tighterror::Category::name(& TEXT), "TEXT")
+    }
+
+
+    #[test]
+    fn test_category_display() {
+        use category::*;
+        assert_eq!(format!("{}", GENERAL), "GENERAL");
+        assert_eq!(format!("{}", TEXT), "TEXT");
+    }
+
+
+    #[test]
+    fn test_category_uniqueness() {
+        use category::*;
+        use std::collections::HashSet;
+        let cats: [ErrorCategory; 2] = [GENERAL, TEXT];
+        let set = HashSet::<ErrorCategory>::from_iter(cats);
+        assert_eq!(set.len(), 2);
+    }
+
+
+    #[test]
+    fn test_category_values() {
+        use category::*;
+        let cats: [ErrorCategory; 2] = [GENERAL, TEXT];
+        for c in cats {
+            assert!(c.0 <= 1);
+        }
+
+    }
+
+
+    #[test]
+    fn test_err_kind_name() {
+        use kind::*;
+        assert_eq!(TIMEOUT.name(), "TIMEOUT");
+        assert_eq!(tighterror::Kind::name(& TIMEOUT), "TIMEOUT");
+        assert_eq!(BAD_ARG.name(), "BAD_ARG");
+        assert_eq!(tighterror::Kind::name(& BAD_ARG), "BAD_ARG");
+    }
+
+
+    #[test]
+    fn test_err_kind_display() {
+        use kind::*;
+        assert_eq!(format!("{}", TIMEOUT), "TIMEOUT");
+        assert_eq!(format!("{}", BAD_ARG), "BAD_ARG");
+    }
+
+
+    #[test]
+    fn test_err_kind_uniqueness() {
+        use kind::*;
+        use std::collections::HashSet;
+        let errs: [ErrorKind; 2] = [TIMEOUT, BAD_ARG];
+        let set = HashSet::<ErrorKind>::from_iter(errs);
+        assert_eq!(set.len(), 2);
+    }
+
+
+    #[test]
+    fn test_err_kind_value_uniqueness() {
+        use kind::*;
+        use std::collections::HashSet;
+        let errs: [ErrorKind; 2] = [TIMEOUT, BAD_ARG];
+        let set = HashSet::<_p::R>::from_iter(errs.iter().map(|ec| ec.value()));
+        assert_eq!(set.len(), 2);
+    }
+
+
+    #[test]
+    fn test_err_kind_category() {
+        use kind::*;
+        assert_eq!(TIMEOUT.category(), category::GENERAL);
+        assert_eq!(BAD_ARG.category(), category::GENERAL);
+    }
+
+
+    #[test]
+    fn test_err_kind_from_value() {
+        use kind::*;
+        assert_eq!(ErrorKind::from_value(TIMEOUT.value()).unwrap(), TIMEOUT);
+        assert_eq!(ErrorKind::from_value(BAD_ARG.value()).unwrap(), BAD_ARG);
+    }
+
+
+    #[test]
+    fn test_err_display() {
+        use kind::*;
+        assert_eq!(format!("{}", Error::from(TIMEOUT)), "Operation timed out.");
+        assert_eq!(format!("{}", Error::from(BAD_ARG)), "Invalid argument received.");
+    }
+
+
+    #[test]
+    fn test_variant_types_display() {
+        use variant::types::*;
+        assert_eq!(format!("{}", BadArg), "Invalid argument received.");
+    }
+
+
+    #[test]
+    fn test_variant_types_to_kind() {
+        use variant::types::*;
+        assert_eq!(ErrorKind::from(BadArg), kind::BAD_ARG);
+    }
+
+
+    #[test]
+    fn test_variant_types_to_error() {
+        use variant::types::*;
+        assert_eq!(Error::from(BadArg).kind(), kind::BAD_ARG);
+    }
+
+
+    #[test]
+    fn test_variant_types_to_result() {
+        use variant::types::*;
+        let res: Result<(), Error> = BadArg.into();
+        assert_eq!(res.unwrap_err().kind(), kind::BAD_ARG);
+    }
+
+}
+

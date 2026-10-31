@@ -95,6 +95,12 @@ const CASES: &[Case] = &[
         "tests/extra/multiple_modules_one_file/tighterror.kdl",
         "multiple_modules_one_file.rs",
     ),
+    Case {
+        separate_files: true,
+        ..build_case("tests/extra/wrap_app/tighterror.kdl", "wrap_app")
+    },
+    build_case("tests/extra/wrap_render/tighterror.kdl", "wrap_render.rs"),
+    build_case("tests/extra/wrap_text/tighterror.kdl", "wrap_text.rs"),
 ];
 
 fn crate_root() -> &'static Path {

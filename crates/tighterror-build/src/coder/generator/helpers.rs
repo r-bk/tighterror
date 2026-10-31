@@ -1,6 +1,7 @@
 use crate::coder::idents;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
+use std::str::FromStr;
 
 fn _handle_multiline_doc(doc: &str) -> String {
     let n_lines = doc.lines().count();
@@ -82,6 +83,10 @@ pub fn variants_mod_ident() -> Ident {
 
 pub fn types_mod_ident() -> Ident {
     format_ident!("{}", idents::TYPES_MOD)
+}
+
+pub fn type_path_tokens(path: &str) -> TokenStream {
+    TokenStream::from_str(path).expect("the parser checks type paths")
 }
 
 #[cfg(test)]

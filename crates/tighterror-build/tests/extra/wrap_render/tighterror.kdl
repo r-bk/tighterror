@@ -1,0 +1,17 @@
+module errors {
+    spec { doc-from-display #true }
+    category General {
+        spec { doc "General errors category." }
+        error TIMEOUT display="Operation timed out."
+        error BAD_ARG display="Invalid argument received." {
+            spec { variant-type #true }
+        }
+    }
+    category Text {
+        spec {
+            doc "Errors of the text crate."
+            error-type test_wrap_text::errors::Error
+            kind-type test_wrap_text::errors::ErrorKind
+        }
+    }
+}
