@@ -1,0 +1,16 @@
+error[E0277]: error kinds of `Bits<65>` don't fit in `u64`, the widest supported underlying type
+ --> tests/compile-fail/repr_too_many_bits.rs:8:12
+  |
+8 |     let _: R = 1;
+  |            ^ the trait `Repr` is not implemented for `Bits<65>`
+  |
+  = help: the following other types implement trait `Repr`:
+            Bits<10>
+            Bits<11>
+            Bits<12>
+            Bits<13>
+            Bits<14>
+            Bits<15>
+            Bits<16>
+            Bits<17>
+          and $N others

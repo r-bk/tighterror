@@ -856,6 +856,9 @@ pub use error::*;
 mod location;
 pub use location::*;
 
+mod repr;
+pub use repr::*;
+
 mod variant_type;
 pub use variant_type::*;
 
