@@ -1,76 +1,29 @@
-//! *tighterror-build* is a library implementing the *tighterror*
-//! specification file parsing, processing and Rust code generation.
+//! *tighterror-build* generates the Rust code of the [tighterror] framework
+//! from a specification file written in [KDL](https://kdl.dev).
 //!
-//! This library is part of the [tighterror] framework.
+//! A project that uses *tighterror* needs this library only at build time,
+//! as a build-dependency, unless it implements a tool similar to
+//! [cargo-tighterror].
 //!
-//! A project that uses the *tighterror* framework doesn't need
-//! to have *tighterror-build* in its `[dependencies]`. This library is at
-//! most a build-dependency of the project, not required at runtime (unless
-//! the project implements a tool similar to [cargo-tighterror]).
+//! *tighterror-build* itself uses the framework. Its [errors] module shows
+//! what the generated code looks like.
 //!
-//! *tighterror-build* itself uses the *tighterror* framework.
-//! The [errors] module is a good example of how the end result looks like.
+//! # Build Script
 //!
-//! The following sections compare two main ways to use *tighterror-build*.
+//! The recommended way to use the library is a [build script]. It keeps the
+//! specification file as the only source: the code is generated again when
+//! the specification or *tighterror-build* changes, so it never goes stale,
+//! and nothing generated is kept in the source tree.
 //!
-//! # cargo-tighterror
+//! Add the two crates to a project that has `tighterror.kdl` in its root
+//! directory:
 //!
-//! The recommended way to use the library is through the framework's cargo
-//! plugin [cargo-tighterror]. The plugin is a thin wrapper around
-//! *tighterror-build* exposing its capabilities on the command-line.
+//! ```shell
+//! cargo add tighterror
+//! cargo add --build tighterror-build
+//! ```
 //!
-//! The benefits of this approach are:
-//!
-//! * *tighterror* Rust code is generated **before** a project is being built.
-//! * The generated Rust code can be **reviewed**.
-//! * The generated Rust code can be placed under **source control**
-//!   to track changes.
-//!
-//! The downsides of this approach are:
-//!
-//! * It requires external means to keep the *tighterror* specification file
-//!   and the build artifacts in sync.
-//! * The sync needs to be done not only when the specification file changes,
-//!   but also when *tighterror-build* version changes.
-//!   Hence, the plugin is required to be periodically upgraded to follow the
-//!   releases of *tighterror-build*.
-//!
-//! Although the build artifacts' sync can be tricky to solve automatically,
-//! in our opinion, having the generated code reviewable and under source
-//! control outweighs the cost.
-//!
-//! See [tighterror] documentation for more information about the plugin.
-//!
-//! # build.rs
-//!
-//! In cases where using the cargo plugin is inconvenient or impossible
-//! *tighterror-build* can be used in `[build-dependencies]` of a project,
-//! i.e., from a [build script].
-//!
-//! The main (and pretty strong) benefit of this approach is that keeping
-//! the *tighterror* specification file and the build artifacts in sync
-//! is fully automated, both when the specification file changes and when
-//! *tighterror-build* version changes.
-//!
-//! The downsides of this approach are:
-//!
-//! * *tighterror* Rust code is generated **during** the project build stage.
-//! * The build artifacts are placed in a temporary directory.
-//!   This makes it hard to review the code.
-//! * The build artifacts aren't versioned. This makes tracking of changes
-//!   practically impossible, which is a big downside because the changes may be
-//!   caused not only by specification (which itself is under source control),
-//!   but also by an upgrade to a newer *tighterror-build* version.
-//!
-//! *tighterror-build* tries to minimize the amount of changes not caused by
-//! specification file change. That said, especially in the early stages of
-//! framework's development, such changes may occur.
-//!
-//! ## Example
-//!
-//! Assuming there is a specification file `tighterror.kdl`
-//! in the root directory of a project, *tighterror-build* can be invoked
-//! from project's build script as follows:
+//! Generate the code in its build script:
 //!
 //! ```no_run
 //! // build.rs
@@ -79,9 +32,9 @@
 //! }
 //! ```
 //!
-//! To use the code of a module include it somewhere in the project's
-//! operational code, e.g., `lib.rs` or `main.rs`, with
-//! [`tighterror::include_errors`]:
+//! [build] writes the code of every module of the specification to a file
+//! of its own under `OUT_DIR`, and [`tighterror::include_errors`] includes it
+//! in a module of the project, e.g., in `lib.rs` or `main.rs`:
 //!
 //! ```text
 //! /// Crate errors.
@@ -92,6 +45,13 @@
 //!
 //! See [BuildOptions] for the options, and for what [build] does besides
 //! writing the code.
+//!
+//! # Checked-in Code
+//!
+//! [CodegenOptions] writes the code into the source tree instead, as
+//! [cargo-tighterror] does. The generated code can then be reviewed and kept
+//! under source control, at the cost of generating it again whenever the
+//! specification or *tighterror-build* changes.
 //!
 //! # Specification File Reference
 //!
@@ -171,7 +131,8 @@
 //! or `-` for `stdout`. When it is an existing directory, the code goes to
 //! `tighterror.rs` under it, or to one file per module in
 //! [*separate files* mode][separate-files]. The `-o, --output` argument of
-//! *cargo-tighterror* overrides it.
+//! *cargo-tighterror* overrides it, and a [build script](#build-script)
+//! ignores it.
 //!
 //! `no-std` turns off the unit tests that need `std`.
 //!
@@ -193,6 +154,10 @@
 //! | `repr`                 | string | see below       | Underlying type of the [Kind] struct.               |
 //! | `doc-from-display`     | bool   | `#false`        | Default for the errors of the module.               |
 //! | `variant-type`         | bool   | `#false`        | Default for the errors of the module.               |
+//!
+//! A [build script](#build-script) leaves the module `doc` out, because
+//! `include!` doesn't accept it. The documentation of the module goes on the
+//! `mod` item that includes it instead.
 //!
 //! The struct names are UpperCamelCase. The default struct docs name the
 //! struct and point at the `kind` or `category` module.
