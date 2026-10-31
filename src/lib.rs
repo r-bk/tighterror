@@ -24,7 +24,6 @@
 //!     * [Wrapped Errors](#wrapped-errors)
 //! 1. [Implementation Details](#implementation-details)
 //! 1. [tighterror-build](#tighterror-build)
-//! 1. [cargo-tighterror](#cargo-tighterror)
 //! 1. [Motivation](#motivation)
 //!     * [Error as Trait Object](#error-as-trait-object)
 //!     * [Error as Enum](#error-as-enum)
@@ -77,7 +76,7 @@
 //! [specification reference]: https://docs.rs/tighterror-build/latest/tighterror_build/#specification-file-reference
 //!
 //! The specification file is translated to Rust using a dedicated command
-//! line tool [`cargo-tighterror`](#cargo-tighterror) or
+//! line tool [`cargo-tighterror`] or
 //! using the [`tighterror-build`](#tighterror-build) library:
 //!
 //! ```shell
@@ -356,7 +355,7 @@
 //! constant having any specific numeric value.
 //!
 //! [`tighterror-build`]: #tighterror-build
-//! [`cargo-tighterror`]: #cargo-tighterror
+//! [`cargo-tighterror`]: https://crates.io/crates/cargo-tighterror
 //! [module-settings]: https://docs.rs/tighterror-build/latest/tighterror_build/#module-settings
 //!
 //! # tighterror-build
@@ -367,136 +366,13 @@
 //! *tighterror* framework, i.e., it is needed at project's build time,
 //! rather than at project's runtime.
 //! The recommended way to use it is through
-//! [`cargo-tighterror`](#cargo-tighterror) command-line utility.
+//! [`cargo-tighterror`] command-line utility.
 //! In special cases, when the cargo plugin cannot be used, the library can be
 //! used as a build-dependency of the project, i.e., in `build.rs`.
 //!
 //! See the [library documentation][tb-docs] for more details.
 //!
 //! [tb-docs]: https://docs.rs/tighterror-build/latest/tighterror_build
-//!
-//! # cargo-tighterror
-//!
-//! [`cargo-tighterror`][ct-docs] is the cargo plugin of the framework.
-//! It is a thin wrapper around the [`tighterror-build`] library.
-//!
-//! [ct-docs]: https://crates.io/crates/cargo-tighterror
-//!
-//! Install the plugin, or upgrade to the latest version,
-//! using the following command:
-//!
-//! ```shell
-//! cargo install cargo-tighterror
-//! ```
-//!
-//! The plugin needs to be periodically upgraded to follow releases of
-//! [`tighterror-build`].
-//!
-//! The plugin is the recommended way to process *tighterror* specification
-//! files and generate code. It allows a project to generate code in pre-build
-//! stage so that both the specification file and the generated code are under
-//! source control. Additionally, the plugin allows to override part of the
-//! settings defined in the specification file.
-//!
-//! ```text
-//! $> cargo help tighterror
-//! The cargo plugin of the tighterror framework.
-//!
-//! Usage: cargo tighterror [OPTIONS]
-//!
-//! Options:
-//!   -s, --spec <PATH>     The specification file path
-//!   -o, --output <PATH>   The output path
-//!   -t, --test            Include a unit-test in the generated code
-//!   -u, --update          Do not overwrite the output file if data is unchanged
-//!   -S, --separate-files  Write modules in separate files
-//!   -h, --help            Print help
-//!   -V, --version         Print version
-//! ```
-//!
-//! * `-s, --spec <PATH>` (optional)
-//!
-//!   Defines the specification file path.
-//!
-//!   It is required if a specification file has a custom name.
-//!   It can be omitted if the specification file uses the default
-//!   name `tighterror.kdl` and is present in the current working directory.
-//!
-//!   The file extension `.kdl` is mandatory in custom filenames.
-//!   <br><br>
-//!
-//! * `-o, --output <PATH>` (optional)
-//!
-//!   Defines the output path.
-//!
-//!   This can be either an absolute path, a relative path, or a hyphen `-`.
-//!   A relative path is relative to the location of the specification file.
-//!
-//!   This argument overrides the [`output`][root-settings]
-//!   setting defined in the specification file.
-//!   If this argument is omitted and output path isn't
-//!   defined in the specification file the output is written to `stdout`.
-//!
-//!   Use hyphen `-` to force the output to be written to `stdout`.<br><br>
-//!
-//! * `-t, --test` (optional)
-//!
-//!   Includes a unit-test in the generated Rust code.
-//!
-//!   In `no_std` environments test cases that require `std` are excluded.<br><br>
-//!
-//! * `-u, --update` (optional)
-//!
-//!   Enables the update mode.
-//!
-//!   By default the output file is overwritten unconditionally, even when
-//!   the new data equals the already existing one. This may cause an
-//!   unnecessary crate rebuild, because file's write timestamp is updated.
-//!   In update mode the new data is compared to the existing one,
-//!   and the output file is overwritten only if the new data is different.
-//!   Therefore, the file's write timestamp is updated only if the file content
-//!   has changed, i.e., a rebuild is indeed required.
-//!   <br><br>
-//!
-//! * `-S, --separate-files` (optional)<a name="separate-files-mode"></a>
-//!
-//!   Enables the *separate files* mode.
-//!
-//!   By default the output, even with multiple modules, is written in a single
-//!   file. This means that every module is enclosed in a *module block*,
-//!   e.g., `pub mod my_errors { ... }`.
-//!
-//!   In *separate files* mode every module is written in a separate Rust file.
-//!   The `-o, --output` argument must point to an existing directory under
-//!   which the separate files are written. The filenames are derived from
-//!   the corresponding module names with the addition of `.rs` suffix.
-//!
-//!   If the output is written to `stdout` the *separate files* mode is
-//!   implicitly disabled.
-//!
-//!   When a module is written in a separate file, or when there is only a
-//!   single module in specification, the module isn't enclosed in a *module
-//!   block*. Therefore inclusion of such file generated by a build-script
-//!   allows addition of custom error types and trait implementations.
-//!   For example:
-//!
-//!   ```text
-//!   /// Module doc string
-//!   pub mod errors {
-//!       tighterror::include_errors!(errors);
-//!
-//!       #[derive(thiserror::Error, Debug)]
-//!       #[error("Custom display string")]
-//!       pub struct CustomError;
-//!
-//!       impl From<CustomError> for Error {
-//!         ...
-//!       }
-//!   }
-//!   ```
-//!   <br><br>
-//!
-//! [root-settings]: https://docs.rs/tighterror-build/latest/tighterror_build/#root-settings
 //!
 //! # Motivation
 //!
