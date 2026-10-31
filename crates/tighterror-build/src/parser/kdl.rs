@@ -1,7 +1,7 @@
 use crate::{
     errors::{TbError, kind::*},
     parser::{helpers::*, kws::*},
-    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, ReprType, Spec},
+    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, ReprType, Spec, WrappedSpec},
 };
 use ::kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
 use log::error;
@@ -177,9 +177,29 @@ impl<'a> KdlParser<'a> {
             );
             return EMPTY_LIST.into();
         }
+        if let [c] = m.categories.as_slice()
+            && c.wrapped.is_some()
+        {
+            error!(
+                "{}: module `{}` wraps another error in its only category `{}`",
+                self.node_pos(n),
+                m.name(),
+                c.name
+            );
+            return BAD_OBJECT_ATTRIBUTE.into();
+        }
         self.at(
             n,
             check_category_name_uniqueness(m.categories.iter().map(|c| c.name.as_str())),
+        )?;
+        let wrapped = || m.categories.iter().filter_map(|c| c.wrapped.as_ref());
+        self.at(
+            n,
+            check_wrapped_type_uniqueness(wrapped().map(|w| w.error_type.as_str())),
+        )?;
+        self.at(
+            n,
+            check_wrapped_type_uniqueness(wrapped().map(|w| w.kind_type.as_str())),
         )?;
 
         Ok(m)
@@ -194,15 +214,55 @@ impl<'a> KdlParser<'a> {
         };
 
         let (spec, children) = self.split_children(n, CATEGORY)?;
+        let mut error_type = None;
+        let mut kind_type = None;
         if let Some(spec) = spec {
             for (key, sn, v) in self.settings(spec)? {
                 match key {
                     DOC => c.doc = Some(self.string(key, sn, v)?),
                     DOC_FROM_DISPLAY => c.oes.doc_from_display = Some(self.boolean(key, sn, v)?),
                     VARIANT_TYPE => c.oes.variant_type = Some(self.boolean(key, sn, v)?),
+                    ERROR_TYPE => error_type = Some(self.type_path(key, sn, v)?),
+                    KIND_TYPE => kind_type = Some(self.type_path(key, sn, v)?),
                     _ => return self.unknown_setting(CATEGORY, key, sn),
                 }
             }
+        }
+
+        c.wrapped = match (error_type, kind_type) {
+            (Some(error_type), Some(kind_type)) => Some(WrappedSpec {
+                error_type,
+                kind_type,
+            }),
+            (None, None) => None,
+            (Some(_), None) | (None, Some(_)) => {
+                error!(
+                    "{}: category `{}` sets one of `{ERROR_TYPE}` and `{KIND_TYPE}` without the other",
+                    self.node_pos(n),
+                    c.name
+                );
+                return MISSING_ATTRIBUTE.into();
+            }
+        };
+        if c.wrapped.is_some() {
+            if c.oes.doc_from_display.is_some() || c.oes.variant_type.is_some() {
+                error!(
+                    "{}: category `{}` wraps another error, so `{DOC_FROM_DISPLAY}` and `{VARIANT_TYPE}` don't apply",
+                    self.node_pos(n),
+                    c.name
+                );
+                return BAD_OBJECT_ATTRIBUTE.into();
+            }
+            if let Some(e) = children.first() {
+                error!(
+                    "{}: category `{}` wraps another error and holds no `{}` nodes",
+                    self.node_pos(e),
+                    c.name,
+                    e.name().value()
+                );
+                return BAD_OBJECT_ATTRIBUTE.into();
+            }
+            return Ok(c);
         }
 
         for e in children {
@@ -461,6 +521,15 @@ impl<'a> KdlParser<'a> {
                 BAD_ENUM_VALUE.into()
             }
         }
+    }
+
+    fn type_path(&self, key: &str, n: &KdlNode, v: &KdlValue) -> Result<String, TbError> {
+        let s = self.string(key, n, v)?;
+        if syn::parse_str::<syn::Path>(&s).is_err() {
+            error!("{}: `{key}` must be a type path: {s}", self.node_pos(n));
+            return BAD_NAME.into();
+        }
+        Ok(s)
     }
 
     fn boolean(&self, key: &str, n: &KdlNode, v: &KdlValue) -> Result<bool, TbError> {

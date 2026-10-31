@@ -174,6 +174,20 @@ where
     check_name_uniqueness("module", iter)
 }
 
+pub fn check_wrapped_type_uniqueness<'a, I>(iter: I) -> Result<(), TbError>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let mut paths = HashSet::new();
+    for path in iter {
+        if !paths.insert(path) {
+            log::error!("a type is wrapped by more than one category: {path}");
+            return NON_UNIQUE_NAME.into();
+        }
+    }
+    Ok(())
+}
+
 pub fn check_module(m: &ModuleSpec) -> Result<(), TbError> {
     if m.flat_kinds() {
         check_module_error_name_uniqueness(m.errors_iter().map(|e| e.name.as_str()))?;
