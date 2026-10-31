@@ -60,8 +60,8 @@ Future options:
 
 _tighterror_ takes the declarative approach where a user project maintains its
 set of errors in a specification file written in [KDL](https://kdl.dev).
-Generation of Rust source code out of the specification file is done by
-a dedicated tool provided by the framework.
+The Rust code is generated from the specification file in a build script, by
+the [tighterror-build] library of the framework.
 
 In its basic form a _tighterror_ is a _newtype_ around a small non-zero unsigned
 integer, e.g., `NonZeroU8`, whose value is a unique identifier of the error, the
@@ -118,30 +118,34 @@ module errors {
 > [!NOTE]
 > When there is only a single category the number of _category_ bits is 0.
 
-Add **tighterror** to your Cargo.toml file:
+Add **tighterror** to your project, and **tighterror-build** as a
+build-dependency:
 
 ```shell
 cargo add tighterror
+cargo add --build tighterror-build
 ```
 
-Install the cargo plugin:
+Generate the code in the build script `build.rs`:
 
-```shell
-cargo install cargo-tighterror
+```rust
+fn main() -> Result<(), tighterror_build::errors::TbError> {
+    tighterror_build::build()
+}
 ```
 
-Run the plugin to generate a Rust module in `src/errors.rs`:
+Include the generated module in your project:
 
-```shell
-cargo tighterror -o src/errors.rs
+```rust
+/// Crate errors.
+pub mod errors {
+    tighterror::include_errors!(errors);
+}
 ```
-
-Include the generated module in your project as any other handwritten Rust
-module, i.e., `mod errors;`.
 
 > [!NOTE]
-> It is recommended to put both `tighterror.kdl` and `src/errors.rs` under
-> source control for visibility and tracking of changes.
+> To keep the generated code in the source tree instead, e.g., for review,
+> generate it with the cargo plugin [cargo-tighterror].
 
 The following is a stripped-down view of the generated module:
 
@@ -191,6 +195,8 @@ The full documentation is on [docs.rs].
 
 [crate documentation]: https://docs.rs/tighterror/latest/tighterror
 [docs.rs]: https://docs.rs/tighterror/latest/tighterror
+[tighterror-build]: https://docs.rs/tighterror-build/latest/tighterror_build
+[cargo-tighterror]: https://crates.io/crates/cargo-tighterror
 
 ## License
 
