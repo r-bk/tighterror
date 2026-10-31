@@ -41,7 +41,17 @@ _tighterror_ tries to achieve the following goals:
   - [x] multiple
   - [x] separate files
 - [x] Variant error types
+- [x] Wrapped errors of other crates
+- [x] Code generation
+  - [x] in a build script
+  - [x] into the source tree
+
+Next:
+
 - [ ] Category error types
+
+Future options:
+
 - [ ] Flags
 - [ ] Location
 - [ ] Backtrace
