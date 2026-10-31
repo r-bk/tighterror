@@ -7,6 +7,139 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- add a `category()` method to the generated `Error`. Until now it came only
+  through the `tighterror::Error` trait.
+
+- add `tighterror_build::build()` and `BuildOptions` to generate the code in
+  a build script, and `tighterror::include_errors!` to include it. `build()`
+  writes the code of every module to `OUT_DIR`, and asks Cargo to run the
+  build script again when the specification file changes:
+
+  ```rust
+  // build.rs
+  fn main() -> Result<(), tighterror_build::errors::TbError> {
+      tighterror_build::build()
+  }
+  ```
+
+  ```rust
+  /// Crate errors.
+  pub mod errors {
+      tighterror::include_errors!(errors);
+  }
+  ```
+
+  `BuildOptions` sets the specification path and the unit tests. `build()`
+  logs to stderr when no logger is set, so a later `env_logger::init()` in
+  the same build script panics.
+
+- set the underlying type of the error kinds of a module with the `repr`
+  setting, so that `value()` and `from_value()` keep their type as the
+  module gains errors. The generation fails when the kinds need more bits
+  than the type has:
+
+  ```kdl
+  module errors {
+      spec { repr u32 }
+      // ...
+  }
+  ```
+
+- wrap the tighterror of another crate in a category, so that `?` converts
+  the errors of that crate and callers still match them with its constants:
+
+  ```kdl
+  category Text {
+      spec {
+          wrap-error-type text::errors::Error
+          wrap-kind-type text::errors::ErrorKind
+      }
+  }
+  ```
+
+  `ErrorKind::wrapped()` gives a wrapped error kind back by its type, e.g.,
+  in a match guard. A wrapped error kind keeps its name and display text.
+  The width of the wrapped kinds is known only at compile time, so a `repr`
+  too narrow for them fails the compilation.
+
+### Changed
+
+- write specification files in KDL, `tighterror.kdl` by default. YAML and
+  TOML specification files are no longer read. A specification names every
+  module and category. The settings of a node go in its `spec` node, in
+  kebab-case, and an error may also set its `display` on the line of its
+  node:
+
+  ```kdl
+  module errors {
+      spec { err-name MyError }
+      category General {
+          error BAD_FILE display="File is invalid."
+      }
+  }
+  ```
+
+- move the error kinds of tighterror-build from `kind::parser::` and
+  `kind::coder::` to `kind::`, e.g., `kind::BAD_NAME`. Remove the kinds of
+  YAML and TOML (`BAD_YAML`, `BAD_TOML`, `BAD_KEYWORD_TYPE` and
+  `MUTUALLY_EXCLUSIVE_KEYWORDS`), and add `BAD_KDL`, `BAD_ENUM_VALUE`,
+  `REPR_TOO_NARROW` and `OUT_DIR_NOT_SET`.
+
+- put the error kinds of a module in one namespace by default, e.g.,
+  `kind::BAD_FILE` and `variant::types::BadFile`. Error names must then be
+  unique in the module, so a specification that uses a name in two
+  categories needs a module per category, e.g., `kind::general::BAD_FILE`:
+
+  ```kdl
+  module errors {
+      spec { flat-kinds #false }
+      // ...
+  }
+  ```
+
+- leave the category constant without a doc unless the category sets `doc`.
+  Until now the only category of a module was documented as "General error
+  category.", so a crate that denies `missing_docs` now has to document it.
+
+- log in the format of `env_logger` in cargo-tighterror, e.g.,
+  `[ERROR target] message` in place of ` ERROR target > message`, with
+  continuation lines indented. `RUST_LOG` still sets the level, and
+  `RUST_LOG_STYLE` now sets the colors.
+
+- implement `core::error::Error` for the generated types in `no_std`
+  modules too, unless the module sets `error-trait #false`. Until now a
+  `no_std` module had no error trait.
+
+- store the error kind in a `NonZero` integer, so that `Option<Error>` and
+  `Result<(), Error>` take no more space than `Error`. The value 0 is never
+  an error kind, which gives every error kind a new value, so a raw value
+  from 0.0.23 decodes to another kind or to `None`. A module whose largest
+  category has a power-of-two number of errors takes one bit more, e.g.,
+  256 errors in one category take a `u16`. A `match` on error kind
+  constants needs a `_` arm even when they cover every value of the integer.
+
+### Removed
+
+- remove the `yaml` and `toml` cargo features of tighterror-build, and its
+  `DEFAULT_SPEC_PATH_YAML` and `DEFAULT_SPEC_PATH_TOML` constants. KDL
+  support is always built, and `DEFAULT_SPEC_PATH_KDL` names its default
+  file.
+
+### Fixed
+
+- link the docs of the generated `Error`, `ErrorKind` and `ErrorCategory` to
+  the `kind` and `category` modules again. The broken links failed
+  `cargo doc` with warnings denied, as in the docs.rs build of
+  tighterror-build 0.0.23.
+
+- reject a value with bits set above the error kind in `from_value()`.
+  Until now a module with more than one category ignored them, and returned
+  another error kind.
+
 ## [0.0.23], [b-0.0.23], [c-0.0.23] - 2026-10-27
 
 A backward incompatible release that requires Rust 1.99.1 and formats
