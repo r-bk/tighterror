@@ -1,0 +1,10 @@
+[package]
+name = "test_wrap_text"
+edition = "2021"
+version = "0.0.0"
+
+[dependencies]
+tighterror = { path = "../../../../.." }
+
+[build-dependencies]
+tighterror-build = { path = "../../.." }

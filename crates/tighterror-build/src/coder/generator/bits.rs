@@ -9,7 +9,8 @@ pub struct Bits {
     pub category: usize,
     /// number of variant bits
     pub variant: usize,
-    /// the representation type (calculated or forced)
+    /// the representation type (calculated or forced), or the narrowest one
+    /// for the module's own kinds when it wraps the kinds of another crate
     pub repr_type: ReprType,
 }
 
@@ -18,7 +19,7 @@ impl Bits {
         let n_categories = module.categories.len();
         let n_category_bits = calc_n_category_bits(n_categories)?;
         let n_variant_bits = calc_n_variant_bits(module)?;
-        assert!(n_variant_bits > 0);
+        assert!(n_variant_bits > 0 || module.has_wrapped_categories());
 
         let n_kind_bits = n_category_bits + n_variant_bits;
         let repr_type = match module.repr {
@@ -73,6 +74,7 @@ fn calc_n_variant_bits(module: &ModuleSpec) -> Result<usize, TbError> {
     };
 
     match n {
+        0 if module.has_wrapped_categories() => Ok(0),
         0 => {
             log::error!("at least one error must be defined");
             ERROR_REQUIRED.into()

@@ -2,7 +2,7 @@ use crate::{
     FrozenOptions,
     coder::generator::{bits::Bits, helpers::*},
     errors::TbError,
-    spec::{CategorySpec, ErrorSpec, ModuleSpec, ReprType, Spec},
+    spec::{CategorySpec, ErrorSpec, ModuleSpec, ReprType, Spec, WrappedSpec},
 };
 use proc_macro2::{Ident, Literal, TokenStream};
 use quote::{format_ident, quote};
@@ -87,9 +87,21 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn private_constants_tokens(&self) -> TokenStream {
-        let repr_type = self.bits.repr_type.ident();
+        let wrapping = self.module.has_wrapped_categories();
+        let repr_type = if wrapping && self.module.repr.is_none() {
+            quote! { <tighterror::Bits<KIND_BITS> as tighterror::Repr>::R }
+        } else {
+            let ident = self.bits.repr_type.ident();
+            quote! { #ident }
+        };
         let n_category_bits = Literal::usize_unsuffixed(self.bits.category);
         let n_variant_bits = Literal::usize_unsuffixed(self.bits.variant);
+        let var_bits = if wrapping {
+            let err_kind_name = self.err_kind_name_ident();
+            quote! { var_bits(#n_variant_bits, &super::#err_kind_name::WRAPPED_BITS) }
+        } else {
+            quote! { #n_variant_bits }
+        };
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
         let category_max = self
             .usize_to_repr_type_literal(self.module.category_max())
@@ -106,9 +118,39 @@ impl<'a> ModuleGenerator<'a> {
             }
         };
 
+        let kind_bits_check = match self.module.repr {
+            Some(r) => {
+                let msg = format!(
+                    "module `{}`: `repr {}` holds fewer bits than the error kinds need",
+                    self.module.name(),
+                    r.name()
+                );
+                quote! { const _: () = assert!(KIND_BITS <= R::BITS as usize, #msg); }
+            }
+            None => quote! { const _: () = assert!(KIND_BITS <= R::BITS as usize); },
+        };
+
+        let var_bits_fn = if wrapping {
+            quote! {
+                const fn var_bits(own: usize, wrapped: &[usize]) -> usize {
+                    let mut bits = own;
+                    let mut i = 0;
+                    while i < wrapped.len() {
+                        if wrapped[i] > bits {
+                            bits = wrapped[i];
+                        }
+                        i += 1;
+                    }
+                    bits
+                }
+            }
+        } else {
+            TokenStream::default()
+        };
+
         quote! {
             pub const CAT_BITS: usize = #n_category_bits;
-            pub const VAR_BITS: usize = #n_variant_bits;
+            pub const VAR_BITS: usize = #var_bits;
             pub const KIND_BITS: usize = CAT_BITS + VAR_BITS;
             pub type R = #repr_type;
             pub const CAT_MAX: R = #category_max;
@@ -117,8 +159,9 @@ impl<'a> ModuleGenerator<'a> {
                 #(#variant_maxes_iter),*
             ];
             #optional_tokens
-            const _: () = assert!(KIND_BITS <= R::BITS as usize);
+            #kind_bits_check
             const _: () = assert!(CAT_BITS <= usize::BITS as usize); // for casting to usize
+            #var_bits_fn
         }
     }
 
@@ -160,14 +203,13 @@ impl<'a> ModuleGenerator<'a> {
 
     fn private_error_names(&self) -> TokenStream {
         let cat_iter = self
+            .own_categories()
+            .map(|c| self.private_category_error_names(c));
+        let cat_arr_iter = self
             .module
             .categories
             .iter()
-            .map(|c| self.private_category_error_names(c));
-        let cat_arr_iter = self.module.categories.iter().map(|c| {
-            let cat_mod_ident = format_ident!("{}", c.module_name());
-            quote! { &#cat_mod_ident::A }
-        });
+            .map(|c| self.error_table_ref(c));
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
         quote! {
             #(#cat_iter)*
@@ -199,6 +241,15 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
+    fn error_table_ref(&self, c: &CategorySpec) -> TokenStream {
+        if c.wrapped.is_some() {
+            quote! { &[] }
+        } else {
+            let cat_mod_ident = format_ident!("{}", c.module_name());
+            quote! { &#cat_mod_ident::A }
+        }
+    }
+
     fn error_table_entries(&self, c: &CategorySpec) -> Vec<TokenStream> {
         std::iter::once(quote! { "" })
             .chain(c.errors.iter().map(|e| {
@@ -210,14 +261,13 @@ impl<'a> ModuleGenerator<'a> {
 
     fn private_error_display(&self) -> TokenStream {
         let cat_iter = self
+            .own_categories()
+            .map(|c| self.private_category_error_display(c));
+        let cat_arr_iter = self
             .module
             .categories
             .iter()
-            .map(|c| self.private_category_error_display(c));
-        let cat_arr_iter = self.module.categories.iter().map(|c| {
-            let cat_mod_ident = format_ident!("{}", c.module_name());
-            quote! { &#cat_mod_ident::A }
-        });
+            .map(|c| self.error_table_ref(c));
         let n_categories = Literal::usize_unsuffixed(self.module.categories.len());
         quote! {
             #(#cat_iter)*
@@ -328,6 +378,7 @@ impl<'a> ModuleGenerator<'a> {
         let error_displays_mod = error_displays_mod_ident();
         let err_kind_doc = doc_tokens(self.module.err_kind_doc());
         let category_max_comparison = self.category_max_comparison();
+        let categories_mod = categories_mod_ident();
         let result_from_err_kind = if self.module.result_from_err_kind() {
             quote! {
                 impl<T> core::convert::From<#err_kind_name> for Result<T, #err_name> {
@@ -358,6 +409,13 @@ impl<'a> ModuleGenerator<'a> {
             quote! { (self.value() & #private_mod::CAT_MASK) >> #private_mod::VAR_BITS }
         };
 
+        let own_from_value_tokens = quote! {
+            if cat #category_max_comparison #private_mod::CAT_MAX && variant != 0 && variant <= #private_mod::VAR_MAXES[cat as usize] {
+                core::num::NonZero::new(value).map(Self)
+            } else {
+                None
+            }
+        };
         let from_value_tokens = if self.bits.category == 0 {
             quote! {
                 if value <= #private_mod::VAR_MAXES[0] {
@@ -366,17 +424,58 @@ impl<'a> ModuleGenerator<'a> {
                     None
                 }
             }
+        } else if self.module.has_wrapped_categories() {
+            let arms = self.wrapped_categories().map(|(c, w)| {
+                let cat_ident = format_ident!("{}", c.ident_name());
+                let kind_type = type_path_tokens(&w.kind_type);
+                quote! {
+                    #categories_mod::#cat_ident => {
+                        Self::wrapped_kind::<#kind_type>(variant)?;
+                        core::num::NonZero::new(value).map(Self)
+                    }
+                }
+            });
+            quote! {
+                let cat = value >> #private_mod::VAR_BITS;
+                let variant = value & #private_mod::VAR_MASK;
+                match #err_cat_name::new(cat) {
+                    #(#arms)*
+                    _ => {
+                        #own_from_value_tokens
+                    }
+                }
+            }
         } else {
             quote! {
                 let cat = value >> #private_mod::VAR_BITS;
                 let variant = value & #private_mod::VAR_MASK;
-                if cat #category_max_comparison #private_mod::CAT_MAX && variant != 0 && variant <= #private_mod::VAR_MAXES[cat as usize] {
-                    core::num::NonZero::new(value).map(Self)
-                } else {
-                    None
-                }
+                #own_from_value_tokens
             }
         };
+
+        let own_name_tokens = quote! {
+            #error_names_mod::A[self.category_value() as usize][self.variant_value() as usize]
+        };
+        let name_tokens = if self.module.has_wrapped_categories() {
+            let arms = self.wrapped_categories().map(|(c, w)| {
+                let cat_ident = format_ident!("{}", c.ident_name());
+                let kind_type = type_path_tokens(&w.kind_type);
+                quote! {
+                    #categories_mod::#cat_ident => tighterror::Kind::name(&self.wrapped::<#kind_type>().unwrap()),
+                }
+            });
+            quote! {
+                match self.category() {
+                    #(#arms)*
+                    _ => #own_name_tokens,
+                }
+            }
+        } else {
+            own_name_tokens
+        };
+
+        let wrapped_tokens = self.error_kind_wrapped_tokens();
+        let wrapped_impls = self.error_kind_wrapped_impls();
 
         quote! {
             #err_kind_doc
@@ -388,6 +487,8 @@ impl<'a> ModuleGenerator<'a> {
                 const fn new(cat: #err_cat_name, variant: #private_mod::R) -> Self {
                     #err_kind_new_tokens
                 }
+
+                #wrapped_tokens
 
                 #[inline]
                 fn category_value(&self) -> #private_mod::R {
@@ -408,7 +509,7 @@ impl<'a> ModuleGenerator<'a> {
                 #[doc = " Returns the error kind name."]
                 #[inline]
                 pub fn name(&self) -> &'static str {
-                    #error_names_mod::A[self.category_value() as usize][self.variant_value() as usize]
+                    #name_tokens
                 }
 
                 #[inline]
@@ -475,7 +576,94 @@ impl<'a> ModuleGenerator<'a> {
             }
 
             #result_from_err_kind
+            #wrapped_impls
         }
+    }
+
+    fn wrapped_categories(&self) -> impl Iterator<Item = (&CategorySpec, &WrappedSpec)> {
+        self.module
+            .categories
+            .iter()
+            .filter_map(|c| c.wrapped.as_ref().map(|w| (c, w)))
+    }
+
+    fn own_categories(&self) -> impl Iterator<Item = &CategorySpec> {
+        self.module
+            .categories
+            .iter()
+            .filter(|c| c.wrapped.is_none())
+    }
+
+    fn has_own_kinds(&self) -> bool {
+        self.own_categories().next().is_some()
+    }
+
+    fn error_kind_wrapped_tokens(&self) -> TokenStream {
+        if !self.module.has_wrapped_categories() {
+            return TokenStream::default();
+        }
+        let private_mod = private_mod_ident();
+        let n_wrapped = Literal::usize_unsuffixed(self.wrapped_categories().count());
+        let bits_iter = self.wrapped_categories().map(|(_, w)| {
+            let kind_type = type_path_tokens(&w.kind_type);
+            quote! { <#kind_type as tighterror::Kind>::BITS }
+        });
+        quote! {
+            const WRAPPED_BITS: [usize; #n_wrapped] = [#(#bits_iter),*];
+
+            #[inline]
+            fn wrapped_kind<K>(variant: #private_mod::R) -> Option<K>
+            where
+                K: tighterror::Kind,
+                K::R: core::convert::TryFrom<#private_mod::R>,
+            {
+                <K::R as core::convert::TryFrom<#private_mod::R>>::try_from(variant)
+                    .ok()
+                    .and_then(K::from_value)
+            }
+
+            #[doc = " Returns the wrapped error kind of type `K`, or `None` for a kind of another category."]
+            #[inline]
+            pub fn wrapped<K>(&self) -> Option<K>
+            where
+                Self: tighterror::Wraps<K>,
+                K: tighterror::Kind,
+                K::R: core::convert::TryFrom<#private_mod::R>,
+            {
+                if self.category() == <Self as tighterror::Wraps<K>>::CATEGORY {
+                    Self::wrapped_kind(self.variant_value())
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
+    fn error_kind_wrapped_impls(&self) -> TokenStream {
+        let err_kind_name = self.err_kind_name_ident();
+        let err_cat_name = self.err_cat_name_ident();
+        let categories_mod = categories_mod_ident();
+        let private_mod = private_mod_ident();
+        let mut tokens = TokenStream::default();
+        for (c, w) in self.wrapped_categories() {
+            let cat_ident = format_ident!("{}", c.ident_name());
+            let kind_type = type_path_tokens(&w.kind_type);
+            tokens = quote! {
+                #tokens
+
+                impl tighterror::Wraps<#kind_type> for #err_kind_name {
+                    const CATEGORY: #err_cat_name = #categories_mod::#cat_ident;
+                }
+
+                impl core::convert::From<#kind_type> for #err_kind_name {
+                    #[inline]
+                    fn from(k: #kind_type) -> Self {
+                        Self::new(#categories_mod::#cat_ident, tighterror::Kind::value(&k) as #private_mod::R)
+                    }
+                }
+            };
+        }
+        tokens
     }
 
     fn error_tokens(&self) -> TokenStream {
@@ -484,6 +672,46 @@ impl<'a> ModuleGenerator<'a> {
         let err_cat_name = self.err_cat_name_ident();
         let err_doc = doc_tokens(self.module.err_doc());
         let private_mod = private_mod_ident();
+        let categories_mod = categories_mod_ident();
+        let own_display_tokens = quote! { f.pad(self.kind().display()) };
+        let display_tokens = if self.module.has_wrapped_categories() {
+            let arms = self.wrapped_categories().map(|(c, w)| {
+                let cat_ident = format_ident!("{}", c.ident_name());
+                let error_type = type_path_tokens(&w.error_type);
+                let kind_type = type_path_tokens(&w.kind_type);
+                quote! {
+                    #categories_mod::#cat_ident => {
+                        let e = <#error_type as core::convert::From<#kind_type>>::from(self.0.wrapped().unwrap());
+                        core::fmt::Display::fmt(&e, f)
+                    }
+                }
+            });
+            quote! {
+                match self.category() {
+                    #(#arms)*
+                    _ => #own_display_tokens,
+                }
+            }
+        } else {
+            own_display_tokens
+        };
+        let mut wrapped_impls = TokenStream::default();
+        for (_, w) in self.wrapped_categories() {
+            let error_type = type_path_tokens(&w.error_type);
+            let kind_type = type_path_tokens(&w.kind_type);
+            wrapped_impls = quote! {
+                #wrapped_impls
+
+                const _: fn(&#error_type) -> #kind_type = <#error_type as tighterror::Error>::kind;
+
+                impl core::convert::From<#error_type> for #err_name {
+                    #[inline]
+                    fn from(e: #error_type) -> Self {
+                        Self(tighterror::Error::kind(&e).into())
+                    }
+                }
+            };
+        }
         let result_from_err = if self.module.result_from_err() {
             quote! {
                 impl<T> core::convert::From<#err_name> for core::result::Result<T, #err_name> {
@@ -555,7 +783,7 @@ impl<'a> ModuleGenerator<'a> {
             impl core::fmt::Display for #err_name {
                 #[inline]
                 fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                    f.pad(self.kind().display())
+                    #display_tokens
                 }
             }
 
@@ -569,6 +797,7 @@ impl<'a> ModuleGenerator<'a> {
 
             #result_from_err
             #error_trait
+            #wrapped_impls
         }
     }
 
@@ -576,7 +805,7 @@ impl<'a> ModuleGenerator<'a> {
         let err_kinds_mod = error_kinds_mod_ident();
         let err_kind_name = self.err_kind_name_ident();
         let mut tokens = TokenStream::default();
-        for c in &self.module.categories {
+        for c in self.own_categories() {
             let cat_tokens = self.error_kind_category_constants_tokens(c);
             if self.module.flat_kinds() {
                 tokens = quote! {
@@ -600,11 +829,18 @@ impl<'a> ModuleGenerator<'a> {
         }
 
         let categories_mod = categories_mod_ident();
+        let use_tokens = if self.has_own_kinds() {
+            quote! {
+                use super::#err_kind_name as EK;
+                use super::#categories_mod as c;
+            }
+        } else {
+            TokenStream::default()
+        };
         quote! {
             #[doc = " Error kind constants."]
             pub mod #err_kinds_mod {
-                use super::#err_kind_name as EK;
-                use super::#categories_mod as c;
+                #use_tokens
                 #tokens
             }
         }
@@ -1008,7 +1244,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_err_kind_name(&self) -> TokenStream {
-        let err_kinds_mod = error_kinds_mod_ident();
+        let use_kinds = self.ut_use_kinds();
         let iter = self.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let name = e.name.as_str();
@@ -1026,7 +1262,7 @@ impl<'a> ModuleGenerator<'a> {
         quote! {
             #[test]
             fn test_err_kind_name() {
-                use #err_kinds_mod::*;
+                #use_kinds
                 #(#iter)*
             }
         }
@@ -1036,7 +1272,7 @@ impl<'a> ModuleGenerator<'a> {
         if self.spec.main.no_std() {
             return TokenStream::default();
         }
-        let err_kinds_mod = error_kinds_mod_ident();
+        let use_kinds = self.ut_use_kinds();
         let iter = self.module.categories.iter().map(|c| {
             let ec_iter = c.errors.iter().map(|e| {
                 let name = e.name.as_str();
@@ -1053,7 +1289,7 @@ impl<'a> ModuleGenerator<'a> {
         quote! {
             #[test]
             fn test_err_kind_display() {
-                use #err_kinds_mod::*;
+                #use_kinds
                 #(#iter)*
             }
         }
@@ -1064,14 +1300,14 @@ impl<'a> ModuleGenerator<'a> {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
-        let err_kinds_mod = error_kinds_mod_ident();
+        let use_kinds = self.ut_use_kinds();
         let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
             Literal::usize_unsuffixed(self.module.categories.iter().map(|c| c.errors.len()).sum());
         quote! {
             #[test]
             fn test_err_kind_uniqueness() {
-                use #err_kinds_mod::*;
+                #use_kinds
                 use std::collections::HashSet;
                 let errs: [#err_kind_name; #n_errors] = #err_kind_arr;
                 let set = HashSet::<#err_kind_name>::from_iter(errs);
@@ -1085,7 +1321,7 @@ impl<'a> ModuleGenerator<'a> {
             return TokenStream::default();
         }
         let err_kind_name = self.err_kind_name_ident();
-        let err_kinds_mod = error_kinds_mod_ident();
+        let use_kinds = self.ut_use_kinds();
         let private_mod = private_mod_ident();
         let err_kind_arr = self.ut_err_kind_arr();
         let n_errors =
@@ -1093,7 +1329,7 @@ impl<'a> ModuleGenerator<'a> {
         quote! {
             #[test]
             fn test_err_kind_value_uniqueness() {
-                use #err_kinds_mod::*;
+                #use_kinds
                 use std::collections::HashSet;
                 let errs: [#err_kind_name; #n_errors] = #err_kind_arr;
                 let set = HashSet::<#private_mod::R>::from_iter(errs.iter().map(|ec| ec.value()));
@@ -1104,7 +1340,7 @@ impl<'a> ModuleGenerator<'a> {
 
     fn ut_err_kind_category(&self) -> TokenStream {
         let categories_mod = categories_mod_ident();
-        let err_kinds_mod = error_kinds_mod_ident();
+        let use_kinds = self.ut_use_kinds();
         let iter = self.module.categories.iter().map(|c| {
             let err_iter = c.errors.iter().map(|e| {
                 let add_cat_mod = !self.module.flat_kinds();
@@ -1121,7 +1357,7 @@ impl<'a> ModuleGenerator<'a> {
         quote! {
             #[test]
             fn test_err_kind_category() {
-                use #err_kinds_mod::*;
+                #use_kinds
                 #(#iter)*
             }
         }
@@ -1129,7 +1365,7 @@ impl<'a> ModuleGenerator<'a> {
 
     fn ut_err_kind_from_value(&self) -> TokenStream {
         let err_kind_name = self.err_kind_name_ident();
-        let err_kinds_mod = error_kinds_mod_ident();
+        let use_kinds = self.ut_use_kinds();
         let iter = self.module.categories.iter().map(|c| {
             let err_iter = c.errors.iter().map(|e| {
                 let add_cat_mod = !self.module.flat_kinds();
@@ -1145,7 +1381,7 @@ impl<'a> ModuleGenerator<'a> {
         quote! {
             #[test]
             fn test_err_kind_from_value() {
-                use #err_kinds_mod::*;
+                #use_kinds
                 #(#iter)*
             }
         }
@@ -1156,7 +1392,7 @@ impl<'a> ModuleGenerator<'a> {
             return TokenStream::default();
         }
         let err_name = self.err_name_ident();
-        let err_kinds_mod = error_kinds_mod_ident();
+        let use_kinds = self.ut_use_kinds();
         let iter = self.module.categories.iter().map(|c| {
             let err_iter = c.errors.iter().map(|e| {
                 let add_cat_mod = !self.module.flat_kinds();
@@ -1177,9 +1413,18 @@ impl<'a> ModuleGenerator<'a> {
         quote! {
             #[test]
             fn test_err_display() {
-                use #err_kinds_mod::*;
+                #use_kinds
                 #(#iter)*
             }
+        }
+    }
+
+    fn ut_use_kinds(&self) -> TokenStream {
+        if self.has_own_kinds() {
+            let err_kinds_mod = error_kinds_mod_ident();
+            quote! { use #err_kinds_mod::*; }
+        } else {
+            TokenStream::default()
         }
     }
 
@@ -1416,7 +1661,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 
     fn ut_err_kind_arr_impl(&self, add_cat_mod: bool) -> TokenStream {
-        let iter = self.module.categories.iter().map(|c| {
+        let iter = self.own_categories().map(|c| {
             let iter = c
                 .errors
                 .iter()

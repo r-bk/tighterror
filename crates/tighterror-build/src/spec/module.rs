@@ -43,6 +43,10 @@ impl ModuleSpec {
         }
     }
 
+    pub fn has_wrapped_categories(&self) -> bool {
+        self.categories.iter().any(|c| c.wrapped.is_some())
+    }
+
     pub fn n_errors_in_largest_category(&self) -> Option<usize> {
         self.categories.iter().map(|c| c.errors.len()).max()
     }

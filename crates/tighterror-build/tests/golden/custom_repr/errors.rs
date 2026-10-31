@@ -325,7 +325,10 @@ mod _p {
     pub const VAR_MASK: R = R::MAX >> (R::BITS as usize - VAR_BITS);
     pub static VAR_MAXES: [R; 2] = [2, 1];
     pub const CAT_MASK: R = (R::MAX >> (R::BITS as usize - CAT_BITS)) << VAR_BITS;
-    const _: () = assert!(KIND_BITS <= R::BITS as usize);
+    const _: () = assert!(
+        KIND_BITS <= R::BITS as usize,
+        "module `errors`: `repr u32` holds fewer bits than the error kinds need"
+    );
     const _: () = assert!(CAT_BITS <= usize::BITS as usize);
     pub(super) struct Ident<'a>(pub(super) &'a str);
 

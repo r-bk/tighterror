@@ -12,5 +12,8 @@ members = [
     "minimal_with_display",
     "multiple_categories",
     "multiple_modules_one_file",
+    "wrap_app",
+    "wrap_render",
+    "wrap_text",
 ]
 resolver = "2"

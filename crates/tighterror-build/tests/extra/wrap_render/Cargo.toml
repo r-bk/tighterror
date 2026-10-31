@@ -1,0 +1,11 @@
+[package]
+name = "test_wrap_render"
+edition = "2021"
+version = "0.0.0"
+
+[dependencies]
+test_wrap_text = { path = "../wrap_text" }
+tighterror = { path = "../../../../.." }
+
+[build-dependencies]
+tighterror-build = { path = "../../.." }
