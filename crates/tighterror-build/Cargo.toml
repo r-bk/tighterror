@@ -19,7 +19,7 @@ prettyplease = "0.3"
 proc-macro2 = "1.0"
 quote = "1.0"
 regex = "1.10"
-syn = { version = "3.0", default-features = false, features = ["parsing"] }
+syn = { version = "3.0", default-features = false, features = ["derive", "parsing"] }
 tempfile = "3.10.0"
 tighterror = { path = "../..", version = "0.0.23" }
 

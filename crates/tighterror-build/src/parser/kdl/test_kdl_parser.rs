@@ -2,7 +2,10 @@ use crate::{
     coder::idents,
     errors::TbErrorKind,
     parser::{kdl::*, testing::log_init},
-    spec::{CategorySpec, ErrorSpec, MainSpec, ModuleSpec, OverridableErrorSpec, ReprType, Spec},
+    spec::{
+        CategorySpec, ErrorSpec, MainSpec, ModuleSpec, OverridableErrorSpec, ReprType, Spec,
+        WrappedSpec,
+    },
 };
 
 fn error(name: &str) -> ErrorSpec {
@@ -233,6 +236,99 @@ fn test_category_settings() {
     // a category without errors, or with a foreign node, is rejected
     assert_eq!(kind(&in_category("", "")), EMPTY_LIST);
     assert_eq!(kind(&in_category("", "module x")), BAD_OBJECT_ATTRIBUTE);
+}
+
+// A module with a category of its own errors, and a category `Text` with
+// the given spec and child nodes.
+fn with_wrapping_category(category_spec: &str, children: &str) -> String {
+    format!(
+        "module errors {{\n category General {{ error BAD_FILE }}\n category Text {{\n{category_spec}\n{children}\n }}\n}}\n"
+    )
+}
+
+// Checks a category that wraps the error of another crate: it names both
+// types, holds no errors, and has a category next to it. It simulates the
+// specs that a crate wrapping the errors of another one writes.
+#[test]
+fn test_wrapped_category() {
+    log_init();
+
+    // both types, bare and quoted
+    let s = with_wrapping_category(
+        "spec { error-type text::Error; kind-type \"crate::text::ErrorKind\" }",
+        "",
+    );
+    let m = &KdlParser::parse_str(&s).unwrap().modules[0];
+    let expected = WrappedSpec {
+        error_type: "text::Error".into(),
+        kind_type: "crate::text::ErrorKind".into(),
+    };
+    assert_eq!(m.categories[1].wrapped, Some(expected));
+    assert!(m.categories[1].errors.is_empty());
+    assert_eq!(m.categories[0].wrapped, None);
+
+    // one type without the other is rejected
+    for spec in [
+        "spec { error-type text::Error }",
+        "spec { kind-type text::ErrorKind }",
+    ] {
+        assert_eq!(
+            kind(&with_wrapping_category(spec, "")),
+            MISSING_ATTRIBUTE,
+            "{spec}"
+        );
+    }
+
+    // a value that is not a type path is rejected
+    for bad in ["\"text::\"", "\"text Error\"", "\"\"", "#true"] {
+        let spec = format!("spec {{ error-type {bad}; kind-type text::ErrorKind }}");
+        let expected = if bad == "#true" {
+            BAD_VALUE_TYPE
+        } else {
+            BAD_NAME
+        };
+        assert_eq!(kind(&with_wrapping_category(&spec, "")), expected, "{bad}");
+    }
+
+    // errors, and defaults for errors, are rejected in a wrapping category
+    let spec = "spec { error-type text::Error; kind-type text::ErrorKind }";
+    let s = with_wrapping_category(spec, "error BAD_GLYPH");
+    assert_eq!(kind(&s), BAD_OBJECT_ATTRIBUTE);
+    for default in ["doc-from-display #true", "variant-type #false"] {
+        let spec =
+            format!("spec {{ error-type text::Error; kind-type text::ErrorKind; {default} }}");
+        assert_eq!(
+            kind(&with_wrapping_category(&spec, "")),
+            BAD_OBJECT_ATTRIBUTE,
+            "{default}"
+        );
+    }
+
+    // a module whose only category wraps is rejected
+    let s = format!("module errors {{\n category Text {{ {spec} }}\n}}\n");
+    assert_eq!(kind(&s), BAD_OBJECT_ATTRIBUTE);
+
+    // a module of wrapping categories alone is accepted
+    let s = format!(
+        "module errors {{\n category Text {{ {spec} }}\n category Font {{ spec {{ error-type font::Error; kind-type font::ErrorKind }} }}\n}}\n"
+    );
+    assert_eq!(
+        KdlParser::parse_str(&s).unwrap().modules[0]
+            .categories
+            .len(),
+        2
+    );
+
+    // a type that two categories wrap is rejected
+    for other in [
+        "error-type text::Error; kind-type font::ErrorKind",
+        "error-type font::Error; kind-type text::ErrorKind",
+    ] {
+        let s = format!(
+            "module errors {{\n category Text {{ {spec} }}\n category Font {{ spec {{ {other} }} }}\n}}\n"
+        );
+        assert_eq!(kind(&s), NON_UNIQUE_NAME, "{other}");
+    }
 }
 
 // Checks the error settings: `display` on the line or in `spec`, with
