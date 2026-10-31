@@ -54,6 +54,10 @@ const CASES: &[Case] = &[
         ..case("tests/multiple_modules/tighterror.kdl", "multiple_modules")
     },
     build_case("tests/extra/flat_kinds/tighterror.kdl", "flat_kinds.rs"),
+    build_case(
+        "tests/extra/full_width_categories/tighterror.kdl",
+        "full_width_categories.rs",
+    ),
     Case {
         separate_files: true,
         ..build_case("tests/extra/custom_repr/tighterror.kdl", "custom_repr")
@@ -67,6 +71,10 @@ const CASES: &[Case] = &[
         ..build_case("tests/extra/edition_2024/tighterror.kdl", "edition_2024")
     },
     build_case("tests/extra/minimal/tighterror.kdl", "minimal.rs"),
+    build_case(
+        "tests/extra/minimal_255_variants/tighterror.kdl",
+        "minimal_255_variants.rs",
+    ),
     build_case(
         "tests/extra/minimal_256_variants/tighterror.kdl",
         "minimal_256_variants.rs",
